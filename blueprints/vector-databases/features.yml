@@ -1,0 +1,594 @@
+# Vector Database Features Catalog
+# Comprehensive feature set based on Qdrant, Milvus, Weaviate, Pinecone, pgvector, ChromaDB
+# Designed for SKVector — our Qdrant-in-production implementation
+
+categories:
+  core_search:
+    name: "Core Search"
+    description: "Vector similarity search fundamentals"
+    features:
+      - name: "cosine_similarity"
+        description: "Normalized dot product distance for directional similarity"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "euclidean_distance"
+        description: "L2 straight-line distance in vector space"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "dot_product"
+        description: "Raw inner product for pre-normalized vectors (MIP)"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "manhattan_distance"
+        description: "L1 sum of absolute differences"
+        complexity: "low"
+        dependencies: []
+        default: "disabled"
+
+      - name: "hamming_distance"
+        description: "Bit-level distance for binary vectors"
+        complexity: "medium"
+        dependencies: ["binary_quantization"]
+        default: "disabled"
+
+      - name: "knn_search"
+        description: "Return top-K nearest neighbors for a query vector"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "batch_search"
+        description: "Execute multiple search queries in a single request"
+        complexity: "medium"
+        dependencies: ["knn_search"]
+        default: "enabled"
+
+      - name: "search_with_vector"
+        description: "Search by providing a raw vector"
+        complexity: "low"
+        dependencies: ["knn_search"]
+        default: "enabled"
+
+      - name: "search_by_id"
+        description: "Search using an existing point's vector as query"
+        complexity: "low"
+        dependencies: ["knn_search", "point_retrieval"]
+        default: "enabled"
+
+      - name: "recommendation_api"
+        description: "Find similar points given positive/negative examples"
+        complexity: "medium"
+        dependencies: ["knn_search"]
+        default: "disabled"
+
+      - name: "discovery_api"
+        description: "Explore data space with context pairs"
+        complexity: "medium"
+        dependencies: ["knn_search"]
+        default: "disabled"
+
+      - name: "grouping_api"
+        description: "Group search results by payload field value"
+        complexity: "medium"
+        dependencies: ["knn_search", "payload_indexing"]
+        default: "disabled"
+
+  indexing:
+    name: "Indexing"
+    description: "Index structures and construction"
+    features:
+      - name: "hnsw_index"
+        description: "Hierarchical Navigable Small World graph for ANN search"
+        complexity: "high"
+        dependencies: []
+        default: "primary"
+
+      - name: "hnsw_m_parameter"
+        description: "Max edges per node (memory vs recall tradeoff)"
+        complexity: "medium"
+        dependencies: ["hnsw_index"]
+        default: "16"
+
+      - name: "hnsw_ef_construction"
+        description: "Build-time search width (quality vs build speed)"
+        complexity: "medium"
+        dependencies: ["hnsw_index"]
+        default: "128"
+
+      - name: "hnsw_ef_search"
+        description: "Query-time search width (speed vs recall)"
+        complexity: "low"
+        dependencies: ["hnsw_index"]
+        default: "64"
+
+      - name: "full_scan_threshold"
+        description: "Brute-force search below this collection size"
+        complexity: "low"
+        dependencies: []
+        default: "10000"
+
+      - name: "on_disk_index"
+        description: "Memory-map HNSW graph to disk; RAM for hot pages"
+        complexity: "medium"
+        dependencies: ["hnsw_index"]
+        default: "disabled"
+
+      - name: "async_indexing"
+        description: "Build index in background while serving queries"
+        complexity: "medium"
+        dependencies: ["hnsw_index"]
+        default: "enabled"
+
+      - name: "index_warmup"
+        description: "Pre-load index pages into RAM on startup"
+        complexity: "medium"
+        dependencies: ["hnsw_index"]
+        default: "auto"
+
+      - name: "ivf_flat_index"
+        description: "Inverted file with flat brute-force in clusters"
+        complexity: "medium"
+        dependencies: ["training_data"]
+        default: "disabled"
+
+      - name: "ivf_pq_index"
+        description: "Inverted file + product quantization"
+        complexity: "high"
+        dependencies: ["training_data", "product_quantization"]
+        default: "disabled"
+
+  storage:
+    name: "Storage"
+    description: "Data persistence, WAL, and segment management"
+    features:
+      - name: "write_ahead_log"
+        description: "Append-only WAL for crash recovery durability"
+        complexity: "medium"
+        dependencies: []
+        default: "enabled"
+
+      - name: "wal_compaction"
+        description: "Periodic cleanup of consumed WAL segments"
+        complexity: "medium"
+        dependencies: ["write_ahead_log"]
+        default: "auto"
+
+      - name: "segment_management"
+        description: "Organize data into immutable segments + mutable memtable"
+        complexity: "medium"
+        dependencies: []
+        default: "auto"
+
+      - name: "segment_merging"
+        description: "Merge small segments for query efficiency"
+        complexity: "medium"
+        dependencies: ["segment_management"]
+        default: "auto"
+
+      - name: "optimizer_triggers"
+        description: "Configure thresholds for re-indexing and merging"
+        complexity: "medium"
+        dependencies: ["segment_management"]
+        default: "auto"
+
+      - name: "embedding_storage"
+        description: "Store raw vectors alongside index"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "float16_storage"
+        description: "Store vectors as float16 to halve memory"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+      - name: "mmap_storage"
+        description: "Memory-mapped vector/segment files; OS manages paging"
+        complexity: "medium"
+        dependencies: []
+        default: "auto"
+
+      - name: "snapshots"
+        description: "Point-in-time backup of collections"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+      - name: "snapshot_restore"
+        description: "Restore collection from snapshot file"
+        complexity: "medium"
+        dependencies: ["snapshots"]
+        default: "disabled"
+
+      - name: "collection_aliases"
+        description: "Named pointers for blue-green re-indexing"
+        complexity: "low"
+        dependencies: ["collection_management"]
+        default: "disabled"
+
+      - name: "collection_management"
+        description: "Create/delete/list/describe collections"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+  filtering:
+    name: "Filtering"
+    description: "Metadata filtering and payload operations"
+    features:
+      - name: "payload_indexing"
+        description: "Index metadata fields for filtered search"
+        complexity: "medium"
+        dependencies: []
+        default: "auto"
+
+      - name: "payload_types"
+        description: "Support int, float, string, bool, geo, datetime types"
+        complexity: "low"
+        dependencies: ["payload_indexing"]
+        default: "all"
+
+      - name: "keyword_match"
+        description: "Exact string/enum matching on payload fields"
+        complexity: "low"
+        dependencies: ["payload_indexing"]
+        default: "enabled"
+
+      - name: "full_text_index"
+        description: "Tokenized text search on payload fields"
+        complexity: "medium"
+        dependencies: ["payload_indexing"]
+        default: "disabled"
+
+      - name: "range_filters"
+        description: "Numeric gt/gte/lt/lte conditions"
+        complexity: "low"
+        dependencies: ["payload_indexing"]
+        default: "enabled"
+
+      - name: "geo_filters"
+        description: "Radius, bounding box, polygon geospatial filtering"
+        complexity: "medium"
+        dependencies: ["geo_payload_index"]
+        default: "disabled"
+
+      - name: "datetime_filters"
+        description: "Temporal range filtering on datetime fields"
+        complexity: "low"
+        dependencies: ["payload_indexing"]
+        default: "enabled"
+
+      - name: "boolean_expressions"
+        description: "AND/OR/NOT (must/should/must_not) filter composition"
+        complexity: "medium"
+        dependencies: ["payload_indexing"]
+        default: "enabled"
+
+      - name: "nested_filters"
+        description: "Filter on nested object payload fields"
+        complexity: "medium"
+        dependencies: ["payload_indexing"]
+        default: "disabled"
+
+      - name: "is_empty_filter"
+        description: "Match points where a field is empty/missing"
+        complexity: "low"
+        dependencies: ["payload_indexing"]
+        default: "enabled"
+
+      - name: "has_id_filter"
+        description: "Filter by set of point IDs"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "query_planning"
+        description: "Optimize filter vs vector search execution order"
+        complexity: "high"
+        dependencies: ["payload_indexing"]
+        default: "auto"
+
+  clustering:
+    name: "Clustering & Distribution"
+    description: "Sharding, replication, and cluster coordination"
+    features:
+      - name: "sharding"
+        description: "Distribute collection across cluster nodes"
+        complexity: "high"
+        dependencies: ["cluster_mode"]
+        default: "auto"
+
+      - name: "shard_key_routing"
+        description: "Route queries to specific shards by custom key"
+        complexity: "high"
+        dependencies: ["sharding"]
+        default: "disabled"
+
+      - name: "replication_factor"
+        description: "Number of data copies across nodes"
+        complexity: "medium"
+        dependencies: ["cluster_mode"]
+        default: "1"
+
+      - name: "read_consistency_levels"
+        description: "Quorum/all/local read consistency options"
+        complexity: "medium"
+        dependencies: ["replication_factor"]
+        default: "local"
+
+      - name: "write_consistency_levels"
+        description: "Quorum/all/local write ordering"
+        complexity: "medium"
+        dependencies: ["replication_factor"]
+        default: "quorum"
+
+      - name: "raft_consensus"
+        description: "Leader election + log replication for metadata"
+        complexity: "high"
+        dependencies: ["cluster_mode"]
+        default: "enabled_in_cluster"
+
+      - name: "node_discovery"
+        description: "Auto-discover cluster peers"
+        complexity: "medium"
+        dependencies: ["cluster_mode"]
+        default: "config_based"
+
+      - name: "collection_migration"
+        description: "Move collection shards between nodes"
+        complexity: "high"
+        dependencies: ["cluster_mode"]
+        default: "manual"
+
+      - name: "cluster_mode"
+        description: "Enable distributed multi-node operation"
+        complexity: "high"
+        dependencies: []
+        default: "disabled"
+
+  security:
+    name: "Security"
+    description: "Authentication, authorization, and encryption"
+    features:
+      - name: "api_key_auth"
+        description: "Static API key authentication"
+        complexity: "low"
+        dependencies: []
+        default: "disabled"
+
+      - name: "jwt_auth"
+        description: "JSON Web Token authentication with claims"
+        complexity: "medium"
+        dependencies: ["api_key_auth"]
+        default: "disabled"
+
+      - name: "rbac"
+        description: "Role-based access control per collection/action"
+        complexity: "medium"
+        dependencies: ["api_key_auth"]
+        default: "disabled"
+
+      - name: "tls_encryption"
+        description: "TLS for client connections"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+      - name: "mtls"
+        description: "Mutual TLS for node-to-node communication"
+        complexity: "medium"
+        dependencies: ["tls_encryption"]
+        default: "disabled"
+
+      - name: "ip_allowlist"
+        description: "Restrict access by source IP address"
+        complexity: "low"
+        dependencies: []
+        default: "disabled"
+
+      - name: "rate_limiting"
+        description: "Per-client request rate throttling"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+      - name: "audit_logging"
+        description: "Log all data modifications with client identity"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+  performance:
+    name: "Performance"
+    description: "Quantization, caching, and optimization"
+    features:
+      - name: "scalar_quantization"
+        description: "Compress float32 → int8 per dimension (4x compression)"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+      - name: "product_quantization"
+        description: "Codebook sub-quantizer compression (10-50x)"
+        complexity: "high"
+        dependencies: ["training_data"]
+        default: "disabled"
+
+      - name: "binary_quantization"
+        description: "1-bit per dimension compression (32x)"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+      - name: "quantization_rescoring"
+        description: "Re-rank quantized results with full-precision vectors"
+        complexity: "medium"
+        dependencies: ["scalar_quantization"]
+        default: "enabled"
+
+      - name: "oversampling"
+        description: "Fetch extra candidates before re-ranking"
+        complexity: "medium"
+        dependencies: ["quantization_rescoring"]
+        default: "auto"
+
+      - name: "prefetch_pipeline"
+        description: "Multi-stage coarse-to-fine search pipeline"
+        complexity: "high"
+        dependencies: []
+        default: "disabled"
+
+      - name: "batch_upsert"
+        description: "Insert/update multiple points atomically"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "batch_size_tuning"
+        description: "Configure optimal batch sizes for throughput"
+        complexity: "low"
+        dependencies: ["batch_upsert"]
+        default: "100"
+
+      - name: "connection_pooling"
+        description: "Reuse gRPC/HTTP connections to reduce overhead"
+        complexity: "medium"
+        dependencies: []
+        default: "enabled"
+
+  api:
+    name: "API"
+    description: "Client interfaces and protocol support"
+    features:
+      - name: "rest_api"
+        description: "HTTP/JSON endpoint for all operations"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "grpc_api"
+        description: "High-performance binary RPC interface"
+        complexity: "medium"
+        dependencies: []
+        default: "enabled"
+
+      - name: "openapi_spec"
+        description: "Auto-generated API documentation"
+        complexity: "low"
+        dependencies: ["rest_api"]
+        default: "enabled"
+
+      - name: "client_sdks"
+        description: "Official Python, JS/TS, Rust, Go, Java, C# SDKs"
+        complexity: "low"
+        dependencies: ["rest_api", "grpc_api"]
+        default: "available"
+
+      - name: "scroll_pagination"
+        description: "Cursor-based iteration through all points"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "point_retrieval"
+        description: "Fetch specific points by their IDs"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "point_count"
+        description: "Count points matching a filter expression"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "bulk_delete"
+        description: "Delete all points matching a filter"
+        complexity: "low"
+        dependencies: ["payload_indexing"]
+        default: "enabled"
+
+      - name: "set_payload"
+        description: "Update metadata without re-uploading vectors"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "conditional_update"
+        description: "Update only if version/condition matches"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+  observability:
+    name: "Observability"
+    description: "Metrics, monitoring, and diagnostics"
+    features:
+      - name: "prometheus_metrics"
+        description: "Prometheus-compatible /metrics endpoint"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "health_check"
+        description: "Liveness/readiness probe endpoints"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "telemetry"
+        description: "Usage telemetry and collection statistics"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "structured_logging"
+        description: "JSON structured log output"
+        complexity: "low"
+        dependencies: []
+        default: "enabled"
+
+      - name: "distributed_tracing"
+        description: "OpenTelemetry trace propagation"
+        complexity: "medium"
+        dependencies: []
+        default: "disabled"
+
+      - name: "resource_monitoring"
+        description: "Track memory, disk, CPU per collection"
+        complexity: "medium"
+        dependencies: ["prometheus_metrics"]
+        default: "enabled"
+
+      - name: "slow_query_log"
+        description: "Log queries exceeding latency threshold"
+        complexity: "low"
+        dependencies: ["structured_logging"]
+        default: "disabled"
+
+      - name: "index_build_progress"
+        description: "Report HNSW/optimizer build progress"
+        complexity: "low"
+        dependencies: ["async_indexing"]
+        default: "enabled"
+
+# Dependency definitions for validation
+dependencies:
+  training_data:
+    description: "Representative vector sample for IVF/PQ training"
+    complexity: "low"
+
+  geo_payload_index:
+    description: "Geospatial index on payload geo fields"
+    complexity: "medium"
+
+  cluster_mode:
+    description: "Multi-node distributed cluster runtime"
+    complexity: "high"

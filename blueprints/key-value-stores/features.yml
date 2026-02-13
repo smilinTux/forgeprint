@@ -1,0 +1,637 @@
+# Key-Value Store Features Catalog
+# Comprehensive feature set based on Redis, Valkey, KeyDB, DragonflyDB, Memcached
+
+categories:
+  core_commands:
+    name: "Core Commands"
+    description: "Fundamental key-value CRUD operations"
+    features:
+      - name: "get_set_del"
+        description: "Basic key-value CRUD: GET, SET, DEL, EXISTS, TYPE"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "mget_mset"
+        description: "Batch get/set multiple keys atomically: MGET, MSET, MSETNX"
+        complexity: "low"
+        dependencies: ["get_set_del"]
+        default: "on"
+
+      - name: "set_conditional"
+        description: "Conditional set with NX/XX/GET flags"
+        complexity: "low"
+        dependencies: ["get_set_del"]
+        default: "on"
+
+      - name: "set_expiry"
+        description: "SET with EX/PX/EXAT/PXAT expiry options"
+        complexity: "low"
+        dependencies: ["get_set_del", "key_expiry"]
+        default: "on"
+
+      - name: "atomic_increment"
+        description: "Atomic integer/float increment: INCR, DECR, INCRBY, DECRBY, INCRBYFLOAT"
+        complexity: "low"
+        dependencies: ["get_set_del"]
+        default: "on"
+
+      - name: "string_manipulation"
+        description: "String operations: APPEND, STRLEN, GETRANGE, SETRANGE"
+        complexity: "low"
+        dependencies: ["get_set_del"]
+        default: "on"
+
+      - name: "getset_getdel"
+        description: "Atomic get-and-modify: GETSET, GETDEL, GETEX"
+        complexity: "low"
+        dependencies: ["get_set_del"]
+        default: "on"
+
+      - name: "key_expiry"
+        description: "TTL management: EXPIRE, PEXPIRE, EXPIREAT, PEXPIREAT, TTL, PTTL, PERSIST, EXPIRETIME"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "lazy_expiry"
+        description: "Passive expiry on access + active periodic expiry scanning"
+        complexity: "medium"
+        dependencies: ["key_expiry"]
+        default: "on"
+
+      - name: "key_scanning"
+        description: "Non-blocking keyspace iteration: SCAN, RANDOMKEY, DBSIZE"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "key_management"
+        description: "Key utilities: RENAME, RENAMENX, COPY, UNLINK, DUMP, RESTORE, OBJECT, TOUCH, WAIT"
+        complexity: "medium"
+        dependencies: ["get_set_del"]
+        default: "on"
+
+      - name: "database_select"
+        description: "Multiple logical databases: SELECT, MOVE, SWAPDB, FLUSHDB, FLUSHALL"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+  data_structures:
+    name: "Data Structures"
+    description: "Rich data type support beyond simple strings"
+    features:
+      - name: "lists"
+        description: "Ordered sequences: LPUSH, RPUSH, LPOP, RPOP, LLEN, LRANGE, LINDEX, LSET, LINSERT, LREM, LTRIM, LPOS, LMPOP"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "list_blocking"
+        description: "Blocking list operations: BLPOP, BRPOP, BLMOVE, BLMPOP"
+        complexity: "medium"
+        dependencies: ["lists"]
+        default: "on"
+
+      - name: "sets"
+        description: "Unordered unique collections: SADD, SREM, SMEMBERS, SISMEMBER, SMISMEMBER, SCARD, SPOP, SRANDMEMBER"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "set_operations"
+        description: "Set algebra: SUNION, SINTER, SDIFF, SUNIONSTORE, SINTERSTORE, SDIFFSTORE, SINTERCARD"
+        complexity: "medium"
+        dependencies: ["sets"]
+        default: "on"
+
+      - name: "sorted_sets"
+        description: "Score-ordered sets: ZADD, ZREM, ZSCORE, ZRANK, ZREVRANK, ZCARD, ZCOUNT, ZINCRBY, ZRANDMEMBER, ZMSCORE"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "sorted_set_ranges"
+        description: "Range queries: ZRANGE, ZREVRANGE, ZRANGEBYSCORE, ZREVRANGEBYSCORE, ZRANGEBYLEX, ZRANGESTORE, ZLEXCOUNT"
+        complexity: "medium"
+        dependencies: ["sorted_sets"]
+        default: "on"
+
+      - name: "sorted_set_aggregation"
+        description: "Set operations on sorted sets: ZUNIONSTORE, ZINTERSTORE, ZDIFFSTORE"
+        complexity: "high"
+        dependencies: ["sorted_sets"]
+        default: "on"
+
+      - name: "sorted_set_blocking"
+        description: "Blocking sorted set pops: ZPOPMIN, ZPOPMAX, BZPOPMIN, BZPOPMAX, ZMPOP, BZMPOP"
+        complexity: "medium"
+        dependencies: ["sorted_sets"]
+        default: "on"
+
+      - name: "hashes"
+        description: "Field-value maps: HSET, HGET, HMGET, HGETALL, HDEL, HEXISTS, HLEN, HKEYS, HVALS, HSETNX, HRANDFIELD"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "hash_arithmetic"
+        description: "Hash field arithmetic: HINCRBY, HINCRBYFLOAT"
+        complexity: "low"
+        dependencies: ["hashes"]
+        default: "on"
+
+      - name: "streams"
+        description: "Append-only log: XADD, XREAD, XRANGE, XREVRANGE, XLEN, XTRIM, XDEL, XINFO"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "consumer_groups"
+        description: "Stream consumer groups: XGROUP, XREADGROUP, XACK, XCLAIM, XAUTOCLAIM, XPENDING"
+        complexity: "high"
+        dependencies: ["streams"]
+        default: "off"
+
+      - name: "bitmaps"
+        description: "Bit-level operations: SETBIT, GETBIT, BITCOUNT, BITPOS"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "bitwise_operations"
+        description: "Advanced bit operations: BITOP (AND/OR/XOR/NOT), BITFIELD, BITFIELD_RO"
+        complexity: "medium"
+        dependencies: ["bitmaps"]
+        default: "on"
+
+      - name: "hyperloglog"
+        description: "Probabilistic cardinality estimation: PFADD, PFCOUNT, PFMERGE"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "geospatial"
+        description: "Geo-indexed data: GEOADD, GEODIST, GEOHASH, GEOPOS, GEOSEARCH, GEOSEARCHSTORE"
+        complexity: "medium"
+        dependencies: ["sorted_sets"]
+        default: "on"
+
+  persistence:
+    name: "Persistence"
+    description: "Data durability and recovery mechanisms"
+    features:
+      - name: "rdb_snapshots"
+        description: "Point-in-time binary snapshots via fork + copy-on-write"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "rdb_save_triggers"
+        description: "Configurable save frequency rules (save N M)"
+        complexity: "low"
+        dependencies: ["rdb_snapshots"]
+        default: "on"
+
+      - name: "rdb_bgsave"
+        description: "Background save without blocking main thread"
+        complexity: "high"
+        dependencies: ["rdb_snapshots"]
+        default: "on"
+
+      - name: "aof_logging"
+        description: "Append-only file write logging for every mutation"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "aof_fsync_policies"
+        description: "AOF fsync modes: always, everysec, no"
+        complexity: "low"
+        dependencies: ["aof_logging"]
+        default: "on"
+
+      - name: "aof_rewrite"
+        description: "Background AOF compaction via fork"
+        complexity: "high"
+        dependencies: ["aof_logging"]
+        default: "on"
+
+      - name: "multi_part_aof"
+        description: "Multi-part AOF with base RDB + incremental files (7.0+)"
+        complexity: "high"
+        dependencies: ["aof_logging", "rdb_snapshots"]
+        default: "off"
+
+      - name: "rdb_aof_combined"
+        description: "Use both RDB and AOF for optimal durability + fast restarts"
+        complexity: "medium"
+        dependencies: ["rdb_snapshots", "aof_logging"]
+        default: "off"
+
+  replication:
+    name: "Replication"
+    description: "Master-replica data synchronization"
+    features:
+      - name: "async_replication"
+        description: "Asynchronous master-to-replica data replication"
+        complexity: "high"
+        dependencies: ["rdb_snapshots"]
+        default: "off"
+
+      - name: "replication_backlog"
+        description: "Circular buffer for partial resync after disconnect (PSYNC2)"
+        complexity: "medium"
+        dependencies: ["async_replication"]
+        default: "on"
+
+      - name: "replica_read_only"
+        description: "Read-only mode for replica nodes"
+        complexity: "low"
+        dependencies: ["async_replication"]
+        default: "on"
+
+      - name: "wait_command"
+        description: "Synchronous replication acknowledgment: WAIT, WAITAOF"
+        complexity: "medium"
+        dependencies: ["async_replication"]
+        default: "on"
+
+      - name: "min_replicas"
+        description: "Require minimum replicas for write acceptance"
+        complexity: "medium"
+        dependencies: ["async_replication"]
+        default: "off"
+
+      - name: "diskless_replication"
+        description: "Stream RDB directly to replicas without disk I/O"
+        complexity: "high"
+        dependencies: ["async_replication"]
+        default: "off"
+
+      - name: "sentinel_ha"
+        description: "Sentinel-based automatic failover and monitoring"
+        complexity: "high"
+        dependencies: ["async_replication"]
+        default: "off"
+
+      - name: "sentinel_quorum"
+        description: "Configurable quorum for failover agreement"
+        complexity: "medium"
+        dependencies: ["sentinel_ha"]
+        default: "on"
+
+  cluster:
+    name: "Cluster"
+    description: "Horizontal sharding and distributed operation"
+    features:
+      - name: "cluster_mode"
+        description: "Hash-slot sharding across multiple masters (16384 slots)"
+        complexity: "high"
+        dependencies: ["async_replication"]
+        default: "off"
+
+      - name: "gossip_protocol"
+        description: "Node discovery, health detection, and state propagation"
+        complexity: "high"
+        dependencies: ["cluster_mode"]
+        default: "on"
+
+      - name: "hash_slot_routing"
+        description: "CRC16-based slot calculation with MOVED/ASK redirects"
+        complexity: "high"
+        dependencies: ["cluster_mode"]
+        default: "on"
+
+      - name: "hash_tags"
+        description: "Force keys to same slot via {tag} syntax"
+        complexity: "low"
+        dependencies: ["cluster_mode"]
+        default: "on"
+
+      - name: "cluster_resharding"
+        description: "Online slot migration between nodes"
+        complexity: "high"
+        dependencies: ["cluster_mode"]
+        default: "on"
+
+      - name: "cluster_auto_failover"
+        description: "Automatic replica promotion on master failure"
+        complexity: "high"
+        dependencies: ["cluster_mode", "gossip_protocol"]
+        default: "on"
+
+      - name: "cluster_manual_failover"
+        description: "Graceful manual failover with CLUSTER FAILOVER"
+        complexity: "medium"
+        dependencies: ["cluster_mode"]
+        default: "on"
+
+  pubsub:
+    name: "Pub/Sub"
+    description: "Publish/subscribe messaging"
+    features:
+      - name: "channel_pubsub"
+        description: "Basic publish/subscribe: PUBLISH, SUBSCRIBE, UNSUBSCRIBE"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "pattern_subscribe"
+        description: "Glob pattern subscriptions: PSUBSCRIBE, PUNSUBSCRIBE"
+        complexity: "medium"
+        dependencies: ["channel_pubsub"]
+        default: "on"
+
+      - name: "sharded_pubsub"
+        description: "Cluster-aware pub/sub scoped to hash slots: SSUBSCRIBE, SPUBLISH"
+        complexity: "medium"
+        dependencies: ["channel_pubsub", "cluster_mode"]
+        default: "off"
+
+      - name: "pubsub_introspection"
+        description: "Inspect pub/sub state: PUBSUB CHANNELS, NUMSUB, NUMPAT"
+        complexity: "low"
+        dependencies: ["channel_pubsub"]
+        default: "on"
+
+      - name: "keyspace_notifications"
+        description: "Pub/Sub events on key mutations (KEA notifications)"
+        complexity: "medium"
+        dependencies: ["channel_pubsub"]
+        default: "off"
+
+  scripting:
+    name: "Scripting & Transactions"
+    description: "Server-side scripting and atomic operations"
+    features:
+      - name: "transactions"
+        description: "Multi-command atomic execution: MULTI, EXEC, DISCARD"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "watch_optimistic_locking"
+        description: "CAS-style optimistic locking: WATCH, UNWATCH"
+        complexity: "medium"
+        dependencies: ["transactions"]
+        default: "on"
+
+      - name: "lua_scripting"
+        description: "Atomic server-side Lua execution: EVAL, EVALSHA"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "lua_readonly"
+        description: "Read-only Lua scripts: EVALRO, EVALSHA_RO"
+        complexity: "medium"
+        dependencies: ["lua_scripting"]
+        default: "on"
+
+      - name: "script_caching"
+        description: "Script SHA1 caching: SCRIPT LOAD, SCRIPT EXISTS, SCRIPT FLUSH"
+        complexity: "medium"
+        dependencies: ["lua_scripting"]
+        default: "on"
+
+      - name: "functions"
+        description: "Named persistent server-side functions: FUNCTION LOAD, FCALL (7.0+)"
+        complexity: "high"
+        dependencies: ["lua_scripting"]
+        default: "off"
+
+      - name: "pipelining"
+        description: "Client-side command batching without round-trip waits"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+  security:
+    name: "Security"
+    description: "Authentication, authorization, and encryption"
+    features:
+      - name: "password_auth"
+        description: "Simple password authentication: AUTH, requirepass"
+        complexity: "low"
+        dependencies: []
+        default: "off"
+
+      - name: "acl_system"
+        description: "Per-user access control lists with command/key/channel permissions"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "acl_categories"
+        description: "Command categories for group permission management (@read, @write, @admin, etc.)"
+        complexity: "medium"
+        dependencies: ["acl_system"]
+        default: "on"
+
+      - name: "acl_selectors"
+        description: "Multiple permission sets per user (7.2+)"
+        complexity: "medium"
+        dependencies: ["acl_system"]
+        default: "off"
+
+      - name: "tls_ssl"
+        description: "Encrypted client, replication, and cluster bus connections"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "protected_mode"
+        description: "Reject external connections without explicit auth configuration"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "command_renaming"
+        description: "Rename or disable dangerous commands (FLUSHALL, CONFIG, DEBUG)"
+        complexity: "low"
+        dependencies: []
+        default: "off"
+
+  performance:
+    name: "Performance"
+    description: "Performance optimization features"
+    features:
+      - name: "io_threads"
+        description: "Multi-threaded I/O for read/write (command execution stays single-threaded)"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "lazy_free"
+        description: "Async memory deallocation in background thread: UNLINK, FLUSHDB ASYNC"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "client_output_buffer_limits"
+        description: "Per-class output buffer limits (normal, replica, pubsub)"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "tcp_keepalive"
+        description: "TCP keepalive for connection health detection"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "resp_protocol_selection"
+        description: "RESP2/RESP3 protocol negotiation: HELLO command"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "client_side_caching"
+        description: "Server-assisted client-side caching with invalidation: CLIENT TRACKING"
+        complexity: "high"
+        dependencies: ["resp_protocol_selection"]
+        default: "off"
+
+      - name: "client_no_evict"
+        description: "Protect specific client connections from eviction"
+        complexity: "low"
+        dependencies: ["acl_system"]
+        default: "off"
+
+  observability:
+    name: "Observability"
+    description: "Monitoring, diagnostics, and introspection"
+    features:
+      - name: "info_command"
+        description: "Comprehensive server statistics: INFO [section]"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "slowlog"
+        description: "Log commands exceeding latency threshold"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "latency_monitor"
+        description: "Track and report latency sources: LATENCY HISTORY, LATEST, RESET"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "memory_introspection"
+        description: "Memory analysis: MEMORY USAGE, MEMORY DOCTOR, MEMORY STATS, MEMORY MALLOC-STATS"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "object_introspection"
+        description: "Key internals: OBJECT ENCODING, OBJECT IDLETIME, OBJECT FREQ, OBJECT HELP"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "client_management"
+        description: "Client inspection: CLIENT LIST, CLIENT GETNAME, CLIENT KILL, CLIENT INFO, CLIENT NO-EVICT"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "config_management"
+        description: "Runtime config: CONFIG SET, CONFIG GET, CONFIG REWRITE, CONFIG RESETSTAT"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "debug_commands"
+        description: "Diagnostic commands: DEBUG, MONITOR, COMMAND INFO/COUNT/DOCS"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+  modules:
+    name: "Modules & Extensions"
+    description: "Server extensibility via loadable modules"
+    features:
+      - name: "modules_api"
+        description: "C module API for custom commands, data types, and hooks"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "module_json"
+        description: "RedisJSON: Native JSON document storage with JSONPath queries"
+        complexity: "high"
+        dependencies: ["modules_api"]
+        default: "off"
+
+      - name: "module_search"
+        description: "RediSearch: Full-text search, secondary indexing, aggregation pipelines"
+        complexity: "high"
+        dependencies: ["modules_api"]
+        default: "off"
+
+      - name: "module_timeseries"
+        description: "RedisTimeSeries: Time-series data type with downsampling and aggregation"
+        complexity: "high"
+        dependencies: ["modules_api"]
+        default: "off"
+
+      - name: "module_bloom"
+        description: "RedisBloom: Bloom filters, cuckoo filters, count-min sketch, top-K"
+        complexity: "medium"
+        dependencies: ["modules_api"]
+        default: "off"
+
+# Feature dependency validation
+dependencies:
+  key_expiry:
+    description: "Key TTL and expiration system"
+    complexity: "low"
+
+  sorted_sets:
+    description: "Sorted set data structure (required for geospatial)"
+    complexity: "medium"
+
+  async_replication:
+    description: "Master-replica replication engine"
+    complexity: "high"
+
+  channel_pubsub:
+    description: "Core pub/sub messaging system"
+    complexity: "medium"
+
+  cluster_mode:
+    description: "Cluster sharding engine"
+    complexity: "high"
+
+  acl_system:
+    description: "Access control list engine"
+    complexity: "medium"
+
+  lua_scripting:
+    description: "Embedded Lua interpreter"
+    complexity: "high"
+
+  modules_api:
+    description: "Dynamic module loading infrastructure"
+    complexity: "high"
+
+  rdb_snapshots:
+    description: "RDB persistence engine"
+    complexity: "high"
+
+  aof_logging:
+    description: "AOF persistence engine"
+    complexity: "medium"
+
+  gossip_protocol:
+    description: "Cluster gossip communication layer"
+    complexity: "high"
+
+  resp_protocol_selection:
+    description: "RESP2/RESP3 protocol negotiation"
+    complexity: "medium"

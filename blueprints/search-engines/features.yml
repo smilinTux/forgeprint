@@ -1,0 +1,716 @@
+# Search Engine Features Catalog (SKSearch)
+# Comprehensive feature set based on Elasticsearch, OpenSearch, Solr, Meilisearch, Typesense, Tantivy, Quickwit
+
+categories:
+  core_search:
+    name: "Core Search"
+    description: "Fundamental search query capabilities"
+    features:
+      - name: "match_query"
+        description: "Full-text analyzed search across a single field"
+        complexity: "low"
+        dependencies: ["inverted_index", "analyzer_pipeline"]
+        default: "on"
+
+      - name: "multi_match_query"
+        description: "Search across multiple fields with configurable scoring types"
+        complexity: "medium"
+        dependencies: ["match_query"]
+        default: "on"
+
+      - name: "bool_query"
+        description: "Compound query with must/should/must_not/filter clauses"
+        complexity: "medium"
+        dependencies: ["match_query"]
+        default: "on"
+
+      - name: "phrase_match"
+        description: "Exact phrase matching with slop (word distance) tolerance"
+        complexity: "medium"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "fuzzy_search"
+        description: "Levenshtein distance typo-tolerant search with AUTO fuzziness"
+        complexity: "medium"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "wildcard_query"
+        description: "Pattern matching with * (multi-char) and ? (single-char) wildcards"
+        complexity: "medium"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "regexp_query"
+        description: "Regular expression matching against indexed terms"
+        complexity: "medium"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "prefix_query"
+        description: "Match documents with a field value starting with given prefix"
+        complexity: "low"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "range_query"
+        description: "Numeric, date, and string range filtering with gte/lte/gt/lt"
+        complexity: "low"
+        dependencies: ["bkd_tree_index"]
+        default: "on"
+
+      - name: "term_query"
+        description: "Exact-match query on keyword fields (not analyzed)"
+        complexity: "low"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "terms_query"
+        description: "Match any of multiple exact values on a field"
+        complexity: "low"
+        dependencies: ["term_query"]
+        default: "on"
+
+      - name: "exists_query"
+        description: "Filter documents by field existence"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "nested_query"
+        description: "Query nested objects maintaining their field relationships"
+        complexity: "high"
+        dependencies: ["nested_field_type"]
+        default: "off"
+
+      - name: "has_child_has_parent"
+        description: "Join-style queries across parent-child document relationships"
+        complexity: "high"
+        dependencies: ["parent_child_mapping"]
+        default: "off"
+
+      - name: "query_string"
+        description: "Lucene-syntax query parser (AND, OR, field:value, ranges)"
+        complexity: "medium"
+        dependencies: ["match_query", "bool_query"]
+        default: "on"
+
+      - name: "more_like_this"
+        description: "Find documents similar to a given document or text"
+        complexity: "medium"
+        dependencies: ["inverted_index"]
+        default: "off"
+
+      - name: "percolate_query"
+        description: "Reverse search: match stored queries against incoming documents"
+        complexity: "high"
+        dependencies: ["percolator_mapping"]
+        default: "off"
+
+  indexing:
+    name: "Indexing"
+    description: "Document ingestion, index management, and lifecycle"
+    features:
+      - name: "inverted_index"
+        description: "Core term-to-document mapping data structure"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "bkd_tree_index"
+        description: "Block KD-tree index for numeric, date, and geo point fields"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "dynamic_mapping"
+        description: "Auto-detect and map new fields from indexed documents"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "explicit_mapping"
+        description: "Manually define field types, analyzers, and index settings"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "multi_fields"
+        description: "Index same source field with multiple types/analyzers"
+        complexity: "medium"
+        dependencies: ["explicit_mapping"]
+        default: "on"
+
+      - name: "nested_field_type"
+        description: "Store arrays of objects as independent nested documents"
+        complexity: "high"
+        dependencies: ["explicit_mapping"]
+        default: "off"
+
+      - name: "doc_values"
+        description: "Column-oriented on-disk storage for sorting and aggregations"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "stored_fields"
+        description: "Store original field values for retrieval in search results"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "source_field"
+        description: "Store complete original JSON document (_source)"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "bulk_api"
+        description: "Batch index/update/delete operations in a single request"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "index_aliases"
+        description: "Named references to one or more indices for zero-downtime reindex"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "index_templates"
+        description: "Pre-define mappings and settings for auto-created indices"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "component_templates"
+        description: "Reusable mapping and settings blocks composed into index templates"
+        complexity: "medium"
+        dependencies: ["index_templates"]
+        default: "off"
+
+      - name: "reindex_api"
+        description: "Copy documents between indices with optional transformation"
+        complexity: "medium"
+        dependencies: ["bulk_api"]
+        default: "on"
+
+      - name: "index_lifecycle_management"
+        description: "Automate hot→warm→cold→delete phase transitions"
+        complexity: "high"
+        dependencies: ["index_aliases", "index_templates"]
+        default: "off"
+
+      - name: "rollover"
+        description: "Auto-create new index when size/age/doc-count threshold met"
+        complexity: "medium"
+        dependencies: ["index_aliases", "index_lifecycle_management"]
+        default: "off"
+
+      - name: "data_streams"
+        description: "Append-only time-series index pattern with auto-rollover"
+        complexity: "medium"
+        dependencies: ["index_templates", "rollover"]
+        default: "off"
+
+      - name: "runtime_fields"
+        description: "Define fields at query time without reindexing"
+        complexity: "medium"
+        dependencies: ["scripting"]
+        default: "off"
+
+  analysis:
+    name: "Analysis"
+    description: "Text analysis pipeline components"
+    features:
+      - name: "analyzer_pipeline"
+        description: "Configurable char_filter → tokenizer → token_filters chain"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "standard_analyzer"
+        description: "Unicode text segmentation with lowercase filter"
+        complexity: "low"
+        dependencies: ["analyzer_pipeline"]
+        default: "on"
+
+      - name: "language_analyzers"
+        description: "Language-specific stemming and stop words (30+ languages)"
+        complexity: "medium"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+      - name: "custom_analyzer"
+        description: "User-defined analyzer from component parts"
+        complexity: "medium"
+        dependencies: ["analyzer_pipeline"]
+        default: "on"
+
+      - name: "ngram_tokenizer"
+        description: "Sliding-window substring tokenization for partial matching"
+        complexity: "medium"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+      - name: "edge_ngram_tokenizer"
+        description: "Prefix substring tokenization for search-as-you-type"
+        complexity: "medium"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+      - name: "synonym_support"
+        description: "Synonym expansion/contraction via inline rules or file"
+        complexity: "medium"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+      - name: "stop_words"
+        description: "Remove common words from index and queries"
+        complexity: "low"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+      - name: "stemming"
+        description: "Algorithmic/dictionary stemming to word root forms"
+        complexity: "medium"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+      - name: "icu_analysis"
+        description: "ICU-based tokenization, normalization, and folding for multilingual"
+        complexity: "high"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+      - name: "phonetic_analysis"
+        description: "Phonetic encoding (Soundex, Metaphone, Beider-Morse)"
+        complexity: "medium"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+      - name: "html_strip_char_filter"
+        description: "Remove HTML tags from text before tokenization"
+        complexity: "low"
+        dependencies: ["analyzer_pipeline"]
+        default: "off"
+
+  aggregations:
+    name: "Aggregations"
+    description: "Analytics and faceting over search results"
+    features:
+      - name: "terms_aggregation"
+        description: "Bucket by unique field values (faceting)"
+        complexity: "medium"
+        dependencies: ["doc_values"]
+        default: "on"
+
+      - name: "histogram_aggregation"
+        description: "Bucket by fixed numeric intervals"
+        complexity: "medium"
+        dependencies: ["doc_values"]
+        default: "on"
+
+      - name: "date_histogram_aggregation"
+        description: "Bucket by calendar or fixed time intervals"
+        complexity: "medium"
+        dependencies: ["doc_values"]
+        default: "on"
+
+      - name: "range_aggregation"
+        description: "Bucket by custom numeric/date ranges"
+        complexity: "medium"
+        dependencies: ["doc_values"]
+        default: "on"
+
+      - name: "stats_aggregation"
+        description: "Compute min, max, avg, sum, count in a single pass"
+        complexity: "low"
+        dependencies: ["doc_values"]
+        default: "on"
+
+      - name: "extended_stats_aggregation"
+        description: "Stats plus variance, std_deviation, sum_of_squares"
+        complexity: "medium"
+        dependencies: ["stats_aggregation"]
+        default: "on"
+
+      - name: "percentiles_aggregation"
+        description: "Approximate percentile computation (t-digest or HDR histogram)"
+        complexity: "medium"
+        dependencies: ["doc_values"]
+        default: "on"
+
+      - name: "cardinality_aggregation"
+        description: "Approximate distinct count via HyperLogLog++"
+        complexity: "medium"
+        dependencies: ["doc_values"]
+        default: "on"
+
+      - name: "nested_aggregations"
+        description: "Sub-aggregations within buckets (multi-level)"
+        complexity: "medium"
+        dependencies: ["terms_aggregation"]
+        default: "on"
+
+      - name: "pipeline_aggregations"
+        description: "Compute derivative, moving_avg, cumulative_sum on agg results"
+        complexity: "high"
+        dependencies: ["nested_aggregations"]
+        default: "off"
+
+      - name: "significant_terms"
+        description: "Find statistically unusual terms in foreground vs background"
+        complexity: "medium"
+        dependencies: ["terms_aggregation"]
+        default: "off"
+
+      - name: "composite_aggregation"
+        description: "Paginate through multi-source aggregation buckets"
+        complexity: "medium"
+        dependencies: ["terms_aggregation"]
+        default: "off"
+
+      - name: "top_hits_aggregation"
+        description: "Return top matching documents per bucket"
+        complexity: "medium"
+        dependencies: ["nested_aggregations"]
+        default: "on"
+
+  relevance:
+    name: "Relevance"
+    description: "Scoring, ranking, and result quality"
+    features:
+      - name: "bm25_scoring"
+        description: "Okapi BM25 probabilistic relevance ranking (k1, b tunable)"
+        complexity: "low"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "tfidf_scoring"
+        description: "Classic TF-IDF scoring with field length normalization"
+        complexity: "low"
+        dependencies: ["inverted_index"]
+        default: "off"
+
+      - name: "function_score"
+        description: "Combine relevance with custom signals (recency, popularity, scripts)"
+        complexity: "high"
+        dependencies: ["bm25_scoring"]
+        default: "off"
+
+      - name: "field_boosting"
+        description: "Increase/decrease field weight in multi-field search"
+        complexity: "low"
+        dependencies: ["multi_match_query"]
+        default: "on"
+
+      - name: "decay_functions"
+        description: "Gaussian/exponential/linear decay for numeric/date/geo fields"
+        complexity: "medium"
+        dependencies: ["function_score"]
+        default: "off"
+
+      - name: "script_scoring"
+        description: "Compute custom scores with sandboxed scripting language"
+        complexity: "high"
+        dependencies: ["scripting"]
+        default: "off"
+
+      - name: "highlighting"
+        description: "Return matched text snippets with configurable markup tags"
+        complexity: "medium"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "term_suggester"
+        description: "Did-you-mean spelling corrections for individual terms"
+        complexity: "medium"
+        dependencies: ["inverted_index"]
+        default: "on"
+
+      - name: "phrase_suggester"
+        description: "Whole-phrase spelling correction with n-gram language model"
+        complexity: "high"
+        dependencies: ["term_suggester"]
+        default: "off"
+
+      - name: "completion_suggester"
+        description: "FST-based prefix autocomplete with context filtering"
+        complexity: "high"
+        dependencies: ["completion_field_type"]
+        default: "off"
+
+      - name: "rescore_query"
+        description: "Re-rank top-N results with expensive secondary scoring"
+        complexity: "medium"
+        dependencies: ["bm25_scoring"]
+        default: "off"
+
+  geospatial:
+    name: "Geospatial"
+    description: "Geographic search and analytics"
+    features:
+      - name: "geo_point_type"
+        description: "Store and index lat/lon coordinates"
+        complexity: "medium"
+        dependencies: ["bkd_tree_index"]
+        default: "on"
+
+      - name: "geo_distance_query"
+        description: "Find documents within a radius of a point"
+        complexity: "medium"
+        dependencies: ["geo_point_type"]
+        default: "on"
+
+      - name: "geo_bounding_box"
+        description: "Filter by rectangular geographic region"
+        complexity: "medium"
+        dependencies: ["geo_point_type"]
+        default: "on"
+
+      - name: "geo_shape_type"
+        description: "Store and query complex geometries (polygon, multipoint, etc.)"
+        complexity: "high"
+        dependencies: ["bkd_tree_index"]
+        default: "off"
+
+      - name: "geo_distance_sort"
+        description: "Sort results by distance from a reference point"
+        complexity: "medium"
+        dependencies: ["geo_point_type"]
+        default: "on"
+
+      - name: "geohash_grid_aggregation"
+        description: "Bucket documents into geohash grid cells"
+        complexity: "medium"
+        dependencies: ["geo_point_type"]
+        default: "off"
+
+      - name: "geo_distance_aggregation"
+        description: "Bucket documents by distance rings from origin"
+        complexity: "medium"
+        dependencies: ["geo_point_type"]
+        default: "off"
+
+  vector_search:
+    name: "Vector Search"
+    description: "Dense vector similarity search and hybrid retrieval"
+    features:
+      - name: "dense_vector_type"
+        description: "Store fixed-dimension float vectors per document"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "hnsw_index"
+        description: "Hierarchical Navigable Small World graph for approximate kNN"
+        complexity: "high"
+        dependencies: ["dense_vector_type"]
+        default: "off"
+
+      - name: "knn_search"
+        description: "Approximate k-nearest-neighbor search on vector fields"
+        complexity: "high"
+        dependencies: ["hnsw_index"]
+        default: "off"
+
+      - name: "hybrid_search"
+        description: "Combine BM25 text scores with kNN vector scores"
+        complexity: "high"
+        dependencies: ["knn_search", "bm25_scoring"]
+        default: "off"
+
+      - name: "reciprocal_rank_fusion"
+        description: "Merge ranked lists from text and vector search via RRF"
+        complexity: "medium"
+        dependencies: ["hybrid_search"]
+        default: "off"
+
+      - name: "vector_quantization"
+        description: "Scalar/product quantization for reduced vector memory footprint"
+        complexity: "high"
+        dependencies: ["dense_vector_type"]
+        default: "off"
+
+      - name: "knn_pre_filter"
+        description: "Apply structured filters before approximate kNN search"
+        complexity: "high"
+        dependencies: ["knn_search"]
+        default: "off"
+
+  cluster:
+    name: "Cluster"
+    description: "Distributed operation and data management"
+    features:
+      - name: "sharding"
+        description: "Distribute index across multiple shards via hash routing"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "replication"
+        description: "Maintain replica shards for HA and read throughput"
+        complexity: "high"
+        dependencies: ["sharding"]
+        default: "on"
+
+      - name: "shard_allocation_awareness"
+        description: "Place shards considering rack/zone topology"
+        complexity: "medium"
+        dependencies: ["sharding"]
+        default: "off"
+
+      - name: "custom_routing"
+        description: "Route documents to specific shards by user-defined key"
+        complexity: "medium"
+        dependencies: ["sharding"]
+        default: "off"
+
+      - name: "distributed_search"
+        description: "Scatter-gather query across shards with result merging"
+        complexity: "high"
+        dependencies: ["sharding"]
+        default: "on"
+
+      - name: "near_real_time_search"
+        description: "Configurable refresh interval for search visibility (default 1s)"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "snapshot_restore"
+        description: "Backup and restore indices to/from S3/GCS/NFS repository"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "cross_cluster_search"
+        description: "Query indices on remote clusters from local cluster"
+        complexity: "high"
+        dependencies: ["distributed_search"]
+        default: "off"
+
+      - name: "cross_cluster_replication"
+        description: "Replicate indices across clusters for disaster recovery"
+        complexity: "high"
+        dependencies: ["replication"]
+        default: "off"
+
+  security:
+    name: "Security"
+    description: "Authentication, authorization, and audit"
+    features:
+      - name: "native_authentication"
+        description: "Username/password authentication with bcrypt hashing"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "api_key_auth"
+        description: "API key-based authentication for programmatic access"
+        complexity: "medium"
+        dependencies: ["native_authentication"]
+        default: "off"
+
+      - name: "ldap_saml_auth"
+        description: "External identity provider integration (LDAP, SAML, OIDC)"
+        complexity: "high"
+        dependencies: ["native_authentication"]
+        default: "off"
+
+      - name: "rbac"
+        description: "Role-based access control per index, field, and document"
+        complexity: "high"
+        dependencies: ["native_authentication"]
+        default: "off"
+
+      - name: "field_level_security"
+        description: "Restrict visible fields per role"
+        complexity: "high"
+        dependencies: ["rbac"]
+        default: "off"
+
+      - name: "document_level_security"
+        description: "Filter visible documents per role via query"
+        complexity: "high"
+        dependencies: ["rbac"]
+        default: "off"
+
+      - name: "tls_encryption"
+        description: "TLS for client-to-node and node-to-node communication"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "audit_logging"
+        description: "Log authentication events, access denials, and admin actions"
+        complexity: "medium"
+        dependencies: ["native_authentication"]
+        default: "off"
+
+  observability:
+    name: "Observability"
+    description: "Monitoring, diagnostics, and operational visibility"
+    features:
+      - name: "cluster_health_api"
+        description: "Cluster status (green/yellow/red) and shard allocation info"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "index_stats"
+        description: "Per-index document count, size, indexing/search rates"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "node_stats"
+        description: "Per-node JVM/OS/thread pool/transport/circuit breaker metrics"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "slow_query_log"
+        description: "Log queries and indexing operations exceeding time thresholds"
+        complexity: "low"
+        dependencies: []
+        default: "off"
+
+      - name: "cat_apis"
+        description: "Human-readable tabular cluster information endpoints"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "task_management"
+        description: "List and cancel long-running cluster tasks"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "ingest_pipelines"
+        description: "Transform documents on write with processor chains"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "scripting"
+        description: "Sandboxed scripting language for queries, aggs, and updates"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+# Feature count summary:
+# Core Search: 17
+# Indexing: 17
+# Analysis: 12
+# Aggregations: 13
+# Relevance: 11
+# Geospatial: 7
+# Vector Search: 7
+# Cluster: 9
+# Security: 8
+# Observability: 8
+# TOTAL: 109 features (90 from research + 19 implementation necessities)

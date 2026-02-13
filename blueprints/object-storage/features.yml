@@ -1,0 +1,653 @@
+# Object Storage Features Catalog
+# Comprehensive feature set based on MinIO, Ceph RGW, SeaweedFS, Garage, AWS S3, GCS, Azure Blob
+
+categories:
+  core_s3_api:
+    name: "Core S3 API"
+    description: "Essential S3-compatible API operations"
+    features:
+      - name: "create_delete_bucket"
+        description: "Create and delete storage buckets with DNS-compatible naming"
+        complexity: "low"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "put_object"
+        description: "Store objects up to 5GB in a single PUT request"
+        complexity: "medium"
+        dependencies: ["metadata_store", "storage_backend", "erasure_coding"]
+        default: "on"
+
+      - name: "get_object"
+        description: "Retrieve objects with support for conditional headers (If-Match, If-Modified-Since)"
+        complexity: "medium"
+        dependencies: ["metadata_store", "storage_backend", "erasure_decoding"]
+        default: "on"
+
+      - name: "head_object"
+        description: "Retrieve object metadata without downloading the data"
+        complexity: "low"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "delete_object"
+        description: "Delete single objects or create delete markers (versioned buckets)"
+        complexity: "low"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "delete_objects_bulk"
+        description: "Bulk delete up to 1000 objects in a single request"
+        complexity: "medium"
+        dependencies: ["delete_object"]
+        default: "on"
+
+      - name: "copy_object"
+        description: "Server-side copy of objects within or across buckets"
+        complexity: "medium"
+        dependencies: ["get_object", "put_object"]
+        default: "on"
+
+      - name: "list_objects_v2"
+        description: "List objects with prefix filtering, delimiter, continuation tokens"
+        complexity: "medium"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "list_buckets"
+        description: "List all buckets owned by the authenticated user"
+        complexity: "low"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "head_bucket"
+        description: "Check bucket existence and access permissions"
+        complexity: "low"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "byte_range_reads"
+        description: "Partial object reads via HTTP Range header"
+        complexity: "medium"
+        dependencies: ["get_object"]
+        default: "on"
+
+      - name: "conditional_operations"
+        description: "If-Match, If-None-Match, If-Modified-Since, If-Unmodified-Since headers"
+        complexity: "medium"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "multipart_upload"
+        description: "Upload large objects in parallel parts (5MB-5GB per part, up to 10000 parts)"
+        complexity: "high"
+        dependencies: ["metadata_store", "storage_backend", "erasure_coding"]
+        default: "on"
+
+      - name: "presigned_urls"
+        description: "Generate time-limited pre-authenticated URLs for GET/PUT operations"
+        complexity: "medium"
+        dependencies: ["aws_sig_v4"]
+        default: "on"
+
+      - name: "presigned_post"
+        description: "Browser-based uploads with server-enforced conditions"
+        complexity: "high"
+        dependencies: ["presigned_urls", "policy_evaluation"]
+        default: "off"
+
+      - name: "aws_signature_v4"
+        description: "AWS Signature Version 4 authentication for all API requests"
+        complexity: "high"
+        dependencies: ["iam_system"]
+        default: "on"
+
+  storage:
+    name: "Storage Engine"
+    description: "Data storage, durability, and placement features"
+    features:
+      - name: "erasure_coding"
+        description: "Reed-Solomon erasure coding with configurable data/parity shards (e.g., EC:4+2)"
+        complexity: "high"
+        dependencies: ["storage_backend"]
+        default: "on"
+
+      - name: "configurable_ec_scheme"
+        description: "Runtime-configurable erasure coding ratios (EC:2+1 to EC:14+4)"
+        complexity: "high"
+        dependencies: ["erasure_coding"]
+        default: "on"
+
+      - name: "replication_factor"
+        description: "N-way replication as alternative to erasure coding for hot data"
+        complexity: "medium"
+        dependencies: ["storage_backend"]
+        default: "off"
+
+      - name: "bitrot_detection"
+        description: "Background scrubbing with per-shard checksums (HighwayHash/BLAKE2)"
+        complexity: "high"
+        dependencies: ["erasure_coding"]
+        default: "on"
+
+      - name: "automatic_healing"
+        description: "Detect and repair degraded objects using parity data"
+        complexity: "high"
+        dependencies: ["bitrot_detection", "erasure_coding"]
+        default: "on"
+
+      - name: "storage_classes"
+        description: "Multiple storage tiers: STANDARD, IA, GLACIER, DEEP_ARCHIVE"
+        complexity: "medium"
+        dependencies: ["metadata_store"]
+        default: "off"
+
+      - name: "inline_small_objects"
+        description: "Store objects < 128KB inline with metadata for reduced IOPS"
+        complexity: "medium"
+        dependencies: ["metadata_store"]
+        default: "off"
+
+      - name: "data_compression"
+        description: "Transparent compression (zstd, snappy, lz4) for stored objects"
+        complexity: "medium"
+        dependencies: ["storage_backend"]
+        default: "off"
+
+      - name: "deduplication"
+        description: "Content-addressable storage for identical object data blocks"
+        complexity: "high"
+        dependencies: ["storage_backend", "metadata_store"]
+        default: "off"
+
+      - name: "tiered_caching"
+        description: "SSD cache tier in front of HDD/cold storage for hot objects"
+        complexity: "high"
+        dependencies: ["storage_classes", "cache_engine"]
+        default: "off"
+
+  security:
+    name: "Security & Encryption"
+    description: "Authentication, authorization, and encryption features"
+    features:
+      - name: "sse_s3"
+        description: "Server-side encryption with system-managed keys (AES-256-GCM)"
+        complexity: "high"
+        dependencies: ["encryption_engine"]
+        default: "on"
+
+      - name: "sse_kms"
+        description: "Server-side encryption with external KMS-managed keys"
+        complexity: "high"
+        dependencies: ["encryption_engine", "kms_integration"]
+        default: "off"
+
+      - name: "sse_c"
+        description: "Server-side encryption with customer-provided keys per request"
+        complexity: "high"
+        dependencies: ["encryption_engine"]
+        default: "off"
+
+      - name: "tls_api"
+        description: "TLS 1.2+ for all API traffic with configurable cipher suites"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "mtls_internode"
+        description: "Mutual TLS for inter-node communication in distributed deployments"
+        complexity: "high"
+        dependencies: ["tls_api", "certificate_management"]
+        default: "off"
+
+      - name: "iam_users_groups"
+        description: "Internal IAM with users, groups, and policy attachment"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "bucket_policies"
+        description: "JSON-based resource policies with conditions on buckets"
+        complexity: "high"
+        dependencies: ["policy_evaluation"]
+        default: "on"
+
+      - name: "bucket_acls"
+        description: "Legacy canned and custom ACLs for bucket access control"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "object_acls"
+        description: "Per-object access control lists"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "sts_assume_role"
+        description: "Security Token Service for temporary credential issuance"
+        complexity: "high"
+        dependencies: ["iam_users_groups"]
+        default: "off"
+
+      - name: "block_public_access"
+        description: "Account/bucket-level controls to prevent public access"
+        complexity: "medium"
+        dependencies: ["bucket_policies", "bucket_acls"]
+        default: "on"
+
+      - name: "ldap_integration"
+        description: "LDAP/Active Directory authentication backend"
+        complexity: "high"
+        dependencies: ["iam_users_groups"]
+        default: "off"
+
+      - name: "openid_connect"
+        description: "OpenID Connect / OAuth2 identity provider integration"
+        complexity: "high"
+        dependencies: ["iam_users_groups", "sts_assume_role"]
+        default: "off"
+
+      - name: "key_rotation"
+        description: "Automatic rotation of encryption master keys"
+        complexity: "high"
+        dependencies: ["sse_s3"]
+        default: "off"
+
+  replication:
+    name: "Replication & Disaster Recovery"
+    description: "Data replication across sites and regions"
+    features:
+      - name: "same_region_replication"
+        description: "Automatic object replication within the same region"
+        complexity: "high"
+        dependencies: ["metadata_store", "replication_engine"]
+        default: "off"
+
+      - name: "cross_region_replication"
+        description: "Asynchronous replication to buckets in different regions"
+        complexity: "high"
+        dependencies: ["same_region_replication"]
+        default: "off"
+
+      - name: "bidirectional_replication"
+        description: "Two-way active-active replication with conflict resolution"
+        complexity: "high"
+        dependencies: ["cross_region_replication", "conflict_resolution"]
+        default: "off"
+
+      - name: "replication_time_control"
+        description: "SLA-backed replication completion within 15 minutes"
+        complexity: "high"
+        dependencies: ["cross_region_replication", "replication_metrics"]
+        default: "off"
+
+      - name: "replication_filters"
+        description: "Replicate only objects matching prefix, tag, or storage class filters"
+        complexity: "medium"
+        dependencies: ["cross_region_replication"]
+        default: "off"
+
+      - name: "delete_marker_replication"
+        description: "Replicate delete markers to destination buckets"
+        complexity: "medium"
+        dependencies: ["cross_region_replication", "versioning"]
+        default: "off"
+
+      - name: "existing_object_replication"
+        description: "Replicate objects that existed before replication was enabled"
+        complexity: "high"
+        dependencies: ["cross_region_replication"]
+        default: "off"
+
+  lifecycle:
+    name: "Lifecycle Management"
+    description: "Automated object transitions and expiration"
+    features:
+      - name: "lifecycle_transitions"
+        description: "Automatically transition objects between storage classes by age"
+        complexity: "medium"
+        dependencies: ["storage_classes", "lifecycle_engine"]
+        default: "off"
+
+      - name: "lifecycle_expiration"
+        description: "Automatically delete objects after configurable age"
+        complexity: "medium"
+        dependencies: ["lifecycle_engine"]
+        default: "on"
+
+      - name: "noncurrent_version_management"
+        description: "Transition or expire noncurrent versions separately"
+        complexity: "medium"
+        dependencies: ["versioning", "lifecycle_engine"]
+        default: "off"
+
+      - name: "abort_incomplete_multipart"
+        description: "Auto-cleanup incomplete multipart uploads after N days"
+        complexity: "low"
+        dependencies: ["multipart_upload", "lifecycle_engine"]
+        default: "on"
+
+      - name: "lifecycle_tag_filters"
+        description: "Apply lifecycle rules based on object tag conditions"
+        complexity: "medium"
+        dependencies: ["lifecycle_engine", "object_tagging"]
+        default: "off"
+
+      - name: "versioning"
+        description: "Object versioning with delete markers and version listing"
+        complexity: "high"
+        dependencies: ["metadata_store"]
+        default: "off"
+
+      - name: "mfa_delete"
+        description: "Require MFA to delete object versions or change versioning state"
+        complexity: "high"
+        dependencies: ["versioning", "iam_users_groups"]
+        default: "off"
+
+      - name: "object_lock_governance"
+        description: "WORM governance mode — privileged override allowed"
+        complexity: "high"
+        dependencies: ["versioning", "object_lock_engine"]
+        default: "off"
+
+      - name: "object_lock_compliance"
+        description: "WORM compliance mode — no override until retention expires"
+        complexity: "high"
+        dependencies: ["versioning", "object_lock_engine"]
+        default: "off"
+
+      - name: "legal_hold"
+        description: "Independent indefinite retention toggle per object"
+        complexity: "medium"
+        dependencies: ["object_lock_governance"]
+        default: "off"
+
+  performance:
+    name: "Performance Optimization"
+    description: "Features for improving throughput and latency"
+    features:
+      - name: "connection_pooling"
+        description: "HTTP connection pooling for client and inter-node connections"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "streaming_io"
+        description: "Stream objects directly to/from disk without full buffering in memory"
+        complexity: "high"
+        dependencies: ["storage_backend"]
+        default: "on"
+
+      - name: "parallel_erasure_ops"
+        description: "Parallel shard read/write across drives for EC encode/decode"
+        complexity: "high"
+        dependencies: ["erasure_coding"]
+        default: "on"
+
+      - name: "metadata_caching"
+        description: "In-memory LRU cache for hot bucket/object metadata"
+        complexity: "medium"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "readahead_prefetch"
+        description: "Predictive prefetch of subsequent shards for sequential reads"
+        complexity: "high"
+        dependencies: ["storage_backend"]
+        default: "off"
+
+      - name: "write_coalescing"
+        description: "Batch small writes to reduce IOPS on underlying storage"
+        complexity: "high"
+        dependencies: ["storage_backend"]
+        default: "off"
+
+      - name: "dns_style_bucket_access"
+        description: "Virtual-hosted-style bucket addressing (bucket.s3.example.com)"
+        complexity: "medium"
+        dependencies: ["tls_api"]
+        default: "off"
+
+      - name: "transfer_acceleration"
+        description: "Optimized network path using edge locations for upload/download"
+        complexity: "high"
+        dependencies: ["dns_style_bucket_access"]
+        default: "off"
+
+      - name: "request_rate_limiting"
+        description: "Per-IP and per-account rate limiting with 503 SlowDown response"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+  observability:
+    name: "Monitoring & Observability"
+    description: "Metrics, logging, and operational visibility"
+    features:
+      - name: "prometheus_metrics"
+        description: "Prometheus-compatible /metrics endpoint for cluster health"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "on"
+
+      - name: "server_access_logging"
+        description: "Per-request access logs written to a target bucket"
+        complexity: "medium"
+        dependencies: ["list_objects_v2", "put_object"]
+        default: "off"
+
+      - name: "audit_logging"
+        description: "Structured audit log of all API operations (JSON)"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "storage_inventory"
+        description: "Scheduled CSV/Parquet inventory reports of all objects"
+        complexity: "high"
+        dependencies: ["metadata_store", "batch_operations"]
+        default: "off"
+
+      - name: "storage_analytics"
+        description: "Access pattern analysis for storage class optimization recommendations"
+        complexity: "high"
+        dependencies: ["server_access_logging", "metrics_collection"]
+        default: "off"
+
+      - name: "health_probes"
+        description: "Liveness and readiness HTTP health check endpoints"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "distributed_tracing"
+        description: "OpenTelemetry trace propagation for request tracing across nodes"
+        complexity: "high"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "alerting_rules"
+        description: "Built-in alerting for disk failures, replication lag, capacity thresholds"
+        complexity: "medium"
+        dependencies: ["prometheus_metrics"]
+        default: "off"
+
+      - name: "replication_metrics"
+        description: "Replication lag, pending count, and failure rate metrics"
+        complexity: "medium"
+        dependencies: ["prometheus_metrics", "cross_region_replication"]
+        default: "off"
+
+  operational:
+    name: "Operational Features"
+    description: "Operations, management, and deployment features"
+    features:
+      - name: "admin_api"
+        description: "RESTful admin API for user, policy, bucket, and cluster management"
+        complexity: "high"
+        dependencies: ["iam_users_groups"]
+        default: "on"
+
+      - name: "web_console"
+        description: "Built-in web UI for browsing objects, managing buckets, users"
+        complexity: "high"
+        dependencies: ["admin_api"]
+        default: "off"
+
+      - name: "hot_config_reload"
+        description: "Reload configuration (TLS certs, IAM, notifications) without restart"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "graceful_shutdown"
+        description: "Drain in-flight requests before shutdown, complete pending writes"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "bucket_quota"
+        description: "Per-bucket storage quota enforcement"
+        complexity: "medium"
+        dependencies: ["metadata_store"]
+        default: "off"
+
+      - name: "multi_tenancy"
+        description: "Namespace isolation between tenants with per-tenant quotas"
+        complexity: "high"
+        dependencies: ["iam_users_groups", "bucket_quota"]
+        default: "off"
+
+      - name: "event_notifications"
+        description: "Push notifications on object mutations to Kafka, AMQP, webhook, NATS, Redis"
+        complexity: "high"
+        dependencies: ["notification_targets"]
+        default: "off"
+
+      - name: "batch_operations"
+        description: "Bulk copy, tag, ACL, restore operations via manifest"
+        complexity: "high"
+        dependencies: ["list_objects_v2", "copy_object"]
+        default: "off"
+
+      - name: "s3_select"
+        description: "SQL query-in-place over CSV/JSON/Parquet objects"
+        complexity: "high"
+        dependencies: ["get_object", "sql_engine"]
+        default: "off"
+
+      - name: "bucket_cors"
+        description: "Cross-Origin Resource Sharing configuration per bucket"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "bucket_website"
+        description: "Static website hosting with index/error document configuration"
+        complexity: "medium"
+        dependencies: ["get_object"]
+        default: "off"
+
+      - name: "bucket_logging"
+        description: "Access log delivery to target bucket"
+        complexity: "medium"
+        dependencies: ["server_access_logging"]
+        default: "off"
+
+      - name: "object_tagging"
+        description: "Key-value tags on objects for lifecycle, replication, and policy conditions"
+        complexity: "low"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "bucket_tagging"
+        description: "Key-value tags on buckets for organizational and billing purposes"
+        complexity: "low"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "requester_pays"
+        description: "Requester pays for data transfer and request costs"
+        complexity: "medium"
+        dependencies: ["iam_users_groups"]
+        default: "off"
+
+# Internal dependency components (not user-facing features)
+dependencies:
+  metadata_store:
+    description: "Distributed metadata storage (etcd, RocksDB, PostgreSQL, or per-disk XL format)"
+    complexity: "high"
+
+  storage_backend:
+    description: "Raw disk I/O layer managing erasure-coded shard placement"
+    complexity: "high"
+
+  erasure_coding:
+    description: "Reed-Solomon encoder producing data + parity shards"
+    complexity: "high"
+
+  erasure_decoding:
+    description: "Reed-Solomon decoder reconstructing data from available shards"
+    complexity: "high"
+
+  encryption_engine:
+    description: "AES-256-GCM encryption/decryption with key envelope management"
+    complexity: "high"
+
+  kms_integration:
+    description: "External KMS (Vault, AWS KMS) integration for key wrapping"
+    complexity: "high"
+
+  policy_evaluation:
+    description: "JSON policy evaluation engine (IAM + bucket policies + ACLs)"
+    complexity: "high"
+
+  iam_system:
+    description: "Identity and access management system (users, groups, roles, policies)"
+    complexity: "high"
+
+  aws_sig_v4:
+    description: "AWS Signature Version 4 request signing and verification"
+    complexity: "high"
+
+  lifecycle_engine:
+    description: "Background lifecycle rule evaluation and action executor"
+    complexity: "high"
+
+  object_lock_engine:
+    description: "WORM retention and legal hold enforcement engine"
+    complexity: "high"
+
+  replication_engine:
+    description: "Asynchronous object replication with queue and retry"
+    complexity: "high"
+
+  conflict_resolution:
+    description: "Conflict resolution for bi-directional replication (last-write-wins or vector clocks)"
+    complexity: "high"
+
+  notification_targets:
+    description: "Pluggable notification delivery (Kafka, AMQP, webhook, NATS, Redis, MQTT)"
+    complexity: "medium"
+
+  metrics_collection:
+    description: "Core metrics collection and aggregation system"
+    complexity: "medium"
+
+  cache_engine:
+    description: "In-memory and SSD caching subsystem"
+    complexity: "high"
+
+  sql_engine:
+    description: "SQL parser and execution engine for S3 Select"
+    complexity: "high"
+
+  certificate_management:
+    description: "TLS certificate loading, rotation, and distribution"
+    complexity: "medium"
+
+  batch_operations:
+    description: "Manifest-driven bulk operation executor"
+    complexity: "high"
