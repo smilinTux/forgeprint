@@ -1,0 +1,1061 @@
+# API Gateway Features Catalog
+# Comprehensive feature set based on Kong, Tyk, KrakenD, APISIX, Envoy, Ambassador,
+# Traefik, AWS API Gateway, Apigee, Azure API Management, Cloudflare API Shield,
+# Mulesoft, Gravitee, WSO2
+
+categories:
+  core_routing:
+    name: "Core Routing"
+    description: "Request routing and traffic distribution capabilities"
+    features:
+      - name: "path_based_routing"
+        description: "Route requests based on URL path patterns with exact, prefix, and regex matching"
+        complexity: "medium"
+        dependencies: ["http_parsing", "route_table"]
+        default: "on"
+
+      - name: "host_based_routing"
+        description: "Route based on Host header or SNI for multi-domain API hosting"
+        complexity: "medium"
+        dependencies: ["http_parsing"]
+        default: "on"
+
+      - name: "method_based_routing"
+        description: "Route based on HTTP method (GET, POST, PUT, DELETE, etc.)"
+        complexity: "low"
+        dependencies: ["http_parsing"]
+        default: "on"
+
+      - name: "header_based_routing"
+        description: "Route based on arbitrary HTTP header values with exact and regex matching"
+        complexity: "medium"
+        dependencies: ["http_parsing", "pattern_matching"]
+        default: "off"
+
+      - name: "query_param_routing"
+        description: "Route based on URL query parameter values"
+        complexity: "medium"
+        dependencies: ["http_parsing", "url_parsing"]
+        default: "off"
+
+      - name: "weighted_routing"
+        description: "Distribute traffic across multiple upstream versions by percentage weight"
+        complexity: "medium"
+        dependencies: ["upstream_management"]
+        default: "off"
+
+      - name: "canary_routing"
+        description: "Route percentage of traffic to canary deployments based on weight or header"
+        complexity: "high"
+        dependencies: ["weighted_routing", "header_based_routing"]
+        default: "off"
+
+      - name: "blue_green_routing"
+        description: "Instant traffic switching between blue and green upstream groups"
+        complexity: "medium"
+        dependencies: ["upstream_management"]
+        default: "off"
+
+      - name: "ab_testing_routing"
+        description: "Split traffic for A/B testing based on consumer, cookie, or header"
+        complexity: "high"
+        dependencies: ["canary_routing", "consumer_identification"]
+        default: "off"
+
+      - name: "geographic_routing"
+        description: "Route to nearest or region-specific upstream based on client GeoIP"
+        complexity: "high"
+        dependencies: ["geoip_database", "upstream_management"]
+        default: "off"
+
+      - name: "priority_routing"
+        description: "Ordered route evaluation with explicit priority for overlapping rules"
+        complexity: "medium"
+        dependencies: ["route_table"]
+        default: "on"
+
+      - name: "regex_routing"
+        description: "Regular expression-based path and header matching for complex routing rules"
+        complexity: "high"
+        dependencies: ["regex_engine", "route_table"]
+        default: "off"
+
+      - name: "strip_path"
+        description: "Remove matched path prefix before forwarding to upstream service"
+        complexity: "low"
+        dependencies: ["path_based_routing"]
+        default: "on"
+
+      - name: "path_rewriting"
+        description: "Rewrite request path using regex substitution before upstream forwarding"
+        complexity: "medium"
+        dependencies: ["regex_engine"]
+        default: "off"
+
+      - name: "service_discovery_routing"
+        description: "Dynamic upstream resolution via Consul, etcd, Kubernetes, or DNS SRV"
+        complexity: "high"
+        dependencies: ["service_discovery_integration"]
+        default: "off"
+
+  authentication:
+    name: "Authentication"
+    description: "Client identity verification mechanisms"
+    features:
+      - name: "api_key_auth"
+        description: "Authenticate via API key in header, query param, or cookie"
+        complexity: "low"
+        dependencies: ["consumer_registry"]
+        default: "off"
+
+      - name: "jwt_validation"
+        description: "Validate JWT tokens: signature, expiration, issuer, audience, custom claims"
+        complexity: "medium"
+        dependencies: ["crypto_operations", "consumer_registry"]
+        default: "off"
+
+      - name: "jwks_support"
+        description: "Fetch and cache signing keys from JWKS (JSON Web Key Set) endpoints"
+        complexity: "medium"
+        dependencies: ["jwt_validation", "http_client"]
+        default: "off"
+
+      - name: "oauth2_authorization_code"
+        description: "Full OAuth 2.0 authorization code flow with PKCE support"
+        complexity: "high"
+        dependencies: ["session_management", "http_client", "crypto_operations"]
+        default: "off"
+
+      - name: "oauth2_client_credentials"
+        description: "OAuth 2.0 client credentials grant for service-to-service auth"
+        complexity: "medium"
+        dependencies: ["http_client", "crypto_operations"]
+        default: "off"
+
+      - name: "oauth2_token_introspection"
+        description: "Validate opaque tokens via RFC 7662 token introspection endpoint"
+        complexity: "medium"
+        dependencies: ["http_client", "token_cache"]
+        default: "off"
+
+      - name: "openid_connect"
+        description: "Full OIDC support with discovery, token exchange, and userinfo"
+        complexity: "high"
+        dependencies: ["oauth2_authorization_code", "jwt_validation", "jwks_support"]
+        default: "off"
+
+      - name: "basic_auth"
+        description: "HTTP Basic Authentication with secure credential storage"
+        complexity: "low"
+        dependencies: ["consumer_registry", "password_hashing"]
+        default: "off"
+
+      - name: "hmac_auth"
+        description: "HMAC-based request signing authentication (AWS Signature v4 style)"
+        complexity: "high"
+        dependencies: ["crypto_operations", "consumer_registry"]
+        default: "off"
+
+      - name: "mtls_auth"
+        description: "Mutual TLS client certificate authentication with CA validation"
+        complexity: "high"
+        dependencies: ["tls_management", "certificate_validation"]
+        default: "off"
+
+      - name: "ldap_auth"
+        description: "LDAP/Active Directory authentication with bind and search operations"
+        complexity: "high"
+        dependencies: ["ldap_client"]
+        default: "off"
+
+      - name: "saml_auth"
+        description: "SAML 2.0 single sign-on authentication with IdP integration"
+        complexity: "high"
+        dependencies: ["xml_parsing", "crypto_operations", "session_management"]
+        default: "off"
+
+      - name: "multi_auth"
+        description: "Combine multiple auth methods (AND/OR logic) per route"
+        complexity: "medium"
+        dependencies: ["api_key_auth", "jwt_validation"]
+        default: "off"
+
+      - name: "anonymous_consumer"
+        description: "Assign a default consumer to unauthenticated requests (fallback identity)"
+        complexity: "low"
+        dependencies: ["consumer_registry"]
+        default: "off"
+
+  authorization:
+    name: "Authorization"
+    description: "Access control and permission enforcement"
+    features:
+      - name: "acl_groups"
+        description: "Access Control List groups: allow/deny consumers by group membership"
+        complexity: "medium"
+        dependencies: ["consumer_registry"]
+        default: "off"
+
+      - name: "rbac"
+        description: "Role-Based Access Control with roles, permissions, and role hierarchy"
+        complexity: "high"
+        dependencies: ["consumer_registry", "policy_engine"]
+        default: "off"
+
+      - name: "abac"
+        description: "Attribute-Based Access Control using request, consumer, and environment attributes"
+        complexity: "high"
+        dependencies: ["policy_engine", "expression_evaluator"]
+        default: "off"
+
+      - name: "scope_based_auth"
+        description: "OAuth2 scope validation: require specific scopes for route access"
+        complexity: "medium"
+        dependencies: ["jwt_validation"]
+        default: "off"
+
+      - name: "opa_integration"
+        description: "Open Policy Agent integration for externalized policy decisions"
+        complexity: "high"
+        dependencies: ["http_client", "policy_engine"]
+        default: "off"
+
+      - name: "ip_restriction"
+        description: "Allow/deny access based on client IP address or CIDR range"
+        complexity: "low"
+        dependencies: []
+        default: "off"
+
+      - name: "geo_restriction"
+        description: "Allow/deny access based on client geographic location"
+        complexity: "medium"
+        dependencies: ["geoip_database"]
+        default: "off"
+
+      - name: "time_based_access"
+        description: "Restrict API access to specific time windows or schedules"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+  traffic_management:
+    name: "Traffic Management"
+    description: "Rate limiting, throttling, and traffic control"
+    features:
+      - name: "rate_limiting_fixed_window"
+        description: "Fixed window rate limiting (per second/minute/hour/day)"
+        complexity: "medium"
+        dependencies: ["counter_store"]
+        default: "off"
+
+      - name: "rate_limiting_sliding_window"
+        description: "Sliding window rate limiting for smoother enforcement"
+        complexity: "high"
+        dependencies: ["counter_store"]
+        default: "off"
+
+      - name: "rate_limiting_token_bucket"
+        description: "Token bucket algorithm allowing controlled bursting"
+        complexity: "high"
+        dependencies: ["counter_store"]
+        default: "off"
+
+      - name: "rate_limiting_leaky_bucket"
+        description: "Leaky bucket algorithm for uniform request rate output"
+        complexity: "high"
+        dependencies: ["counter_store"]
+        default: "off"
+
+      - name: "distributed_rate_limiting"
+        description: "Synchronized rate limiting across gateway cluster via Redis/shared store"
+        complexity: "high"
+        dependencies: ["rate_limiting_fixed_window", "redis_integration"]
+        default: "off"
+
+      - name: "per_consumer_rate_limiting"
+        description: "Individual rate limits per authenticated consumer or API key"
+        complexity: "medium"
+        dependencies: ["rate_limiting_fixed_window", "consumer_registry"]
+        default: "off"
+
+      - name: "per_route_rate_limiting"
+        description: "Different rate limits per route/endpoint"
+        complexity: "medium"
+        dependencies: ["rate_limiting_fixed_window"]
+        default: "off"
+
+      - name: "quota_management"
+        description: "Long-term usage quotas (monthly/yearly) with overage policies"
+        complexity: "high"
+        dependencies: ["counter_store", "consumer_registry"]
+        default: "off"
+
+      - name: "request_size_limiting"
+        description: "Reject requests exceeding configurable body size limit"
+        complexity: "low"
+        dependencies: []
+        default: "off"
+
+      - name: "response_size_limiting"
+        description: "Truncate or reject responses exceeding configurable size"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "concurrent_request_limiting"
+        description: "Limit number of simultaneous in-flight requests per consumer"
+        complexity: "medium"
+        dependencies: ["consumer_identification"]
+        default: "off"
+
+      - name: "circuit_breaker"
+        description: "Circuit breaker pattern: trip on error threshold, half-open recovery testing"
+        complexity: "high"
+        dependencies: ["upstream_health_tracking", "metrics_collection"]
+        default: "off"
+
+      - name: "retry_policy"
+        description: "Configurable retry with exponential backoff, jitter, and status code triggers"
+        complexity: "medium"
+        dependencies: ["upstream_management"]
+        default: "off"
+
+      - name: "request_timeout"
+        description: "Configurable connect, read, write, and total request timeout"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "traffic_mirroring"
+        description: "Mirror (shadow) traffic to secondary upstream for testing without affecting response"
+        complexity: "high"
+        dependencies: ["upstream_management"]
+        default: "off"
+
+      - name: "request_queuing"
+        description: "Queue requests when backend is overloaded instead of immediate rejection"
+        complexity: "high"
+        dependencies: ["upstream_health_tracking"]
+        default: "off"
+
+  transformation:
+    name: "Transformation"
+    description: "Request and response modification capabilities"
+    features:
+      - name: "request_header_injection"
+        description: "Add, remove, or modify request headers before upstream forwarding"
+        complexity: "low"
+        dependencies: ["http_parsing"]
+        default: "off"
+
+      - name: "response_header_injection"
+        description: "Add, remove, or modify response headers before client delivery"
+        complexity: "low"
+        dependencies: ["http_parsing"]
+        default: "off"
+
+      - name: "request_body_transformation"
+        description: "Transform request body (JSON↔XML, field mapping, template-based)"
+        complexity: "high"
+        dependencies: ["json_parsing", "template_engine"]
+        default: "off"
+
+      - name: "response_body_transformation"
+        description: "Transform response body before client delivery"
+        complexity: "high"
+        dependencies: ["json_parsing", "template_engine"]
+        default: "off"
+
+      - name: "json_to_xml"
+        description: "Bi-directional JSON to XML content transformation"
+        complexity: "high"
+        dependencies: ["json_parsing", "xml_parsing"]
+        default: "off"
+
+      - name: "request_validation"
+        description: "Validate request body against JSON Schema or OpenAPI specification"
+        complexity: "high"
+        dependencies: ["json_schema_validator", "openapi_parser"]
+        default: "off"
+
+      - name: "response_validation"
+        description: "Validate upstream response against expected schema"
+        complexity: "high"
+        dependencies: ["json_schema_validator"]
+        default: "off"
+
+      - name: "correlation_id_injection"
+        description: "Inject unique correlation/request ID header for distributed tracing"
+        complexity: "low"
+        dependencies: ["uuid_generator"]
+        default: "off"
+
+      - name: "request_aggregation"
+        description: "Aggregate responses from multiple upstream services into single response"
+        complexity: "high"
+        dependencies: ["async_http_client", "json_merging"]
+        default: "off"
+
+      - name: "response_filtering"
+        description: "Filter/mask specific fields from response body (data masking)"
+        complexity: "medium"
+        dependencies: ["json_parsing"]
+        default: "off"
+
+      - name: "url_rewriting"
+        description: "Rewrite upstream URL path and query parameters with regex support"
+        complexity: "medium"
+        dependencies: ["regex_engine"]
+        default: "off"
+
+      - name: "content_negotiation"
+        description: "Auto-select response format based on Accept header (JSON, XML, YAML)"
+        complexity: "medium"
+        dependencies: ["json_parsing", "xml_parsing"]
+        default: "off"
+
+  protocol_support:
+    name: "Protocol Support"
+    description: "Network protocol handling capabilities"
+    features:
+      - name: "http_1_1"
+        description: "HTTP/1.1 protocol with keep-alive, chunked encoding, pipelining"
+        complexity: "medium"
+        dependencies: ["tcp_support"]
+        default: "on"
+
+      - name: "http_2"
+        description: "HTTP/2 with multiplexing, header compression (HPACK), server push"
+        complexity: "high"
+        dependencies: ["http_1_1", "tls_management"]
+        default: "off"
+
+      - name: "http_3_quic"
+        description: "HTTP/3 over QUIC with 0-RTT, connection migration"
+        complexity: "high"
+        dependencies: ["udp_support", "tls_1_3"]
+        default: "off"
+
+      - name: "grpc_proxy"
+        description: "gRPC proxy with unary, server-streaming, client-streaming, bidirectional"
+        complexity: "high"
+        dependencies: ["http_2", "protobuf_support"]
+        default: "off"
+
+      - name: "grpc_json_transcoding"
+        description: "Automatic transcoding between gRPC/Protobuf and REST/JSON"
+        complexity: "high"
+        dependencies: ["grpc_proxy", "protobuf_descriptor", "json_parsing"]
+        default: "off"
+
+      - name: "grpc_web"
+        description: "gRPC-Web support for browser clients without HTTP/2"
+        complexity: "medium"
+        dependencies: ["grpc_proxy"]
+        default: "off"
+
+      - name: "graphql_proxy"
+        description: "GraphQL request proxying with query parsing and validation"
+        complexity: "high"
+        dependencies: ["graphql_parser"]
+        default: "off"
+
+      - name: "graphql_depth_limiting"
+        description: "Limit GraphQL query depth and complexity to prevent abuse"
+        complexity: "medium"
+        dependencies: ["graphql_proxy"]
+        default: "off"
+
+      - name: "graphql_persisted_queries"
+        description: "Support for automatic persisted queries (APQ) to reduce bandwidth"
+        complexity: "medium"
+        dependencies: ["graphql_proxy", "cache_engine"]
+        default: "off"
+
+      - name: "websocket_proxy"
+        description: "WebSocket upgrade handling and bidirectional frame proxying"
+        complexity: "medium"
+        dependencies: ["http_1_1", "connection_upgrade"]
+        default: "off"
+
+      - name: "server_sent_events"
+        description: "Server-Sent Events (SSE) streaming proxy with reconnection support"
+        complexity: "medium"
+        dependencies: ["http_1_1"]
+        default: "off"
+
+      - name: "tcp_proxy"
+        description: "Raw TCP/TLS stream proxying for non-HTTP protocols"
+        complexity: "medium"
+        dependencies: ["tcp_support"]
+        default: "off"
+
+      - name: "soap_support"
+        description: "SOAP/WSDL legacy protocol support with XML parsing"
+        complexity: "high"
+        dependencies: ["xml_parsing"]
+        default: "off"
+
+  security:
+    name: "Security"
+    description: "Security enforcement and protection features"
+    features:
+      - name: "tls_termination"
+        description: "SSL/TLS termination with certificate management and SNI support"
+        complexity: "high"
+        dependencies: ["tls_management"]
+        default: "off"
+
+      - name: "tls_1_3"
+        description: "TLS 1.3 support with modern cipher suites"
+        complexity: "medium"
+        dependencies: ["tls_termination"]
+        default: "off"
+
+      - name: "mtls_upstream"
+        description: "Mutual TLS for upstream connections (gateway authenticates to backend)"
+        complexity: "high"
+        dependencies: ["tls_management", "certificate_store"]
+        default: "off"
+
+      - name: "certificate_auto_renewal"
+        description: "Automatic certificate renewal via ACME/Let's Encrypt"
+        complexity: "high"
+        dependencies: ["tls_termination", "acme_client"]
+        default: "off"
+
+      - name: "cors_handling"
+        description: "Cross-Origin Resource Sharing preflight and header management"
+        complexity: "medium"
+        dependencies: ["response_header_injection"]
+        default: "off"
+
+      - name: "waf_rules"
+        description: "Web Application Firewall with OWASP Core Rule Set support"
+        complexity: "high"
+        dependencies: ["pattern_matching", "http_parsing"]
+        default: "off"
+
+      - name: "bot_detection"
+        description: "Automated bot detection via user-agent analysis and behavioral fingerprinting"
+        complexity: "high"
+        dependencies: ["pattern_matching", "behavioral_analysis"]
+        default: "off"
+
+      - name: "ddos_protection"
+        description: "DDoS mitigation with connection limits, rate limiting, and SYN flood protection"
+        complexity: "high"
+        dependencies: ["rate_limiting_fixed_window", "ip_restriction"]
+        default: "off"
+
+      - name: "security_headers"
+        description: "Inject security headers (CSP, X-Frame-Options, X-Content-Type-Options, etc.)"
+        complexity: "low"
+        dependencies: ["response_header_injection"]
+        default: "off"
+
+      - name: "request_sanitization"
+        description: "Sanitize request inputs: strip script tags, encode special chars, normalize paths"
+        complexity: "medium"
+        dependencies: ["http_parsing"]
+        default: "off"
+
+      - name: "data_masking"
+        description: "Mask sensitive fields (SSN, credit card, etc.) in request/response logging"
+        complexity: "medium"
+        dependencies: ["pattern_matching", "json_parsing"]
+        default: "off"
+
+  observability:
+    name: "Observability"
+    description: "Monitoring, logging, tracing, and analytics"
+    features:
+      - name: "access_logging"
+        description: "Structured HTTP access logs with configurable format (JSON, CLF, custom)"
+        complexity: "medium"
+        dependencies: ["log_engine"]
+        default: "on"
+
+      - name: "error_logging"
+        description: "Error and debug logging with configurable log levels"
+        complexity: "low"
+        dependencies: ["log_engine"]
+        default: "on"
+
+      - name: "prometheus_metrics"
+        description: "Prometheus exposition format metrics endpoint (/metrics)"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "statsd_metrics"
+        description: "StatsD/DogStatsD protocol metrics push"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "opentelemetry_metrics"
+        description: "OpenTelemetry metrics export via OTLP"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "distributed_tracing"
+        description: "Distributed tracing with W3C Trace Context, B3, and Jaeger propagation"
+        complexity: "high"
+        dependencies: ["trace_context_propagation"]
+        default: "off"
+
+      - name: "opentelemetry_tracing"
+        description: "OpenTelemetry trace export via OTLP to Jaeger, Zipkin, or collector"
+        complexity: "high"
+        dependencies: ["distributed_tracing"]
+        default: "off"
+
+      - name: "request_response_logging"
+        description: "Log full request and response bodies (configurable, with size limits)"
+        complexity: "medium"
+        dependencies: ["access_logging"]
+        default: "off"
+
+      - name: "log_shipping"
+        description: "Ship logs to external systems (Elasticsearch, Splunk, Datadog, syslog)"
+        complexity: "medium"
+        dependencies: ["access_logging"]
+        default: "off"
+
+      - name: "real_time_analytics"
+        description: "Real-time API usage analytics: top endpoints, error rates, latency trends"
+        complexity: "high"
+        dependencies: ["metrics_collection", "time_series_store"]
+        default: "off"
+
+      - name: "custom_metrics"
+        description: "User-defined custom metrics via plugin or Lua/WASM scripting"
+        complexity: "medium"
+        dependencies: ["metrics_collection", "scripting_engine"]
+        default: "off"
+
+      - name: "alerting"
+        description: "Built-in alerting on error rate, latency threshold, or rate limit violations"
+        complexity: "high"
+        dependencies: ["metrics_collection", "notification_system"]
+        default: "off"
+
+      - name: "audit_logging"
+        description: "Admin API and configuration change audit trail"
+        complexity: "medium"
+        dependencies: ["log_engine"]
+        default: "off"
+
+  developer_experience:
+    name: "Developer Experience"
+    description: "Tools for API consumers and developers"
+    features:
+      - name: "openapi_integration"
+        description: "Import OpenAPI 3.x specs to auto-generate routes, validation, and docs"
+        complexity: "high"
+        dependencies: ["openapi_parser", "route_table"]
+        default: "off"
+
+      - name: "swagger_ui"
+        description: "Embedded Swagger UI for interactive API documentation"
+        complexity: "medium"
+        dependencies: ["openapi_integration", "static_file_serving"]
+        default: "off"
+
+      - name: "developer_portal"
+        description: "Self-service portal for API key registration, docs, and usage analytics"
+        complexity: "high"
+        dependencies: ["openapi_integration", "api_key_auth", "real_time_analytics"]
+        default: "off"
+
+      - name: "api_versioning"
+        description: "API versioning support via path prefix, header, or query parameter"
+        complexity: "medium"
+        dependencies: ["path_based_routing", "header_based_routing"]
+        default: "off"
+
+      - name: "mock_responses"
+        description: "Return mock responses based on OpenAPI examples for development/testing"
+        complexity: "medium"
+        dependencies: ["openapi_integration"]
+        default: "off"
+
+      - name: "sandbox_environment"
+        description: "Isolated sandbox environments with separate rate limits and backends"
+        complexity: "high"
+        dependencies: ["multi_tenancy"]
+        default: "off"
+
+      - name: "sdk_generation"
+        description: "Auto-generate client SDKs from OpenAPI specs (JS, Python, Go, Java)"
+        complexity: "high"
+        dependencies: ["openapi_integration"]
+        default: "off"
+
+      - name: "api_deprecation"
+        description: "Mark API versions as deprecated with Sunset/Deprecation headers"
+        complexity: "low"
+        dependencies: ["response_header_injection"]
+        default: "off"
+
+      - name: "breaking_change_detection"
+        description: "Detect breaking changes between API spec versions"
+        complexity: "high"
+        dependencies: ["openapi_integration"]
+        default: "off"
+
+  operational:
+    name: "Operational"
+    description: "Operations, deployment, and management features"
+    features:
+      - name: "admin_api"
+        description: "RESTful Admin API for runtime configuration management"
+        complexity: "high"
+        dependencies: ["http_server", "authentication"]
+        default: "off"
+
+      - name: "declarative_config"
+        description: "Declarative YAML/JSON configuration with atomic reload (dbless mode)"
+        complexity: "medium"
+        dependencies: ["config_parser", "config_validation"]
+        default: "on"
+
+      - name: "hot_reload"
+        description: "Configuration reload without dropping active connections"
+        complexity: "high"
+        dependencies: ["declarative_config", "graceful_transitions"]
+        default: "off"
+
+      - name: "database_backed_config"
+        description: "Store configuration in PostgreSQL/Cassandra for cluster coordination"
+        complexity: "high"
+        dependencies: ["database_client"]
+        default: "off"
+
+      - name: "cluster_mode"
+        description: "Multi-node clustering with configuration synchronization"
+        complexity: "high"
+        dependencies: ["database_backed_config"]
+        default: "off"
+
+      - name: "kubernetes_ingress"
+        description: "Kubernetes Ingress Controller with CRD-based configuration"
+        complexity: "high"
+        dependencies: ["kubernetes_api", "service_discovery_integration"]
+        default: "off"
+
+      - name: "service_discovery_consul"
+        description: "HashiCorp Consul service discovery and health check integration"
+        complexity: "medium"
+        dependencies: ["http_client"]
+        default: "off"
+
+      - name: "service_discovery_dns"
+        description: "DNS-based service discovery (SRV records, A records)"
+        complexity: "medium"
+        dependencies: ["dns_client"]
+        default: "off"
+
+      - name: "graceful_shutdown"
+        description: "Graceful shutdown with connection draining and in-flight request completion"
+        complexity: "medium"
+        dependencies: ["connection_tracking"]
+        default: "on"
+
+      - name: "health_endpoint"
+        description: "Gateway health check endpoint for load balancer/orchestrator probes"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "multi_tenancy"
+        description: "Workspace/tenant isolation with separate configs, routes, and consumers"
+        complexity: "high"
+        dependencies: ["admin_api", "consumer_registry"]
+        default: "off"
+
+      - name: "plugin_hot_loading"
+        description: "Load/unload custom plugins at runtime without gateway restart"
+        complexity: "high"
+        dependencies: ["plugin_engine", "scripting_engine"]
+        default: "off"
+
+      - name: "wasm_plugin_support"
+        description: "WebAssembly plugin support for portable, sandboxed custom logic"
+        complexity: "high"
+        dependencies: ["wasm_runtime"]
+        default: "off"
+
+      - name: "lua_scripting"
+        description: "Lua scripting engine for lightweight custom plugin logic"
+        complexity: "medium"
+        dependencies: ["lua_runtime"]
+        default: "off"
+
+      - name: "response_caching"
+        description: "Cache upstream responses with configurable TTL, vary keys, and invalidation"
+        complexity: "high"
+        dependencies: ["cache_engine", "cache_key_builder"]
+        default: "off"
+
+      - name: "redis_caching"
+        description: "Use Redis as distributed cache backend for response and rate limit state"
+        complexity: "medium"
+        dependencies: ["redis_integration"]
+        default: "off"
+
+# Dependency definitions
+dependencies:
+  http_parsing:
+    description: "HTTP protocol parsing and validation"
+    complexity: "medium"
+
+  route_table:
+    description: "Radix tree or prefix tree-based route storage and lookup"
+    complexity: "high"
+
+  pattern_matching:
+    description: "Regex and glob pattern matching engine"
+    complexity: "medium"
+
+  url_parsing:
+    description: "URL parsing with path, query, and fragment extraction"
+    complexity: "low"
+
+  upstream_management:
+    description: "Backend pool management with targets and weights"
+    complexity: "high"
+
+  consumer_registry:
+    description: "Consumer storage, credential lookup, and group management"
+    complexity: "medium"
+
+  consumer_identification:
+    description: "Identify consumer from request (via auth credential)"
+    complexity: "medium"
+
+  crypto_operations:
+    description: "Cryptographic signing, verification, hashing, encryption"
+    complexity: "high"
+
+  http_client:
+    description: "Async HTTP client for external service calls"
+    complexity: "medium"
+
+  session_management:
+    description: "Server-side session storage and management"
+    complexity: "medium"
+
+  token_cache:
+    description: "In-memory cache for validated token results"
+    complexity: "medium"
+
+  password_hashing:
+    description: "Secure password hashing (bcrypt, argon2)"
+    complexity: "medium"
+
+  tls_management:
+    description: "TLS context creation, certificate loading, SNI handling"
+    complexity: "high"
+
+  certificate_validation:
+    description: "X.509 certificate chain validation, CRL/OCSP checking"
+    complexity: "high"
+
+  certificate_store:
+    description: "Certificate and private key storage and retrieval"
+    complexity: "medium"
+
+  ldap_client:
+    description: "LDAP protocol client for directory queries"
+    complexity: "high"
+
+  xml_parsing:
+    description: "XML parsing and generation"
+    complexity: "medium"
+
+  policy_engine:
+    description: "Policy evaluation engine for RBAC/ABAC rules"
+    complexity: "high"
+
+  expression_evaluator:
+    description: "Dynamic expression evaluation (CEL, Rego)"
+    complexity: "high"
+
+  geoip_database:
+    description: "MaxMind GeoIP2 or similar geographic IP database"
+    complexity: "medium"
+
+  counter_store:
+    description: "Atomic counter storage (local or distributed)"
+    complexity: "medium"
+
+  redis_integration:
+    description: "Redis client for caching and distributed state"
+    complexity: "medium"
+
+  json_parsing:
+    description: "JSON parsing, querying (JSONPath), and generation"
+    complexity: "medium"
+
+  template_engine:
+    description: "Template rendering engine for body transformation"
+    complexity: "medium"
+
+  json_schema_validator:
+    description: "JSON Schema draft-07/2020-12 validation engine"
+    complexity: "high"
+
+  openapi_parser:
+    description: "OpenAPI 3.x specification parser and validator"
+    complexity: "high"
+
+  uuid_generator:
+    description: "UUID v4/v7 generation for correlation IDs"
+    complexity: "low"
+
+  async_http_client:
+    description: "Async HTTP client for parallel upstream requests"
+    complexity: "medium"
+
+  json_merging:
+    description: "JSON deep merge for response aggregation"
+    complexity: "medium"
+
+  regex_engine:
+    description: "Regular expression compilation and matching"
+    complexity: "medium"
+
+  tcp_support:
+    description: "TCP listener and connection management"
+    complexity: "medium"
+
+  udp_support:
+    description: "UDP socket support for QUIC"
+    complexity: "medium"
+
+  tls_1_3:
+    description: "TLS 1.3 protocol implementation"
+    complexity: "high"
+
+  protobuf_support:
+    description: "Protocol Buffers serialization/deserialization"
+    complexity: "high"
+
+  protobuf_descriptor:
+    description: "Protobuf descriptor file loading for transcoding"
+    complexity: "high"
+
+  graphql_parser:
+    description: "GraphQL query language parser and AST"
+    complexity: "high"
+
+  connection_upgrade:
+    description: "HTTP connection upgrade mechanism (WebSocket, h2c)"
+    complexity: "medium"
+
+  acme_client:
+    description: "ACME protocol client for Let's Encrypt"
+    complexity: "high"
+
+  behavioral_analysis:
+    description: "Request pattern and behavioral fingerprinting"
+    complexity: "high"
+
+  log_engine:
+    description: "Structured logging with multiple output targets"
+    complexity: "medium"
+
+  metrics_collection:
+    description: "Internal metrics counters, histograms, gauges"
+    complexity: "medium"
+
+  trace_context_propagation:
+    description: "W3C Trace Context and B3 header propagation"
+    complexity: "medium"
+
+  time_series_store:
+    description: "Time-series data storage for analytics"
+    complexity: "high"
+
+  scripting_engine:
+    description: "Embedded scripting runtime (Lua, WASM)"
+    complexity: "high"
+
+  notification_system:
+    description: "Alert notification delivery (webhook, email, Slack)"
+    complexity: "medium"
+
+  static_file_serving:
+    description: "Serve static files (for Swagger UI, portal)"
+    complexity: "low"
+
+  multi_tenancy:
+    description: "Workspace/tenant isolation infrastructure"
+    complexity: "high"
+
+  config_parser:
+    description: "YAML/JSON configuration parser"
+    complexity: "low"
+
+  config_validation:
+    description: "Configuration schema validation"
+    complexity: "medium"
+
+  graceful_transitions:
+    description: "Graceful configuration migration without dropping connections"
+    complexity: "high"
+
+  database_client:
+    description: "PostgreSQL/Cassandra database client"
+    complexity: "high"
+
+  kubernetes_api:
+    description: "Kubernetes API client and CRD watching"
+    complexity: "high"
+
+  service_discovery_integration:
+    description: "Service discovery adapter interface"
+    complexity: "high"
+
+  dns_client:
+    description: "DNS resolver client with SRV support"
+    complexity: "medium"
+
+  connection_tracking:
+    description: "Active connection tracking and management"
+    complexity: "medium"
+
+  plugin_engine:
+    description: "Plugin lifecycle management and execution"
+    complexity: "high"
+
+  wasm_runtime:
+    description: "WebAssembly runtime (wasmtime, wasmer)"
+    complexity: "high"
+
+  lua_runtime:
+    description: "LuaJIT or Lua 5.x runtime"
+    complexity: "medium"
+
+  cache_engine:
+    description: "In-memory LRU cache with TTL support"
+    complexity: "high"
+
+  cache_key_builder:
+    description: "Cache key construction from method, path, headers, query"
+    complexity: "medium"
+
+  upstream_health_tracking:
+    description: "Track upstream success/failure rates"
+    complexity: "medium"
+
+  http_server:
+    description: "Embedded HTTP server for admin API"
+    complexity: "medium"
+
+  authentication:
+    description: "Admin API authentication"
+    complexity: "medium"

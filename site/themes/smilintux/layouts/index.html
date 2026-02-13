@@ -1,0 +1,55 @@
+{{ define "main" }}
+<section class="hero">
+  <div style="margin-bottom:1.5rem;">
+    <img src="/img/king-divad.svg" alt="King Divad" width="120" height="120" style="filter: drop-shadow(0 4px 12px rgba(0,200,212,0.3));">
+  </div>
+  <h1>
+    Open Source<br>
+    <span class="accent">Sovereign</span> Infrastructure<br>
+    & <span class="yellow">AI Ecosystem</span>
+  </h1>
+  <p class="tagline">{{ .Site.Params.tagline }}</p>
+  <p class="motto">#{{ .Site.Params.motto }}</p>
+</section>
+
+<section class="projects">
+  <h2>🐧 Our Projects</h2>
+  <div class="project-grid">
+    {{ range .Site.Params.projects }}
+    <a href="{{ .url }}" class="project-card" style="text-decoration:none;">
+      <div class="icon">{{ .icon }}</div>
+      <h3>{{ .name }}</h3>
+      <p class="card-tagline">{{ .tagline }}</p>
+      <p>{{ .description }}</p>
+      {{ if eq .status "Active" }}
+      <span class="status status-active">✓ {{ .status }}</span>
+      {{ else }}
+      <span class="status status-soon">◎ {{ .status }}</span>
+      {{ end }}
+    </a>
+    {{ end }}
+  </div>
+</section>
+
+<section class="section">
+  <h2>🏠 Why Self-Host?</h2>
+  <p>Every project in the smilinTux ecosystem is designed for you to <strong>own, run, and control</strong> — on your hardware, your terms, your rules.</p>
+  <p>No price hikes. No vendor lock-in. No data harvesting. No services sunsetting your workflow.</p>
+  <p><strong>Your infrastructure. Your data. Your software.</strong></p>
+</section>
+
+<section class="section">
+  <h2>👑 About smilinTux</h2>
+  <p><strong>smilinTux</strong> is the open-source organization under <span style="color:var(--yellow)">S&K Holdings QT (Quantum Technologies)</span>, a private trust dedicated to building sovereign infrastructure that actually doesn't suck.</p>
+  <p>Our mascot is <strong>King Divad</strong> — a wise, friendly, curious penguin monarch who believes the best software is the software you build yourself.</p>
+  <p>We're the <strong>Bing Chilling Nation</strong> — cool heads, warm justice, smart systems. And we're making decentralized cool again.</p>
+</section>
+
+<section class="section" style="text-align:center;">
+  <h2>🚀 Get Started</h2>
+  <p style="font-family:'Fira Code',monospace; background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; display:inline-block;">
+    npm install -g forgeprint && forge onboard
+  </p>
+  <p style="margin-top:1rem;">Or browse our <a href="https://github.com/smilinTux">GitHub organization →</a></p>
+</section>
+{{ end }}

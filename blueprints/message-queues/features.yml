@@ -1,0 +1,661 @@
+# Message Queue Features Catalog
+# Comprehensive feature set based on Kafka, RabbitMQ, NATS, Pulsar, Redis Streams,
+# ZeroMQ, ActiveMQ, Amazon SQS/SNS, Google Pub/Sub, Azure Service Bus, Confluent Cloud,
+# Memphis, Redpanda, LavinMQ
+
+categories:
+  core_messaging:
+    name: "Core Messaging"
+    description: "Fundamental message production and consumption capabilities"
+    features:
+      - name: "publish_subscribe"
+        description: "Topic-based pub/sub where messages fan out to all subscribers"
+        complexity: "medium"
+        dependencies: ["topic_management"]
+        default: "on"
+
+      - name: "point_to_point"
+        description: "Queue-based messaging where each message delivered to exactly one consumer"
+        complexity: "medium"
+        dependencies: ["queue_management"]
+        default: "on"
+
+      - name: "request_reply"
+        description: "Synchronous request-reply pattern with correlation IDs and reply queues"
+        complexity: "medium"
+        dependencies: ["publish_subscribe", "correlation_tracking"]
+        default: "off"
+
+      - name: "message_batching"
+        description: "Batch multiple messages into single network request for throughput"
+        complexity: "medium"
+        dependencies: ["network_layer"]
+        default: "on"
+
+      - name: "message_compression"
+        description: "Compress message batches (gzip, snappy, lz4, zstd)"
+        complexity: "medium"
+        dependencies: ["message_batching"]
+        default: "off"
+
+      - name: "message_headers"
+        description: "Key-value metadata headers attached to messages"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "message_keys"
+        description: "Partition keys for ordering and routing messages"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "message_timestamps"
+        description: "Automatic timestamps (create time or log append time)"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "topic_management"
+        description: "Create, delete, list, and describe topics"
+        complexity: "medium"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "queue_management"
+        description: "Create, delete, purge, and inspect queues"
+        complexity: "medium"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "auto_topic_creation"
+        description: "Automatically create topics on first produce/consume"
+        complexity: "low"
+        dependencies: ["topic_management"]
+        default: "on"
+
+      - name: "topic_deletion"
+        description: "Delete topics and associated data"
+        complexity: "medium"
+        dependencies: ["topic_management"]
+        default: "on"
+
+      - name: "multi_tenancy"
+        description: "Isolated namespaces/virtual hosts for multiple tenants"
+        complexity: "high"
+        dependencies: ["topic_management", "authentication", "authorization"]
+        default: "off"
+
+  delivery_guarantees:
+    name: "Delivery Guarantees"
+    description: "Message delivery semantics and reliability features"
+    features:
+      - name: "at_most_once"
+        description: "Fire-and-forget delivery; messages may be lost, never duplicated"
+        complexity: "low"
+        dependencies: []
+        default: "off"
+
+      - name: "at_least_once"
+        description: "Messages never lost but may be delivered multiple times"
+        complexity: "medium"
+        dependencies: ["message_acknowledgment"]
+        default: "on"
+
+      - name: "exactly_once"
+        description: "Each message processed exactly once via idempotent producers and transactions"
+        complexity: "high"
+        dependencies: ["idempotent_producer", "transactions", "consumer_offset_management"]
+        default: "off"
+
+      - name: "message_acknowledgment"
+        description: "Consumer ACK/NACK to confirm or reject message processing"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "producer_acknowledgment"
+        description: "Configurable acks (0=fire-forget, 1=leader, all=ISR)"
+        complexity: "medium"
+        dependencies: ["replication"]
+        default: "on"
+
+      - name: "idempotent_producer"
+        description: "Prevent duplicate messages from producer retries using sequence numbers"
+        complexity: "high"
+        dependencies: ["producer_acknowledgment"]
+        default: "off"
+
+      - name: "message_deduplication"
+        description: "Broker-side deduplication based on message ID or content hash"
+        complexity: "high"
+        dependencies: ["message_headers"]
+        default: "off"
+
+      - name: "message_ordering"
+        description: "Strict FIFO ordering within partitions/queues"
+        complexity: "medium"
+        dependencies: ["partition_management"]
+        default: "on"
+
+      - name: "global_ordering"
+        description: "Total order across all partitions (single partition topic)"
+        complexity: "low"
+        dependencies: ["message_ordering"]
+        default: "off"
+
+      - name: "dead_letter_queue"
+        description: "Route failed messages to DLQ after max retry attempts"
+        complexity: "medium"
+        dependencies: ["queue_management", "message_acknowledgment"]
+        default: "off"
+
+      - name: "poison_message_handling"
+        description: "Detect and isolate messages that repeatedly cause consumer failures"
+        complexity: "medium"
+        dependencies: ["dead_letter_queue"]
+        default: "off"
+
+      - name: "message_ttl"
+        description: "Time-to-live expiration for individual messages"
+        complexity: "medium"
+        dependencies: ["message_timestamps"]
+        default: "off"
+
+      - name: "queue_ttl"
+        description: "Auto-delete queues after idle timeout"
+        complexity: "low"
+        dependencies: ["queue_management"]
+        default: "off"
+
+  routing:
+    name: "Routing & Filtering"
+    description: "Message routing, filtering, and exchange patterns"
+    features:
+      - name: "topic_routing"
+        description: "Route messages based on topic/subject name"
+        complexity: "low"
+        dependencies: ["topic_management"]
+        default: "on"
+
+      - name: "content_based_routing"
+        description: "Route messages based on payload content or header values"
+        complexity: "high"
+        dependencies: ["message_headers", "routing_engine"]
+        default: "off"
+
+      - name: "header_based_routing"
+        description: "Route messages based on header key-value matches"
+        complexity: "medium"
+        dependencies: ["message_headers"]
+        default: "off"
+
+      - name: "exchange_types"
+        description: "AMQP exchange patterns: direct, fanout, topic, headers"
+        complexity: "high"
+        dependencies: ["topic_routing"]
+        default: "off"
+
+      - name: "wildcard_subscriptions"
+        description: "Subscribe using wildcards (e.g., orders.* or orders.>)"
+        complexity: "medium"
+        dependencies: ["topic_routing", "pattern_matching"]
+        default: "off"
+
+      - name: "message_filtering"
+        description: "Server-side message filtering based on SQL-like expressions or attributes"
+        complexity: "high"
+        dependencies: ["message_headers", "expression_engine"]
+        default: "off"
+
+      - name: "message_transformation"
+        description: "Transform messages in-flight (format conversion, enrichment)"
+        complexity: "high"
+        dependencies: ["routing_engine", "scripting_engine"]
+        default: "off"
+
+      - name: "priority_queues"
+        description: "Message priority levels affecting delivery order"
+        complexity: "medium"
+        dependencies: ["queue_management"]
+        default: "off"
+
+      - name: "delayed_messages"
+        description: "Schedule messages for future delivery with configurable delay"
+        complexity: "medium"
+        dependencies: ["timer_wheel", "message_timestamps"]
+        default: "off"
+
+      - name: "message_deferred_redelivery"
+        description: "Redeliver NACKed messages after configurable backoff delay"
+        complexity: "medium"
+        dependencies: ["delayed_messages", "message_acknowledgment"]
+        default: "off"
+
+      - name: "fan_out"
+        description: "Deliver single message to multiple destination queues"
+        complexity: "medium"
+        dependencies: ["exchange_types"]
+        default: "off"
+
+      - name: "fan_in"
+        description: "Aggregate messages from multiple sources into single queue"
+        complexity: "medium"
+        dependencies: ["queue_management"]
+        default: "off"
+
+  storage:
+    name: "Storage & Persistence"
+    description: "Message storage, retention, and durability features"
+    features:
+      - name: "log_based_storage"
+        description: "Append-only log segments for high-throughput persistent storage"
+        complexity: "high"
+        dependencies: ["disk_io"]
+        default: "on"
+
+      - name: "in_memory_storage"
+        description: "Memory-only message storage for maximum speed (non-durable)"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "tiered_storage"
+        description: "Hot/warm/cold storage tiers with automatic offloading to object storage"
+        complexity: "high"
+        dependencies: ["log_based_storage", "object_storage_integration"]
+        default: "off"
+
+      - name: "log_compaction"
+        description: "Retain only latest value per message key (table semantics)"
+        complexity: "high"
+        dependencies: ["log_based_storage", "message_keys"]
+        default: "off"
+
+      - name: "time_based_retention"
+        description: "Delete messages older than configured retention period"
+        complexity: "medium"
+        dependencies: ["log_based_storage", "message_timestamps"]
+        default: "on"
+
+      - name: "size_based_retention"
+        description: "Delete oldest messages when total log size exceeds limit"
+        complexity: "medium"
+        dependencies: ["log_based_storage"]
+        default: "off"
+
+      - name: "message_replay"
+        description: "Replay messages from any offset or timestamp"
+        complexity: "medium"
+        dependencies: ["log_based_storage", "offset_index"]
+        default: "on"
+
+      - name: "offset_index"
+        description: "Sparse index mapping offsets to physical file positions"
+        complexity: "medium"
+        dependencies: ["log_based_storage"]
+        default: "on"
+
+      - name: "timestamp_index"
+        description: "Index mapping timestamps to offsets for time-based seeks"
+        complexity: "medium"
+        dependencies: ["log_based_storage", "message_timestamps"]
+        default: "on"
+
+      - name: "message_encryption_at_rest"
+        description: "Encrypt stored message data on disk"
+        complexity: "high"
+        dependencies: ["log_based_storage", "encryption_engine"]
+        default: "off"
+
+      - name: "schema_registry"
+        description: "Centralized schema management with compatibility enforcement"
+        complexity: "high"
+        dependencies: ["message_serialization"]
+        default: "off"
+
+      - name: "message_serialization"
+        description: "Pluggable serialization (Avro, Protobuf, JSON Schema)"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+  clustering:
+    name: "Clustering & Replication"
+    description: "Distributed operations, replication, and high availability"
+    features:
+      - name: "partition_management"
+        description: "Topic partitioning for parallel processing and scalability"
+        complexity: "high"
+        dependencies: ["topic_management"]
+        default: "on"
+
+      - name: "replication"
+        description: "Replicate partitions across multiple brokers for durability"
+        complexity: "high"
+        dependencies: ["partition_management", "leader_election"]
+        default: "on"
+
+      - name: "leader_election"
+        description: "Automatic leader election for partitions on broker failure"
+        complexity: "high"
+        dependencies: ["metadata_store"]
+        default: "on"
+
+      - name: "in_sync_replicas"
+        description: "Track and manage set of replicas caught up to leader"
+        complexity: "high"
+        dependencies: ["replication"]
+        default: "on"
+
+      - name: "consumer_group_coordination"
+        description: "Coordinate partition assignment across consumer group members"
+        complexity: "high"
+        dependencies: ["partition_management", "group_coordinator"]
+        default: "on"
+
+      - name: "consumer_offset_management"
+        description: "Store and manage consumer group offsets (committed positions)"
+        complexity: "medium"
+        dependencies: ["consumer_group_coordination"]
+        default: "on"
+
+      - name: "partition_reassignment"
+        description: "Move partitions between brokers for load balancing"
+        complexity: "high"
+        dependencies: ["partition_management", "replication"]
+        default: "off"
+
+      - name: "rack_awareness"
+        description: "Distribute replicas across failure domains (racks/AZs)"
+        complexity: "medium"
+        dependencies: ["replication"]
+        default: "off"
+
+      - name: "geo_replication"
+        description: "Cross-datacenter/region message replication"
+        complexity: "high"
+        dependencies: ["replication", "cluster_linking"]
+        default: "off"
+
+      - name: "cluster_linking"
+        description: "Mirror topics between independent clusters"
+        complexity: "high"
+        dependencies: ["replication"]
+        default: "off"
+
+      - name: "quorum_controller"
+        description: "Raft-based metadata management without external ZooKeeper"
+        complexity: "high"
+        dependencies: ["leader_election"]
+        default: "off"
+
+      - name: "transactions"
+        description: "Atomic multi-partition produce and consume-transform-produce"
+        complexity: "high"
+        dependencies: ["idempotent_producer", "consumer_offset_management"]
+        default: "off"
+
+      - name: "cooperative_rebalancing"
+        description: "Incremental consumer rebalancing without stop-the-world pauses"
+        complexity: "high"
+        dependencies: ["consumer_group_coordination"]
+        default: "off"
+
+  security:
+    name: "Security"
+    description: "Authentication, authorization, and data protection"
+    features:
+      - name: "tls_encryption"
+        description: "TLS encryption for client-broker and inter-broker traffic"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "authentication"
+        description: "Client authentication (SASL/PLAIN, SCRAM, Kerberos, mTLS)"
+        complexity: "high"
+        dependencies: ["tls_encryption"]
+        default: "off"
+
+      - name: "authorization"
+        description: "Access control lists (ACLs) for topic/group/cluster operations"
+        complexity: "high"
+        dependencies: ["authentication"]
+        default: "off"
+
+      - name: "sasl_scram"
+        description: "SCRAM-SHA-256/512 challenge-response authentication"
+        complexity: "high"
+        dependencies: ["authentication"]
+        default: "off"
+
+      - name: "sasl_oauthbearer"
+        description: "OAuth 2.0 / OIDC token-based authentication"
+        complexity: "high"
+        dependencies: ["authentication"]
+        default: "off"
+
+      - name: "mtls_authentication"
+        description: "Mutual TLS with client certificate authentication"
+        complexity: "high"
+        dependencies: ["tls_encryption"]
+        default: "off"
+
+      - name: "audit_logging"
+        description: "Log all administrative and data access operations"
+        complexity: "medium"
+        dependencies: ["authentication"]
+        default: "off"
+
+      - name: "message_encryption_in_transit"
+        description: "End-to-end payload encryption (application-level)"
+        complexity: "high"
+        dependencies: ["encryption_engine"]
+        default: "off"
+
+      - name: "rbac"
+        description: "Role-based access control with predefined roles"
+        complexity: "high"
+        dependencies: ["authorization"]
+        default: "off"
+
+      - name: "quotas"
+        description: "Producer/consumer byte-rate and request-rate quotas"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+  observability:
+    name: "Observability & Monitoring"
+    description: "Metrics, logging, tracing, and operational visibility"
+    features:
+      - name: "metrics_collection"
+        description: "Core broker, topic, partition, and consumer group metrics"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "prometheus_metrics"
+        description: "Prometheus-format metrics endpoint for scraping"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "jmx_metrics"
+        description: "JMX MBeans for JVM-based monitoring tools"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "consumer_lag_monitoring"
+        description: "Track and alert on consumer group lag per partition"
+        complexity: "medium"
+        dependencies: ["consumer_offset_management", "metrics_collection"]
+        default: "on"
+
+      - name: "broker_metrics"
+        description: "Network, request, disk I/O, and replication metrics per broker"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "on"
+
+      - name: "topic_metrics"
+        description: "Per-topic throughput, message count, and size metrics"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "on"
+
+      - name: "distributed_tracing"
+        description: "OpenTelemetry trace context propagation through message headers"
+        complexity: "high"
+        dependencies: ["message_headers", "metrics_collection"]
+        default: "off"
+
+      - name: "health_checks"
+        description: "Broker liveness and readiness health check endpoints"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "admin_api"
+        description: "REST/gRPC API for cluster, topic, and consumer group management"
+        complexity: "high"
+        dependencies: ["metadata_store"]
+        default: "off"
+
+      - name: "management_ui"
+        description: "Web-based dashboard for cluster monitoring and management"
+        complexity: "high"
+        dependencies: ["admin_api", "metrics_collection"]
+        default: "off"
+
+      - name: "alerting"
+        description: "Built-in alerting on lag, throughput, error thresholds"
+        complexity: "high"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "structured_logging"
+        description: "JSON-formatted structured log output"
+        complexity: "low"
+        dependencies: []
+        default: "off"
+
+  client_sdks:
+    name: "Client SDKs & Protocol Support"
+    description: "Client libraries, protocol support, and integration"
+    features:
+      - name: "native_binary_protocol"
+        description: "High-performance binary wire protocol"
+        complexity: "high"
+        dependencies: ["network_layer"]
+        default: "on"
+
+      - name: "amqp_protocol"
+        description: "AMQP 0-9-1 or 1.0 protocol support"
+        complexity: "high"
+        dependencies: ["network_layer"]
+        default: "off"
+
+      - name: "mqtt_protocol"
+        description: "MQTT 3.1.1/5.0 protocol support for IoT"
+        complexity: "high"
+        dependencies: ["network_layer"]
+        default: "off"
+
+      - name: "http_rest_api"
+        description: "HTTP/REST produce and consume API"
+        complexity: "medium"
+        dependencies: ["network_layer"]
+        default: "off"
+
+      - name: "websocket_support"
+        description: "WebSocket-based message streaming for browser clients"
+        complexity: "medium"
+        dependencies: ["http_rest_api"]
+        default: "off"
+
+      - name: "grpc_api"
+        description: "gRPC-based high-performance client API"
+        complexity: "high"
+        dependencies: ["network_layer"]
+        default: "off"
+
+      - name: "client_interceptors"
+        description: "Pluggable client-side interceptor chain for cross-cutting concerns"
+        complexity: "medium"
+        dependencies: ["native_binary_protocol"]
+        default: "off"
+
+      - name: "schema_validation"
+        description: "Client-side schema validation before produce"
+        complexity: "medium"
+        dependencies: ["schema_registry", "message_serialization"]
+        default: "off"
+
+      - name: "connection_pooling"
+        description: "Client-side connection pooling and multiplexing"
+        complexity: "medium"
+        dependencies: ["network_layer"]
+        default: "on"
+
+      - name: "automatic_retry"
+        description: "Client-side retry with configurable backoff on transient failures"
+        complexity: "medium"
+        dependencies: ["native_binary_protocol"]
+        default: "on"
+
+# Infrastructure dependencies (not user-facing features)
+dependencies:
+  network_layer:
+    description: "TCP/TLS network I/O with NIO/epoll"
+    complexity: "high"
+
+  metadata_store:
+    description: "Cluster metadata storage (ZooKeeper, KRaft, etcd)"
+    complexity: "high"
+
+  disk_io:
+    description: "Disk I/O management with sequential writes"
+    complexity: "high"
+
+  routing_engine:
+    description: "Message routing decision engine"
+    complexity: "medium"
+
+  expression_engine:
+    description: "SQL-like expression evaluation for message filtering"
+    complexity: "high"
+
+  scripting_engine:
+    description: "Embedded scripting for message transformation"
+    complexity: "high"
+
+  timer_wheel:
+    description: "Hierarchical timer wheel for delayed message scheduling"
+    complexity: "medium"
+
+  pattern_matching:
+    description: "Wildcard and regex pattern matching engine"
+    complexity: "medium"
+
+  encryption_engine:
+    description: "Cryptographic operations (AES, RSA, key management)"
+    complexity: "high"
+
+  group_coordinator:
+    description: "Consumer group membership and rebalance protocol"
+    complexity: "high"
+
+  correlation_tracking:
+    description: "Track request-reply correlation IDs"
+    complexity: "medium"
+
+  object_storage_integration:
+    description: "S3/GCS/Azure Blob integration for tiered storage"
+    complexity: "high"
+
+  cluster_linking:
+    description: "Cross-cluster topic mirroring protocol"
+    complexity: "high"

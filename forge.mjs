@@ -490,6 +490,65 @@ async function cmdSearch(query) {
   }
 }
 
+async function cmdStack(stackFile) {
+  if (!stackFile) {
+    console.log(c.red('Usage: forge stack <stack.yml>'));
+    console.log(c.dim('  Compose a full vertical stack from multiple blueprints'));
+    console.log();
+    console.log(c.cyan('  Pre-built templates:'));
+    console.log(`    ${c.green('saas-starter')}      Gateway + Web + DB + Cache + Queue`);
+    console.log(`    ${c.green('ai-platform')}       Gateway + DB + Vectors + Graph + Queue + Storage`);
+    console.log(`    ${c.green('enterprise')}        Full 9-layer production stack`);
+    console.log(`    ${c.green('notion-killer')}     Gateway + Web + DB + Search + Storage + Realtime`);
+    console.log(`    ${c.green('zero-trust')}        Gateway + Secrets + DB + Vectors + Graph + Storage`);
+    console.log();
+    console.log(c.dim('  See STACKS.md for full documentation'));
+    return;
+  }
+
+  // Check if it's a template name or a file
+  const templates = ['saas-starter', 'ai-platform', 'enterprise', 'notion-killer', 'zero-trust'];
+  if (templates.includes(stackFile)) {
+    console.log(`\n    🐧 ${c.bold('Forgeprint')} v${VERSION} — Stack Composer\n`);
+    console.log(c.cyan(`🏗️  Stack template: ${stackFile}`));
+    console.log();
+    const stacks = {
+      'saas-starter': ['api-gateways', 'web-servers', 'databases', 'key-value-stores', 'message-queues'],
+      'ai-platform': ['api-gateways', 'databases', 'vector-databases', 'graph-databases', 'message-queues', 'object-storage'],
+      'enterprise': ['api-gateways', 'web-servers', 'databases', 'key-value-stores', 'search-engines', 'message-queues', 'secret-management', 'container-orchestrators', 'workflow-orchestrators'],
+      'notion-killer': ['api-gateways', 'web-servers', 'databases', 'search-engines', 'object-storage', 'message-queues'],
+      'zero-trust': ['api-gateways', 'secret-management', 'databases', 'vector-databases', 'graph-databases', 'object-storage', 'container-orchestrators'],
+    };
+    const layers = stacks[stackFile];
+    console.log(`  ${c.bold('Layers:')}`);
+    layers.forEach((l, i) => {
+      const exists = existsSync(join(BLUEPRINTS_DIR, l, 'BLUEPRINT.md'));
+      const status = exists ? c.green('✅ ready') : c.dim('📋 planned');
+      console.log(`    ${i + 1}. ${c.cyan(l.padEnd(28))} ${status}`);
+    });
+    console.log();
+    const ready = layers.filter(l => existsSync(join(BLUEPRINTS_DIR, l, 'BLUEPRINT.md'))).length;
+    console.log(`  ${c.green(`${ready}/${layers.length}`)} blueprints available`);
+    if (ready < layers.length) {
+      console.log(c.dim(`  Remaining blueprints coming soon — contribute at github.com/smilinTux/forgeprint`));
+    }
+    console.log();
+    console.log(c.dim('  Full stack building coming in v0.2.0'));
+    console.log(c.dim('  For now: forge init <blueprint> to build individual layers'));
+    return;
+  }
+
+  // File-based stack
+  if (!existsSync(stackFile)) {
+    console.log(c.red(`Stack file not found: ${stackFile}`));
+    return;
+  }
+  console.log(`\n    🐧 ${c.bold('Forgeprint')} v${VERSION} — Stack Composer\n`);
+  console.log(c.cyan(`🏗️  Loading stack: ${stackFile}`));
+  console.log(c.dim('  Stack composition from YAML coming in v0.2.0'));
+  console.log(c.dim('  See STACKS.md for the stack.yml format'));
+}
+
 async function cmdUpdate() {
   console.log(c.cyan('🐧 Checking for blueprint updates...'));
   console.log(c.dim('  Blueprint updates come via npm: npm update -g forgeprint'));
@@ -503,6 +562,7 @@ const commands = {
   onboard: () => cmdOnboard(),
   init: () => cmdInit(args[0]),
   build: () => cmdBuild(args[0]),
+  stack: () => cmdStack(args[0]),
   list: () => cmdList(),
   info: () => cmdInfo(args[0]),
   search: () => cmdSearch(args[0]),

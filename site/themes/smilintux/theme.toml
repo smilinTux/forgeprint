@@ -1,0 +1,10 @@
+# theme.toml
+name = "smilinTux"
+license = "AGPL-3.0"
+description = "The official smilinTux Hugo theme"
+homepage = "https://github.com/smilinTux"
+min_version = "0.128.0"
+
+[author]
+  name = "S&K Holdings QT"
+  homepage = "https://smilintux.org"

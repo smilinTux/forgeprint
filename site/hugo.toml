@@ -1,0 +1,70 @@
+baseURL = 'https://smilintux.org/'
+languageCode = 'en-us'
+title = 'smilinTux — Open Source Sovereign Infrastructure'
+theme = 'smilintux'
+
+[params]
+  description = "Open-source sovereign infrastructure & AI ecosystem. Making self-hosting and decentralized systems cool again. 🐧"
+  author = "S&K Holdings QT"
+  tagline = "Helping architect our quantum future, one smile at a time."
+  motto = "staycuriousANDkeepsmilin"
+  mascot = "King Divad"
+  github = "https://github.com/smilinTux"
+  discord = "https://discord.gg/smilintux"
+
+  # Brand colors
+  [params.colors]
+    primary = "#0E2B3D"
+    accent = "#00C8D4"
+    yellow = "#FFD166"
+    white = "#F7FBFF"
+    black = "#0B0B0B"
+    gray = "#A9B2BB"
+
+  # Projects
+  [[params.projects]]
+    name = "Forgeprint"
+    tagline = "Don't use software. Forge your own."
+    description = "AI-native software blueprints. Pick a category, choose features, and let AI build complete tested software."
+    url = "https://github.com/smilinTux/forgeprint"
+    icon = "🔧"
+    status = "Active"
+
+  [[params.projects]]
+    name = "SKMemory"
+    tagline = "Universal AI Memory System"
+    description = "Git-based multi-layer memory with vector search. Short-term, mid-term, and long-term memory for AI agents."
+    url = "https://github.com/smilinTux/SKMemory"
+    icon = "🧠"
+    status = "Coming Soon"
+
+  [[params.projects]]
+    name = "SKyForge"
+    tagline = "Sovereign Alignment Calendar"
+    description = "Forge your sovereign path through the cosmos. 10 integrated domains of daily guidance."
+    url = "https://github.com/smilinTux/SKyForge"
+    icon = "🌟"
+    status = "Active"
+
+[menu]
+  [[menu.main]]
+    name = "Projects"
+    url = "/projects/"
+    weight = 1
+  [[menu.main]]
+    name = "Forgeprint"
+    url = "/forgeprint/"
+    weight = 2
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 3
+  [[menu.main]]
+    name = "GitHub"
+    url = "https://github.com/smilinTux"
+    weight = 4
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true

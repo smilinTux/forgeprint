@@ -1,0 +1,12 @@
+{{ define "main" }}
+<section class="section">
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  {{ range .Pages }}
+  <div style="margin: 2rem 0; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+    <h3><a href="{{ .Permalink }}">{{ .Title }}</a></h3>
+    <p style="color: var(--gray);">{{ .Summary }}</p>
+  </div>
+  {{ end }}
+</section>
+{{ end }}

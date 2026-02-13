@@ -1,0 +1,13 @@
+<!-- SKStacks simple wordmark -->
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="200" viewBox="0 0 700 200" role="img" aria-label="SKStacks">
+  <rect width="100%" height="100%" fill="transparent"></rect>
+  <!-- icon: stacked blocks -->
+  <g transform="translate(20,30)" fill="#00C8D4">
+    <rect x="0" y="60" width="60" height="20" rx="4"></rect>
+    <rect x="10" y="40" width="60" height="20" rx="4" fill="#0E2B3D"></rect>
+    <rect x="20" y="20" width="60" height="20" rx="4" fill="#00C8D4"></rect>
+  </g>
+  <!-- wordmark -->
+  <text x="120" y="110" font-family="Inter, sans-serif" font-weight="700" font-size="56" fill="#0E2B3D">SKStacks</text>
+  <text x="120" y="150" font-family="Source Sans 3, sans-serif" font-size="18" fill="#A9B2BB">Sovereign - Secure - Stackable</text>
+</svg>

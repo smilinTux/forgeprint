@@ -1,0 +1,871 @@
+# Relational Database Features Catalog
+# Comprehensive feature set based on PostgreSQL, MySQL, SQLite, CockroachDB, MariaDB,
+# TiDB, YugabyteDB, Vitess, DuckDB, QuestDB, Oracle, SQL Server, Db2, Snowflake,
+# BigQuery, Aurora, AlloyDB, Supabase, PlanetScale, Neon
+
+categories:
+  core_sql:
+    name: "Core SQL"
+    description: "SQL parsing, execution, and standards compliance"
+    features:
+      - name: "sql_parser"
+        description: "Lexer and parser transforming SQL text into AST"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "select_queries"
+        description: "SELECT with projections, aliases, DISTINCT, LIMIT/OFFSET"
+        complexity: "medium"
+        dependencies: ["sql_parser"]
+        default: "on"
+
+      - name: "insert_statements"
+        description: "INSERT INTO with VALUES, multi-row, INSERT...SELECT, RETURNING"
+        complexity: "medium"
+        dependencies: ["sql_parser"]
+        default: "on"
+
+      - name: "update_statements"
+        description: "UPDATE with SET, WHERE, FROM clause, RETURNING"
+        complexity: "medium"
+        dependencies: ["sql_parser"]
+        default: "on"
+
+      - name: "delete_statements"
+        description: "DELETE with WHERE, USING clause, RETURNING, TRUNCATE"
+        complexity: "medium"
+        dependencies: ["sql_parser"]
+        default: "on"
+
+      - name: "join_support"
+        description: "INNER, LEFT/RIGHT/FULL OUTER, CROSS, NATURAL joins"
+        complexity: "high"
+        dependencies: ["select_queries"]
+        default: "on"
+
+      - name: "subqueries"
+        description: "Scalar, EXISTS, IN, ANY/ALL, correlated subqueries"
+        complexity: "high"
+        dependencies: ["select_queries"]
+        default: "on"
+
+      - name: "common_table_expressions"
+        description: "WITH clause (CTEs), recursive CTEs"
+        complexity: "high"
+        dependencies: ["select_queries"]
+        default: "on"
+
+      - name: "set_operations"
+        description: "UNION, INTERSECT, EXCEPT with ALL modifier"
+        complexity: "medium"
+        dependencies: ["select_queries"]
+        default: "on"
+
+      - name: "aggregate_functions"
+        description: "COUNT, SUM, AVG, MIN, MAX, ARRAY_AGG, STRING_AGG, etc."
+        complexity: "medium"
+        dependencies: ["select_queries"]
+        default: "on"
+
+      - name: "window_functions"
+        description: "ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD, NTILE, OVER clause"
+        complexity: "high"
+        dependencies: ["aggregate_functions"]
+        default: "on"
+
+      - name: "group_by_having"
+        description: "GROUP BY with HAVING filter, GROUPING SETS, CUBE, ROLLUP"
+        complexity: "medium"
+        dependencies: ["aggregate_functions"]
+        default: "on"
+
+      - name: "order_by_limit"
+        description: "ORDER BY with ASC/DESC/NULLS FIRST/LAST, LIMIT, OFFSET, FETCH"
+        complexity: "low"
+        dependencies: ["select_queries"]
+        default: "on"
+
+      - name: "case_expressions"
+        description: "CASE WHEN ... THEN ... ELSE ... END expressions"
+        complexity: "low"
+        dependencies: ["sql_parser"]
+        default: "on"
+
+      - name: "type_casting"
+        description: "CAST, implicit type coercion, :: operator"
+        complexity: "medium"
+        dependencies: ["sql_parser", "data_types"]
+        default: "on"
+
+      - name: "prepared_statements"
+        description: "PREPARE, EXECUTE, DEALLOCATE with parameter binding"
+        complexity: "medium"
+        dependencies: ["sql_parser", "query_plan_cache"]
+        default: "on"
+
+      - name: "explain_analyze"
+        description: "EXPLAIN and EXPLAIN ANALYZE for query plan inspection"
+        complexity: "medium"
+        dependencies: ["query_optimizer"]
+        default: "on"
+
+      - name: "merge_upsert"
+        description: "MERGE (SQL:2008), INSERT...ON CONFLICT (PostgreSQL), REPLACE (MySQL)"
+        complexity: "high"
+        dependencies: ["insert_statements", "update_statements"]
+        default: "off"
+
+  data_types:
+    name: "Data Types"
+    description: "Supported data types and type system"
+    features:
+      - name: "numeric_types"
+        description: "INTEGER, BIGINT, SMALLINT, DECIMAL/NUMERIC, FLOAT, DOUBLE, SERIAL"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "string_types"
+        description: "CHAR, VARCHAR, TEXT, CLOB with collation support"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "datetime_types"
+        description: "DATE, TIME, TIMESTAMP, TIMESTAMP WITH TIME ZONE, INTERVAL"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "binary_types"
+        description: "BYTEA, BINARY, VARBINARY, BLOB"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "boolean_type"
+        description: "BOOLEAN with TRUE/FALSE/NULL three-valued logic"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "uuid_type"
+        description: "UUID data type with generation functions"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "json_jsonb"
+        description: "JSON (text) and JSONB (binary) with operators and path queries"
+        complexity: "high"
+        dependencies: ["string_types"]
+        default: "off"
+
+      - name: "array_types"
+        description: "Array columns with element access, slicing, operators"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "enum_types"
+        description: "User-defined enumerated types"
+        complexity: "medium"
+        dependencies: ["catalog_manager"]
+        default: "off"
+
+      - name: "range_types"
+        description: "Range types (int4range, tsrange, etc.) with containment operators"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "geometric_types"
+        description: "POINT, LINE, POLYGON, CIRCLE, BOX for spatial data"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "network_types"
+        description: "INET, CIDR, MACADDR for network addresses"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "user_defined_types"
+        description: "Composite types, domains, custom base types"
+        complexity: "high"
+        dependencies: ["catalog_manager"]
+        default: "off"
+
+  storage:
+    name: "Storage Engine"
+    description: "Data storage, page management, and file organization"
+    features:
+      - name: "btree_storage"
+        description: "B+ tree page-oriented storage engine for OLTP"
+        complexity: "high"
+        dependencies: ["buffer_pool"]
+        default: "on"
+
+      - name: "heap_tables"
+        description: "Unordered heap file storage with tuple visibility"
+        complexity: "high"
+        dependencies: ["buffer_pool"]
+        default: "on"
+
+      - name: "lsm_storage"
+        description: "Log-Structured Merge Tree storage for write-heavy workloads"
+        complexity: "high"
+        dependencies: ["wal_manager"]
+        default: "off"
+
+      - name: "columnar_storage"
+        description: "Column-oriented storage for analytical queries"
+        complexity: "high"
+        dependencies: ["buffer_pool"]
+        default: "off"
+
+      - name: "page_management"
+        description: "Fixed-size page allocation, free space tracking, page splits"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "buffer_pool"
+        description: "Shared buffer cache with LRU/Clock-sweep eviction"
+        complexity: "high"
+        dependencies: ["page_management"]
+        default: "on"
+
+      - name: "data_compression"
+        description: "Page-level or column-level compression (LZ4, Snappy, ZSTD)"
+        complexity: "high"
+        dependencies: ["page_management"]
+        default: "off"
+
+      - name: "tablespaces"
+        description: "Store tables/indexes on different filesystems/disks"
+        complexity: "medium"
+        dependencies: ["page_management"]
+        default: "off"
+
+      - name: "toast"
+        description: "Oversized attribute storage (TOAST in PostgreSQL, overflow pages)"
+        complexity: "high"
+        dependencies: ["heap_tables"]
+        default: "on"
+
+      - name: "pluggable_storage"
+        description: "Pluggable storage engine interface (InnoDB/MyISAM pattern)"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+  transactions:
+    name: "Transaction Management"
+    description: "ACID transactions and concurrency control"
+    features:
+      - name: "acid_transactions"
+        description: "Full ACID compliance with BEGIN, COMMIT, ROLLBACK"
+        complexity: "high"
+        dependencies: ["wal_manager", "lock_manager"]
+        default: "on"
+
+      - name: "mvcc"
+        description: "Multi-Version Concurrency Control for non-blocking reads"
+        complexity: "high"
+        dependencies: ["acid_transactions"]
+        default: "on"
+
+      - name: "isolation_levels"
+        description: "READ UNCOMMITTED, READ COMMITTED, REPEATABLE READ, SERIALIZABLE"
+        complexity: "high"
+        dependencies: ["mvcc"]
+        default: "on"
+
+      - name: "savepoints"
+        description: "SAVEPOINT, ROLLBACK TO SAVEPOINT for partial rollback"
+        complexity: "medium"
+        dependencies: ["acid_transactions"]
+        default: "on"
+
+      - name: "two_phase_commit"
+        description: "PREPARE TRANSACTION / COMMIT PREPARED for distributed XA"
+        complexity: "high"
+        dependencies: ["acid_transactions"]
+        default: "off"
+
+      - name: "deadlock_detection"
+        description: "Wait-for graph analysis and automatic deadlock resolution"
+        complexity: "high"
+        dependencies: ["lock_manager"]
+        default: "on"
+
+      - name: "lock_manager"
+        description: "Row-level, table-level, advisory locks with lock queuing"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "optimistic_concurrency"
+        description: "Optimistic concurrency control with validation at commit"
+        complexity: "high"
+        dependencies: ["acid_transactions"]
+        default: "off"
+
+      - name: "snapshot_isolation"
+        description: "Snapshot-based isolation using consistent read views"
+        complexity: "high"
+        dependencies: ["mvcc"]
+        default: "on"
+
+      - name: "wal_manager"
+        description: "Write-Ahead Log with fsync, checkpointing, ARIES recovery"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "vacuum_garbage_collection"
+        description: "Dead tuple cleanup (VACUUM/autovacuum/purge thread)"
+        complexity: "high"
+        dependencies: ["mvcc"]
+        default: "on"
+
+  indexing:
+    name: "Indexing"
+    description: "Index types and index management"
+    features:
+      - name: "btree_index"
+        description: "B-tree index for equality and range queries"
+        complexity: "high"
+        dependencies: ["page_management"]
+        default: "on"
+
+      - name: "hash_index"
+        description: "Hash index for equality-only lookups"
+        complexity: "medium"
+        dependencies: ["page_management"]
+        default: "off"
+
+      - name: "gin_index"
+        description: "Generalized Inverted Index for full-text, arrays, JSONB"
+        complexity: "high"
+        dependencies: ["btree_index"]
+        default: "off"
+
+      - name: "gist_index"
+        description: "Generalized Search Tree for geometric, range, full-text data"
+        complexity: "high"
+        dependencies: ["page_management"]
+        default: "off"
+
+      - name: "brin_index"
+        description: "Block Range Index for naturally ordered data (timestamps)"
+        complexity: "medium"
+        dependencies: ["page_management"]
+        default: "off"
+
+      - name: "bitmap_index"
+        description: "Bitmap index for low-cardinality columns and OR queries"
+        complexity: "medium"
+        dependencies: ["page_management"]
+        default: "off"
+
+      - name: "full_text_index"
+        description: "Full-text search indexing with ranking and stemming"
+        complexity: "high"
+        dependencies: ["gin_index"]
+        default: "off"
+
+      - name: "spatial_index"
+        description: "R-tree/GiST index for geometric and geographic data"
+        complexity: "high"
+        dependencies: ["gist_index", "geometric_types"]
+        default: "off"
+
+      - name: "partial_index"
+        description: "Index with WHERE clause filtering (conditional index)"
+        complexity: "medium"
+        dependencies: ["btree_index"]
+        default: "off"
+
+      - name: "expression_index"
+        description: "Index on expressions/functions (e.g., LOWER(name))"
+        complexity: "medium"
+        dependencies: ["btree_index"]
+        default: "off"
+
+      - name: "covering_index"
+        description: "INCLUDE columns for index-only scans"
+        complexity: "medium"
+        dependencies: ["btree_index"]
+        default: "off"
+
+      - name: "multi_column_index"
+        description: "Composite indexes on multiple columns"
+        complexity: "medium"
+        dependencies: ["btree_index"]
+        default: "on"
+
+      - name: "unique_index"
+        description: "Enforce uniqueness constraint via index"
+        complexity: "medium"
+        dependencies: ["btree_index"]
+        default: "on"
+
+      - name: "concurrent_index_build"
+        description: "CREATE INDEX CONCURRENTLY without blocking writes"
+        complexity: "high"
+        dependencies: ["btree_index", "mvcc"]
+        default: "off"
+
+  replication:
+    name: "Replication & High Availability"
+    description: "Data replication and failover capabilities"
+    features:
+      - name: "streaming_replication"
+        description: "WAL-based physical streaming replication to replicas"
+        complexity: "high"
+        dependencies: ["wal_manager"]
+        default: "off"
+
+      - name: "logical_replication"
+        description: "Row-level logical change data capture and replay"
+        complexity: "high"
+        dependencies: ["wal_manager", "catalog_manager"]
+        default: "off"
+
+      - name: "synchronous_replication"
+        description: "Wait for replica acknowledgment before commit"
+        complexity: "high"
+        dependencies: ["streaming_replication"]
+        default: "off"
+
+      - name: "async_replication"
+        description: "Asynchronous replication with eventual consistency"
+        complexity: "medium"
+        dependencies: ["streaming_replication"]
+        default: "off"
+
+      - name: "read_replicas"
+        description: "Hot standby replicas serving read queries"
+        complexity: "high"
+        dependencies: ["streaming_replication"]
+        default: "off"
+
+      - name: "automatic_failover"
+        description: "Automatic promotion of replica on primary failure"
+        complexity: "high"
+        dependencies: ["streaming_replication", "health_monitoring"]
+        default: "off"
+
+      - name: "multi_master_replication"
+        description: "Multiple writable nodes with conflict resolution"
+        complexity: "high"
+        dependencies: ["logical_replication", "conflict_resolution"]
+        default: "off"
+
+      - name: "change_data_capture"
+        description: "CDC stream of row-level changes for external consumers"
+        complexity: "high"
+        dependencies: ["logical_replication"]
+        default: "off"
+
+      - name: "point_in_time_recovery"
+        description: "Restore database to any point in time via WAL replay"
+        complexity: "high"
+        dependencies: ["wal_manager", "base_backup"]
+        default: "off"
+
+      - name: "partitioning"
+        description: "Range, hash, list partitioning with partition pruning"
+        complexity: "high"
+        dependencies: ["catalog_manager"]
+        default: "off"
+
+      - name: "sharding"
+        description: "Horizontal data distribution across nodes"
+        complexity: "high"
+        dependencies: ["partitioning", "distributed_transactions"]
+        default: "off"
+
+  security:
+    name: "Security"
+    description: "Authentication, authorization, and data protection"
+    features:
+      - name: "user_authentication"
+        description: "Username/password auth with SCRAM-SHA-256, MD5, certificate"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "role_based_access_control"
+        description: "GRANT/REVOKE permissions on tables, schemas, functions, roles"
+        complexity: "medium"
+        dependencies: ["catalog_manager"]
+        default: "on"
+
+      - name: "row_level_security"
+        description: "Per-row access policies based on user/role attributes"
+        complexity: "high"
+        dependencies: ["role_based_access_control"]
+        default: "off"
+
+      - name: "column_level_security"
+        description: "Grant SELECT/UPDATE on individual columns"
+        complexity: "medium"
+        dependencies: ["role_based_access_control"]
+        default: "off"
+
+      - name: "ssl_tls_connections"
+        description: "Encrypted client-server connections via TLS"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "transparent_data_encryption"
+        description: "Encryption at rest for data files, WAL, and backups"
+        complexity: "high"
+        dependencies: ["key_management"]
+        default: "off"
+
+      - name: "audit_logging"
+        description: "Detailed logging of DDL, DML, and access events"
+        complexity: "medium"
+        dependencies: ["logging"]
+        default: "off"
+
+      - name: "data_masking"
+        description: "Dynamic masking of sensitive data based on user role"
+        complexity: "high"
+        dependencies: ["role_based_access_control"]
+        default: "off"
+
+      - name: "ldap_kerberos_auth"
+        description: "Enterprise directory authentication integration"
+        complexity: "high"
+        dependencies: ["user_authentication"]
+        default: "off"
+
+  performance:
+    name: "Performance & Query Optimization"
+    description: "Query optimization, execution, and caching"
+    features:
+      - name: "query_optimizer"
+        description: "Cost-based query optimizer with statistics"
+        complexity: "high"
+        dependencies: ["catalog_manager", "statistics_collector"]
+        default: "on"
+
+      - name: "statistics_collector"
+        description: "Table/column statistics: histograms, MCV, correlation, n_distinct"
+        complexity: "high"
+        dependencies: ["catalog_manager"]
+        default: "on"
+
+      - name: "query_plan_cache"
+        description: "Cache and reuse query execution plans"
+        complexity: "medium"
+        dependencies: ["query_optimizer"]
+        default: "on"
+
+      - name: "hash_join"
+        description: "Hash join algorithm for equi-joins"
+        complexity: "high"
+        dependencies: ["query_optimizer"]
+        default: "on"
+
+      - name: "merge_join"
+        description: "Sort-merge join algorithm for sorted inputs"
+        complexity: "high"
+        dependencies: ["query_optimizer"]
+        default: "on"
+
+      - name: "nested_loop_join"
+        description: "Nested loop join with optional index lookup"
+        complexity: "medium"
+        dependencies: ["query_optimizer"]
+        default: "on"
+
+      - name: "parallel_query"
+        description: "Parallel execution of scans, joins, and aggregations"
+        complexity: "high"
+        dependencies: ["query_optimizer"]
+        default: "off"
+
+      - name: "vectorized_execution"
+        description: "Process batches of rows through operators (columnar execution)"
+        complexity: "high"
+        dependencies: ["query_optimizer"]
+        default: "off"
+
+      - name: "jit_compilation"
+        description: "JIT-compile expressions and tuple deforming (LLVM)"
+        complexity: "high"
+        dependencies: ["query_optimizer"]
+        default: "off"
+
+      - name: "connection_pooling"
+        description: "Built-in connection pooling or pgbouncer-style multiplexing"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "result_caching"
+        description: "Cache query results for repeated identical queries"
+        complexity: "medium"
+        dependencies: ["query_plan_cache"]
+        default: "off"
+
+      - name: "predicate_pushdown"
+        description: "Push WHERE filters below joins and into storage scans"
+        complexity: "medium"
+        dependencies: ["query_optimizer"]
+        default: "on"
+
+      - name: "join_reordering"
+        description: "Reorder joins based on cardinality estimates for optimal plan"
+        complexity: "high"
+        dependencies: ["query_optimizer", "statistics_collector"]
+        default: "on"
+
+  observability:
+    name: "Monitoring & Observability"
+    description: "Metrics, logging, and diagnostic capabilities"
+    features:
+      - name: "slow_query_log"
+        description: "Log queries exceeding duration threshold"
+        complexity: "low"
+        dependencies: ["logging"]
+        default: "on"
+
+      - name: "query_statistics"
+        description: "Per-query execution statistics (pg_stat_statements equivalent)"
+        complexity: "medium"
+        dependencies: ["statistics_collector"]
+        default: "off"
+
+      - name: "wait_event_monitoring"
+        description: "Track what processes/threads are waiting on (I/O, locks, CPU)"
+        complexity: "medium"
+        dependencies: ["lock_manager"]
+        default: "off"
+
+      - name: "lock_monitoring"
+        description: "View current locks, lock waits, and deadlock history"
+        complexity: "medium"
+        dependencies: ["lock_manager"]
+        default: "on"
+
+      - name: "replication_monitoring"
+        description: "Replication lag, slot status, WAL sender statistics"
+        complexity: "medium"
+        dependencies: ["streaming_replication"]
+        default: "off"
+
+      - name: "buffer_pool_statistics"
+        description: "Hit ratio, dirty page count, eviction rate metrics"
+        complexity: "medium"
+        dependencies: ["buffer_pool"]
+        default: "on"
+
+      - name: "table_statistics"
+        description: "Row counts, dead tuples, sequential/index scan counts"
+        complexity: "medium"
+        dependencies: ["statistics_collector"]
+        default: "on"
+
+      - name: "prometheus_endpoint"
+        description: "Prometheus-compatible metrics endpoint"
+        complexity: "medium"
+        dependencies: ["query_statistics"]
+        default: "off"
+
+      - name: "logging"
+        description: "Configurable logging with levels, destinations, and formats"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "health_monitoring"
+        description: "Health check endpoints and self-diagnostic capabilities"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+  schema:
+    name: "Schema & DDL"
+    description: "Schema management and data definition"
+    features:
+      - name: "catalog_manager"
+        description: "System catalog storing table, column, index, constraint metadata"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "create_alter_drop_table"
+        description: "DDL for table lifecycle management"
+        complexity: "medium"
+        dependencies: ["catalog_manager"]
+        default: "on"
+
+      - name: "constraints"
+        description: "PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, NOT NULL, EXCLUSION"
+        complexity: "high"
+        dependencies: ["catalog_manager", "btree_index"]
+        default: "on"
+
+      - name: "views"
+        description: "CREATE VIEW with query expansion at execution time"
+        complexity: "medium"
+        dependencies: ["catalog_manager", "select_queries"]
+        default: "on"
+
+      - name: "materialized_views"
+        description: "Pre-computed view results stored on disk with REFRESH"
+        complexity: "high"
+        dependencies: ["views", "heap_tables"]
+        default: "off"
+
+      - name: "stored_procedures"
+        description: "Server-side procedural code (PL/pgSQL, PL/SQL, T-SQL style)"
+        complexity: "high"
+        dependencies: ["catalog_manager"]
+        default: "off"
+
+      - name: "triggers"
+        description: "BEFORE/AFTER/INSTEAD OF triggers on INSERT/UPDATE/DELETE"
+        complexity: "high"
+        dependencies: ["catalog_manager", "stored_procedures"]
+        default: "off"
+
+      - name: "sequences"
+        description: "Auto-incrementing sequence generators"
+        complexity: "medium"
+        dependencies: ["catalog_manager"]
+        default: "on"
+
+      - name: "schemas_namespaces"
+        description: "Schema-level namespace isolation for multi-tenant"
+        complexity: "medium"
+        dependencies: ["catalog_manager"]
+        default: "on"
+
+      - name: "online_schema_change"
+        description: "ALTER TABLE without locking (gh-ost, pt-osc pattern)"
+        complexity: "high"
+        dependencies: ["create_alter_drop_table", "logical_replication"]
+        default: "off"
+
+  backup:
+    name: "Backup & Recovery"
+    description: "Backup, restore, and disaster recovery"
+    features:
+      - name: "base_backup"
+        description: "Full physical backup of data directory"
+        complexity: "medium"
+        dependencies: ["wal_manager"]
+        default: "on"
+
+      - name: "incremental_backup"
+        description: "Backup only changed pages/WAL since last backup"
+        complexity: "high"
+        dependencies: ["base_backup", "wal_manager"]
+        default: "off"
+
+      - name: "logical_dump_restore"
+        description: "SQL-level dump (pg_dump) and restore"
+        complexity: "medium"
+        dependencies: ["sql_parser"]
+        default: "on"
+
+      - name: "backup_compression"
+        description: "Compress backup files (gzip, lz4, zstd)"
+        complexity: "low"
+        dependencies: ["base_backup"]
+        default: "off"
+
+      - name: "backup_encryption"
+        description: "Encrypt backup files with AES-256"
+        complexity: "medium"
+        dependencies: ["base_backup"]
+        default: "off"
+
+  extensions:
+    name: "Extensions & Programmability"
+    description: "Extension system and programmability features"
+    features:
+      - name: "extension_system"
+        description: "Load/unload extension modules (CREATE EXTENSION pattern)"
+        complexity: "high"
+        dependencies: ["catalog_manager"]
+        default: "off"
+
+      - name: "user_defined_functions"
+        description: "CREATE FUNCTION with SQL, PL/pgSQL, or external languages"
+        complexity: "high"
+        dependencies: ["catalog_manager"]
+        default: "off"
+
+      - name: "custom_aggregates"
+        description: "User-defined aggregate functions with state/combine/finalize"
+        complexity: "high"
+        dependencies: ["user_defined_functions", "aggregate_functions"]
+        default: "off"
+
+      - name: "foreign_data_wrappers"
+        description: "Query external data sources as virtual tables"
+        complexity: "high"
+        dependencies: ["catalog_manager", "select_queries"]
+        default: "off"
+
+      - name: "custom_data_types"
+        description: "User-defined base types with I/O functions and operators"
+        complexity: "high"
+        dependencies: ["catalog_manager"]
+        default: "off"
+
+      - name: "custom_operators"
+        description: "User-defined operators with optimizer support"
+        complexity: "high"
+        dependencies: ["catalog_manager", "query_optimizer"]
+        default: "off"
+
+      - name: "custom_index_methods"
+        description: "Pluggable index access method interface"
+        complexity: "high"
+        dependencies: ["catalog_manager", "btree_index"]
+        default: "off"
+
+      - name: "event_triggers"
+        description: "Triggers on DDL events (CREATE, ALTER, DROP)"
+        complexity: "high"
+        dependencies: ["triggers", "catalog_manager"]
+        default: "off"
+
+      - name: "external_language_support"
+        description: "Execute functions in Python, Java, R, JavaScript"
+        complexity: "high"
+        dependencies: ["user_defined_functions"]
+        default: "off"
+
+      - name: "listen_notify"
+        description: "Pub/sub notification channel (LISTEN/NOTIFY)"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+# Internal dependency components (not user-facing features)
+dependencies:
+  key_management:
+    description: "Encryption key storage and rotation"
+    complexity: "high"
+
+  conflict_resolution:
+    description: "Conflict detection and resolution for multi-master"
+    complexity: "high"
+
+  distributed_transactions:
+    description: "Cross-node transaction coordination (2PC/Paxos/Raft)"
+    complexity: "high"

@@ -144,10 +144,53 @@ blueprints/load-balancers/
 
 ---
 
+## 🏗️ Stack Composer — Forge Your Entire Stack
+
+Why build one component when you can forge the whole thing?
+
+```bash
+# Preview a pre-built stack template
+forge stack ai-platform
+
+# Templates available:
+#   saas-starter    — Gateway + Web + DB + Cache + Queue
+#   ai-platform     — Gateway + DB + Vectors + Graph + Queue + Storage
+#   enterprise      — Full 9-layer production stack
+#   notion-killer   — Gateway + Web + DB + Search + Storage + Realtime
+#   zero-trust      — Gateway + Secrets + DB + Vectors + Graph + Storage
+
+# Or define your own stack.yml
+forge stack my-stack.yml
+```
+
+Pick one blueprint per layer. Define how they connect. Generate the entire integrated stack — database, cache, search, API gateway, auth, deployment configs — in one command. See **[STACKS.md](./STACKS.md)** for full documentation.
+
+---
+
+## 🔍 RECON — Create Blueprints for ANY Software
+
+Want to blueprint a new software category? We wrote the guide:
+
+**[RECON.md](./RECON.md)** — The Recipe for Making Recipes
+
+Any AI (or human) can follow this step-by-step process to:
+1. Research the top 30 products (OSS + proprietary + SaaS)
+2. Extract every feature into a master catalog
+3. Document the architecture patterns
+4. Write test specifications
+5. Create memory/hardware profiles
+
+**It's reverse engineering without copying code.** We document patterns, not source. The AI writes fresh code from the specs. Royalty-free. 100% legal.
+
+> *Copy-paste the quick-start prompt from RECON.md into any AI and point it at a software category. Instant blueprint.*
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! Here's how:
 
+- **New Blueprints:** Follow [RECON.md](./RECON.md) to research and blueprint any software category
 - **New Features:** Add features to existing `features.yml` files
 - **New Categories:** Create a new blueprint directory following the template
 - **Improvements:** Enhance architectural guidance, test specs, or memory profiles

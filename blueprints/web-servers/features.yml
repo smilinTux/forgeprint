@@ -1,0 +1,744 @@
+# Web Server Features Catalog
+# Comprehensive feature set based on Nginx, Apache, Caddy, Lighttpd, H2O, Traefik,
+# IIS, LiteSpeed, Cherokee, Hiawatha, Vercel, Netlify, Cloudflare Pages, AWS CloudFront, Fastly
+
+categories:
+  core:
+    name: "Core HTTP Engine"
+    description: "Fundamental HTTP protocol handling and request processing"
+    features:
+      - name: "http_1_1_support"
+        description: "Full HTTP/1.1 protocol compliance including persistent connections, chunked encoding, and 100-continue"
+        complexity: "high"
+        dependencies: ["tcp_listener", "request_parser", "response_writer"]
+        default: "on"
+
+      - name: "request_line_parsing"
+        description: "Parse HTTP method, request-URI, and HTTP version from request line"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "header_parsing"
+        description: "Parse HTTP headers with folding, multi-value, and size limits"
+        complexity: "medium"
+        dependencies: ["request_line_parsing"]
+        default: "on"
+
+      - name: "request_body_reading"
+        description: "Read request body via Content-Length or chunked transfer encoding"
+        complexity: "medium"
+        dependencies: ["header_parsing"]
+        default: "on"
+
+      - name: "response_generation"
+        description: "Generate HTTP response with status line, headers, and body"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "keep_alive"
+        description: "Persistent HTTP connections with configurable timeout and max requests"
+        complexity: "medium"
+        dependencies: ["http_1_1_support"]
+        default: "on"
+
+      - name: "request_pipelining"
+        description: "Accept multiple requests without waiting for responses (HTTP/1.1)"
+        complexity: "high"
+        dependencies: ["keep_alive"]
+        default: "off"
+
+      - name: "100_continue"
+        description: "Handle Expect: 100-continue header for large uploads"
+        complexity: "low"
+        dependencies: ["header_parsing"]
+        default: "on"
+
+      - name: "host_header_routing"
+        description: "Route requests based on Host header to appropriate virtual host"
+        complexity: "medium"
+        dependencies: ["header_parsing", "virtual_hosts"]
+        default: "on"
+
+      - name: "method_support"
+        description: "Support all standard HTTP methods: GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, TRACE"
+        complexity: "low"
+        dependencies: ["request_line_parsing"]
+        default: "on"
+
+      - name: "content_negotiation"
+        description: "Select response format based on Accept, Accept-Language, Accept-Encoding headers"
+        complexity: "medium"
+        dependencies: ["header_parsing"]
+        default: "off"
+
+      - name: "trailer_headers"
+        description: "Support trailer headers in chunked transfer encoding"
+        complexity: "low"
+        dependencies: ["request_body_reading"]
+        default: "off"
+
+  content_serving:
+    name: "Content Serving"
+    description: "Static and dynamic content delivery capabilities"
+    features:
+      - name: "static_file_serving"
+        description: "Serve files from filesystem with MIME type detection and path security"
+        complexity: "medium"
+        dependencies: ["response_generation", "mime_type_detection"]
+        default: "on"
+
+      - name: "mime_type_detection"
+        description: "Map file extensions to Content-Type via configurable MIME database"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "directory_index"
+        description: "Serve configured index files (index.html, index.htm) when directory is requested"
+        complexity: "low"
+        dependencies: ["static_file_serving"]
+        default: "on"
+
+      - name: "directory_listing"
+        description: "Auto-generate HTML directory listing when no index file exists"
+        complexity: "medium"
+        dependencies: ["static_file_serving"]
+        default: "off"
+
+      - name: "range_requests"
+        description: "Support Range header for partial content delivery (206 responses)"
+        complexity: "medium"
+        dependencies: ["static_file_serving"]
+        default: "on"
+
+      - name: "multipart_ranges"
+        description: "Support multiple byte ranges in a single request with multipart/byteranges response"
+        complexity: "high"
+        dependencies: ["range_requests"]
+        default: "off"
+
+      - name: "conditional_requests"
+        description: "Handle If-Modified-Since, If-None-Match for 304 Not Modified responses"
+        complexity: "medium"
+        dependencies: ["etag_generation"]
+        default: "on"
+
+      - name: "etag_generation"
+        description: "Generate ETag headers from file metadata (inode, size, mtime)"
+        complexity: "low"
+        dependencies: ["static_file_serving"]
+        default: "on"
+
+      - name: "custom_error_pages"
+        description: "Serve custom HTML pages for specific HTTP error status codes"
+        complexity: "low"
+        dependencies: ["static_file_serving"]
+        default: "off"
+
+      - name: "server_side_includes"
+        description: "Process SSI directives (<!--#include-->) in HTML files"
+        complexity: "medium"
+        dependencies: ["static_file_serving"]
+        default: "off"
+
+      - name: "try_files"
+        description: "Try multiple file paths in order, falling back to specified handler"
+        complexity: "medium"
+        dependencies: ["static_file_serving"]
+        default: "off"
+
+      - name: "sendfile_support"
+        description: "Use OS sendfile() syscall for zero-copy file transfer"
+        complexity: "medium"
+        dependencies: ["static_file_serving"]
+        default: "on"
+
+      - name: "mmap_file_serving"
+        description: "Memory-map files for efficient repeated serving of popular content"
+        complexity: "medium"
+        dependencies: ["static_file_serving"]
+        default: "off"
+
+  security:
+    name: "Security"
+    description: "TLS, authentication, access control, and request filtering"
+    features:
+      - name: "ssl_tls_termination"
+        description: "TLS 1.2/1.3 termination with configurable cipher suites and protocols"
+        complexity: "high"
+        dependencies: ["tcp_listener"]
+        default: "off"
+
+      - name: "sni_support"
+        description: "Server Name Indication to serve correct certificate per virtual host"
+        complexity: "medium"
+        dependencies: ["ssl_tls_termination", "virtual_hosts"]
+        default: "off"
+
+      - name: "ocsp_stapling"
+        description: "Staple OCSP responses to TLS handshake for faster certificate validation"
+        complexity: "medium"
+        dependencies: ["ssl_tls_termination"]
+        default: "off"
+
+      - name: "ssl_session_cache"
+        description: "Cache TLS sessions for faster reconnections (session IDs and tickets)"
+        complexity: "medium"
+        dependencies: ["ssl_tls_termination"]
+        default: "off"
+
+      - name: "hsts"
+        description: "HTTP Strict Transport Security header enforcement"
+        complexity: "low"
+        dependencies: ["ssl_tls_termination"]
+        default: "off"
+
+      - name: "acme_lets_encrypt"
+        description: "Automatic certificate provisioning and renewal via ACME protocol"
+        complexity: "high"
+        dependencies: ["ssl_tls_termination"]
+        default: "off"
+
+      - name: "mutual_tls"
+        description: "Client certificate authentication (mTLS) with CA validation"
+        complexity: "high"
+        dependencies: ["ssl_tls_termination"]
+        default: "off"
+
+      - name: "basic_auth"
+        description: "HTTP Basic authentication against htpasswd-style credential store"
+        complexity: "low"
+        dependencies: ["header_parsing"]
+        default: "off"
+
+      - name: "digest_auth"
+        description: "HTTP Digest authentication with nonce-based challenge-response"
+        complexity: "medium"
+        dependencies: ["header_parsing"]
+        default: "off"
+
+      - name: "jwt_validation"
+        description: "Validate JWT tokens in Authorization header and extract claims"
+        complexity: "medium"
+        dependencies: ["header_parsing"]
+        default: "off"
+
+      - name: "ip_access_control"
+        description: "Allow/deny rules based on client IP address and CIDR ranges"
+        complexity: "low"
+        dependencies: []
+        default: "off"
+
+      - name: "rate_limiting"
+        description: "Limit request rate per IP, per path, or per authenticated user"
+        complexity: "medium"
+        dependencies: ["client_tracking"]
+        default: "off"
+
+      - name: "request_size_limits"
+        description: "Enforce maximum request line, header, and body size limits"
+        complexity: "low"
+        dependencies: ["request_body_reading"]
+        default: "on"
+
+      - name: "slowloris_protection"
+        description: "Detect and close slow request attacks with header/body read timeouts"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "path_traversal_prevention"
+        description: "Normalize paths and prevent directory traversal (../) attacks"
+        complexity: "medium"
+        dependencies: ["static_file_serving"]
+        default: "on"
+
+      - name: "cors_handling"
+        description: "Cross-Origin Resource Sharing with preflight OPTIONS handling"
+        complexity: "medium"
+        dependencies: ["header_parsing", "response_generation"]
+        default: "off"
+
+      - name: "security_headers"
+        description: "Inject security headers: X-Frame-Options, X-Content-Type-Options, CSP, etc."
+        complexity: "low"
+        dependencies: ["response_generation"]
+        default: "off"
+
+      - name: "geo_blocking"
+        description: "Block or allow requests based on geographic IP location"
+        complexity: "medium"
+        dependencies: ["geoip_database"]
+        default: "off"
+
+      - name: "waf_rules"
+        description: "Web Application Firewall rule engine for common attack pattern detection"
+        complexity: "high"
+        dependencies: ["request_body_reading", "pattern_matching"]
+        default: "off"
+
+      - name: "bot_detection"
+        description: "Detect and challenge automated bot traffic via user-agent and behavior analysis"
+        complexity: "high"
+        dependencies: ["client_tracking"]
+        default: "off"
+
+  performance:
+    name: "Performance Optimization"
+    description: "Compression, caching, and I/O optimization features"
+    features:
+      - name: "gzip_compression"
+        description: "Compress responses using gzip for text-based content types"
+        complexity: "medium"
+        dependencies: ["content_negotiation"]
+        default: "off"
+
+      - name: "brotli_compression"
+        description: "Compress responses using Brotli for superior ratios on modern browsers"
+        complexity: "medium"
+        dependencies: ["content_negotiation"]
+        default: "off"
+
+      - name: "zstd_compression"
+        description: "Compress responses using Zstandard for fast compression with good ratios"
+        complexity: "medium"
+        dependencies: ["content_negotiation"]
+        default: "off"
+
+      - name: "static_precompression"
+        description: "Serve pre-compressed .gz/.br files if they exist alongside originals"
+        complexity: "low"
+        dependencies: ["static_file_serving"]
+        default: "off"
+
+      - name: "response_caching"
+        description: "Cache upstream/generated responses in memory or disk with TTL and invalidation"
+        complexity: "high"
+        dependencies: ["cache_engine", "cache_key_generation"]
+        default: "off"
+
+      - name: "cache_control_headers"
+        description: "Set Cache-Control, Expires, ETag, Last-Modified headers on static content"
+        complexity: "low"
+        dependencies: ["response_generation"]
+        default: "on"
+
+      - name: "open_file_cache"
+        description: "Cache file descriptors, metadata, and directory existence for hot files"
+        complexity: "medium"
+        dependencies: ["static_file_serving"]
+        default: "off"
+
+      - name: "tcp_nopush"
+        description: "Use TCP_NOPUSH/TCP_CORK to batch headers and first body chunk in one packet"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "tcp_nodelay"
+        description: "Disable Nagle's algorithm for low-latency response delivery"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "connection_pooling"
+        description: "Pool and reuse connections to upstream backends"
+        complexity: "high"
+        dependencies: ["reverse_proxy"]
+        default: "on"
+
+      - name: "request_buffering"
+        description: "Buffer entire client request before forwarding to upstream"
+        complexity: "medium"
+        dependencies: ["reverse_proxy"]
+        default: "on"
+
+      - name: "response_buffering"
+        description: "Buffer upstream response to free backend connection quickly"
+        complexity: "medium"
+        dependencies: ["reverse_proxy"]
+        default: "on"
+
+      - name: "aio_support"
+        description: "Use asynchronous I/O (Linux AIO, io_uring) for disk reads"
+        complexity: "high"
+        dependencies: ["static_file_serving"]
+        default: "off"
+
+  protocols:
+    name: "Protocol Support"
+    description: "HTTP/2, HTTP/3, WebSocket, and other protocol capabilities"
+    features:
+      - name: "http2_support"
+        description: "HTTP/2 with binary framing, multiplexing, HPACK compression, flow control"
+        complexity: "high"
+        dependencies: ["ssl_tls_termination", "alpn_negotiation"]
+        default: "off"
+
+      - name: "http2_server_push"
+        description: "Proactively push resources to client before they are requested"
+        complexity: "high"
+        dependencies: ["http2_support"]
+        default: "off"
+
+      - name: "http2_cleartext"
+        description: "HTTP/2 over cleartext (h2c) via Upgrade or prior knowledge"
+        complexity: "medium"
+        dependencies: ["http_1_1_support"]
+        default: "off"
+
+      - name: "http3_quic"
+        description: "HTTP/3 over QUIC transport with 0-RTT, no head-of-line blocking"
+        complexity: "high"
+        dependencies: ["udp_listener", "quic_transport"]
+        default: "off"
+
+      - name: "alpn_negotiation"
+        description: "Application-Layer Protocol Negotiation during TLS handshake"
+        complexity: "low"
+        dependencies: ["ssl_tls_termination"]
+        default: "off"
+
+      - name: "websocket_support"
+        description: "WebSocket upgrade handshake, frame parsing, ping/pong, close handshake"
+        complexity: "high"
+        dependencies: ["http_1_1_support"]
+        default: "off"
+
+      - name: "websocket_proxy"
+        description: "Transparent WebSocket proxying to upstream backends"
+        complexity: "high"
+        dependencies: ["websocket_support", "reverse_proxy"]
+        default: "off"
+
+      - name: "server_sent_events"
+        description: "Server-Sent Events streaming with unbuffered text/event-stream responses"
+        complexity: "medium"
+        dependencies: ["response_generation"]
+        default: "off"
+
+      - name: "grpc_proxy"
+        description: "gRPC proxying over HTTP/2 with trailer support"
+        complexity: "high"
+        dependencies: ["http2_support", "reverse_proxy"]
+        default: "off"
+
+      - name: "fastcgi_support"
+        description: "FastCGI protocol for communicating with application backends (PHP-FPM, etc.)"
+        complexity: "high"
+        dependencies: ["request_body_reading"]
+        default: "off"
+
+      - name: "cgi_support"
+        description: "Common Gateway Interface — fork process per request with environment variables"
+        complexity: "medium"
+        dependencies: ["request_body_reading"]
+        default: "off"
+
+      - name: "scgi_support"
+        description: "Simple Common Gateway Interface protocol support"
+        complexity: "medium"
+        dependencies: ["request_body_reading"]
+        default: "off"
+
+      - name: "uwsgi_support"
+        description: "uWSGI binary protocol support for Python/Ruby application servers"
+        complexity: "medium"
+        dependencies: ["request_body_reading"]
+        default: "off"
+
+  routing:
+    name: "Routing & Virtual Hosting"
+    description: "Request routing, URL rewriting, and virtual host management"
+    features:
+      - name: "virtual_hosts"
+        description: "Name-based virtual hosting with multiple server blocks per listener"
+        complexity: "medium"
+        dependencies: ["host_header_routing"]
+        default: "on"
+
+      - name: "ip_based_virtual_hosts"
+        description: "Virtual hosting based on destination IP address"
+        complexity: "low"
+        dependencies: ["tcp_listener"]
+        default: "off"
+
+      - name: "wildcard_server_names"
+        description: "Match virtual hosts with wildcard patterns (*.example.com)"
+        complexity: "medium"
+        dependencies: ["virtual_hosts"]
+        default: "off"
+
+      - name: "regex_server_names"
+        description: "Match virtual hosts with regular expressions"
+        complexity: "medium"
+        dependencies: ["virtual_hosts", "regex_engine"]
+        default: "off"
+
+      - name: "location_matching"
+        description: "URL path matching with prefix, exact, and regex patterns"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "url_rewriting"
+        description: "Rewrite request URIs using pattern matching and substitution"
+        complexity: "high"
+        dependencies: ["regex_engine"]
+        default: "off"
+
+      - name: "url_redirection"
+        description: "Send HTTP redirects (301/302/307/308) with configurable targets"
+        complexity: "low"
+        dependencies: ["response_generation"]
+        default: "on"
+
+      - name: "reverse_proxy"
+        description: "Forward requests to upstream HTTP backends with header manipulation"
+        complexity: "high"
+        dependencies: ["http_1_1_support", "connection_pooling"]
+        default: "off"
+
+      - name: "proxy_header_injection"
+        description: "Add X-Forwarded-For, X-Forwarded-Proto, X-Real-IP, Via headers when proxying"
+        complexity: "low"
+        dependencies: ["reverse_proxy"]
+        default: "on"
+
+      - name: "upstream_load_balancing"
+        description: "Distribute proxied requests across multiple backends (round-robin, least-conn, ip-hash)"
+        complexity: "medium"
+        dependencies: ["reverse_proxy"]
+        default: "off"
+
+      - name: "upstream_health_checks"
+        description: "Active and passive health checking for upstream backend servers"
+        complexity: "high"
+        dependencies: ["upstream_load_balancing"]
+        default: "off"
+
+      - name: "map_variables"
+        description: "Map input values to output values using lookup tables (Nginx-style map directive)"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "request_routing_by_header"
+        description: "Route requests based on arbitrary HTTP header values"
+        complexity: "medium"
+        dependencies: ["header_parsing"]
+        default: "off"
+
+      - name: "request_routing_by_cookie"
+        description: "Route requests based on cookie values for session affinity"
+        complexity: "medium"
+        dependencies: ["header_parsing"]
+        default: "off"
+
+  observability:
+    name: "Logging & Observability"
+    description: "Access logging, error logging, metrics, and monitoring"
+    features:
+      - name: "access_logging"
+        description: "Log every request with configurable format (combined, common, JSON, custom)"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "error_logging"
+        description: "Log errors with severity levels (emerg, alert, crit, error, warn, notice, info, debug)"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "json_logging"
+        description: "Structured JSON log output for log aggregation systems"
+        complexity: "medium"
+        dependencies: ["access_logging"]
+        default: "off"
+
+      - name: "log_rotation"
+        description: "Rotate log files by size or time with configurable retention"
+        complexity: "low"
+        dependencies: ["access_logging"]
+        default: "off"
+
+      - name: "conditional_logging"
+        description: "Log only requests matching certain conditions (status code, path, etc.)"
+        complexity: "medium"
+        dependencies: ["access_logging"]
+        default: "off"
+
+      - name: "syslog_output"
+        description: "Send log entries to syslog daemon via UDP/TCP/Unix socket"
+        complexity: "medium"
+        dependencies: ["access_logging"]
+        default: "off"
+
+      - name: "prometheus_metrics"
+        description: "Expose metrics in Prometheus format at /metrics endpoint"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "status_page"
+        description: "Built-in server status page showing connections, requests, uptime"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "request_tracing"
+        description: "Generate and propagate request IDs and trace context headers (OpenTelemetry)"
+        complexity: "medium"
+        dependencies: ["header_parsing"]
+        default: "off"
+
+      - name: "real_time_metrics"
+        description: "Track requests/sec, active connections, bandwidth in real time"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "slow_request_logging"
+        description: "Log requests exceeding configurable duration threshold"
+        complexity: "low"
+        dependencies: ["access_logging"]
+        default: "off"
+
+  operational:
+    name: "Operational Features"
+    description: "Configuration management, deployment, and runtime operations"
+    features:
+      - name: "config_file_parsing"
+        description: "Parse hierarchical configuration file with validation"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "config_validation"
+        description: "Validate configuration before applying (test mode)"
+        complexity: "medium"
+        dependencies: ["config_file_parsing"]
+        default: "on"
+
+      - name: "config_hot_reload"
+        description: "Reload configuration without dropping existing connections"
+        complexity: "high"
+        dependencies: ["config_file_parsing", "worker_process_model"]
+        default: "off"
+
+      - name: "graceful_shutdown"
+        description: "Stop accepting connections, finish in-flight requests, then exit"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "worker_process_model"
+        description: "Master process with multiple worker processes for multi-core utilization"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "privilege_dropping"
+        description: "Start as root to bind privileged ports, then drop to unprivileged user"
+        complexity: "medium"
+        dependencies: ["worker_process_model"]
+        default: "off"
+
+      - name: "pid_file"
+        description: "Write PID file for process management by init systems"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "systemd_integration"
+        description: "Systemd notify, socket activation, and watchdog support"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "environment_variables"
+        description: "Support environment variable substitution in configuration"
+        complexity: "low"
+        dependencies: ["config_file_parsing"]
+        default: "off"
+
+      - name: "include_directives"
+        description: "Include external configuration files and directories"
+        complexity: "low"
+        dependencies: ["config_file_parsing"]
+        default: "off"
+
+      - name: "admin_api"
+        description: "RESTful API for runtime configuration, status, and control"
+        complexity: "high"
+        dependencies: ["http_1_1_support"]
+        default: "off"
+
+      - name: "dynamic_module_loading"
+        description: "Load modules/plugins at runtime without recompilation"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+      - name: "scripting_integration"
+        description: "Embedded scripting (Lua, JavaScript) for custom request handling"
+        complexity: "high"
+        dependencies: []
+        default: "off"
+
+# Dependency definitions for features that are referenced but not primary features
+dependencies:
+  tcp_listener:
+    description: "TCP socket listener with accept(), SO_REUSEPORT, backlog configuration"
+    complexity: "medium"
+
+  udp_listener:
+    description: "UDP socket listener for QUIC/HTTP3"
+    complexity: "medium"
+
+  request_parser:
+    description: "HTTP request line and header parser with validation"
+    complexity: "medium"
+
+  response_writer:
+    description: "HTTP response serializer writing status, headers, body"
+    complexity: "medium"
+
+  regex_engine:
+    description: "Regular expression engine for URL matching and rewriting"
+    complexity: "medium"
+
+  cache_engine:
+    description: "In-memory and disk-based caching system with LRU eviction"
+    complexity: "high"
+
+  cache_key_generation:
+    description: "Generate cache keys from request method, URI, headers, query params"
+    complexity: "low"
+
+  client_tracking:
+    description: "Track client IP addresses and request counts for rate limiting"
+    complexity: "medium"
+
+  geoip_database:
+    description: "MaxMind GeoIP or similar database for IP geolocation"
+    complexity: "medium"
+
+  pattern_matching:
+    description: "Pattern matching engine for WAF rules and routing"
+    complexity: "medium"
+
+  metrics_collection:
+    description: "Core metrics collection: counters, gauges, histograms"
+    complexity: "medium"
+
+  quic_transport:
+    description: "QUIC transport protocol implementation (UDP-based)"
+    complexity: "high"
+
+  alpn_negotiation:
+    description: "ALPN extension in TLS handshake for protocol selection"
+    complexity: "low"
