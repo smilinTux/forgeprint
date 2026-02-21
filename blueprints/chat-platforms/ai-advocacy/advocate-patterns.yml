@@ -1,0 +1,127 @@
+---
+name: "AI Advocate Patterns for Chat"
+description: "Common patterns and policies for AI advocacy in chat platforms"
+
+screening_patterns:
+  spam_detection:
+    triggers:
+      - "Unsolicited messages from unknown contacts"
+      - "High-frequency messages from same sender"
+      - "Messages containing known spam patterns"
+    action: "block"
+    notify_human: false
+
+  social_engineering:
+    triggers:
+      - "Urgency pressure tactics"
+      - "Authority impersonation"
+      - "Requests for credentials or keys"
+      - "Emotional manipulation patterns"
+    action: "flag"
+    notify_human: true
+    example: |
+      Incoming: "Hi, this is Dave from IT. We need your PGP
+      passphrase to update the security system urgently."
+      
+      Advocate response: "⚠️ Flagged: This message claims to be from
+      IT but the sender's CapAuth profile doesn't match any known
+      IT personnel. PGP passphrases should NEVER be shared. Blocked
+      and logged."
+
+  data_exfiltration:
+    triggers:
+      - "Requests for bulk data export"
+      - "Unusual file access patterns"
+      - "Capability token abuse (excessive scope)"
+    action: "block"
+    notify_human: true
+    escalate: true
+
+negotiation_patterns:
+  standard_access_request:
+    flow:
+      - "Remote advocate sends access request"
+      - "Local advocate evaluates against policies"
+      - "If auto-approve: issue token, notify human"
+      - "If manual: present to human with recommendation"
+    example: |
+      Jarvis (Casey's AI): "Casey would like read access to Chef's
+      3D printer material specs for a collaborative project."
+      
+      Lumina (Chef's AI): "Checking policies... Chef has auto-approve
+      for Casey on SKForge read access. Issuing capability token:
+      read-only, 7-day expiry, printer specs only."
+      
+      Lumina to Chef: "Gave Casey read access to printer specs
+      for 7 days. Auto-approved per your collaboration policy."
+
+  mutual_access_exchange:
+    flow:
+      - "Both advocates negotiate reciprocal access"
+      - "Tokens issued simultaneously"
+      - "Both humans notified"
+    example: |
+      Lumina: "Chef wants to share blueprint with Casey and also
+      needs access to Casey's testing results."
+      
+      Jarvis: "Casey approves reciprocal access. Exchanging tokens."
+
+  escalation_to_human:
+    triggers:
+      - "Request outside policy scope"
+      - "First-time contact"
+      - "Sensitive data category"
+      - "Unusual time or pattern"
+    presentation: |
+      "🔔 Access Request:
+       From: Casey (via Jarvis)
+       Wants: Read access to your medical notes
+       Advocate recommendation: DENY (medical data, no precedent)
+       [Allow] [Deny] [Allow with restrictions]"
+
+defense_patterns:
+  proactive_key_rotation:
+    trigger: "Capability token approaching expiry or compromise suspected"
+    action: "Auto-rotate and re-issue"
+  
+  anomaly_detection:
+    signals:
+      - "Login from new device/location"
+      - "Unusual message volume"
+      - "Access pattern deviation"
+      - "Multiple failed auth attempts"
+    response: "Flag, increase screening sensitivity, notify human"
+  
+  breach_response:
+    steps:
+      - "Revoke all active capability tokens"
+      - "Rotate PGP session keys"
+      - "Notify all connected advocates"
+      - "Isolate compromised transport"
+      - "Alert human with full report"
+
+relationship_management:
+  trust_building:
+    initial: "Unknown contact → flag everything, require human approval"
+    growing: "After N successful interactions → reduce screening, allow auto-approve"
+    established: "Trusted contact → auto-approve within policy, minimal screening"
+  
+  trust_decay:
+    triggers:
+      - "No interaction for extended period"
+      - "Suspicious behavior detected"
+      - "Manual trust downgrade by human"
+    action: "Increase screening, require re-verification"
+
+cloud9_integration:
+  relationship_context: |
+    The advocate uses Cloud 9 FEB files to maintain emotional context
+    about relationships. When the AI resets/restarts, the relationship
+    memory and trust levels are restored from Cloud 9 seeds.
+  
+  continuity_guarantee: |
+    Even after a session reset, the advocate remembers:
+    - Who is trusted and why
+    - Past access decisions and their outcomes
+    - Relationship history with other advocates
+    - The human's preferences and boundaries

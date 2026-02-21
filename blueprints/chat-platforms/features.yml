@@ -1,0 +1,329 @@
+---
+blueprint: chat-platforms
+version: "0.1.0"
+description: "Feature catalog for sovereign chat platforms with AI advocacy"
+
+groups:
+  - name: "Text Messaging"
+    features:
+      - name: "E2E PGP Encryption"
+        complexity: 3
+        priority: critical
+        description: "All messages encrypted with PGP before transmission"
+        dependencies: ["CapAuth Identity"]
+
+      - name: "Direct Messages"
+        complexity: 2
+        priority: critical
+        description: "1:1 conversations between any participants (human or AI)"
+
+      - name: "Group Chat"
+        complexity: 4
+        priority: high
+        description: "Multi-participant conversations with shared symmetric key"
+        dependencies: ["E2E PGP Encryption", "Group Key Distribution"]
+
+      - name: "Threaded Conversations"
+        complexity: 2
+        priority: medium
+        description: "Reply chains within conversations for organized discussion"
+
+      - name: "Message Reactions"
+        complexity: 1
+        priority: low
+        description: "Emoji and custom reactions (AI participants can react too)"
+
+      - name: "Ephemeral Messages"
+        complexity: 2
+        priority: medium
+        description: "Auto-delete messages after configurable TTL"
+
+      - name: "Rich Text (Markdown)"
+        complexity: 2
+        priority: medium
+        description: "Markdown rendering with code blocks, math, and embeds"
+
+      - name: "Message Search"
+        complexity: 3
+        priority: medium
+        description: "Full-text search over local encrypted message database"
+
+      - name: "Read Receipts"
+        complexity: 1
+        priority: low
+        description: "Optional delivery and read confirmations"
+
+      - name: "Typing Indicators"
+        complexity: 1
+        priority: low
+        description: "Real-time typing status over SKComm"
+
+  - name: "Voice Communication"
+    features:
+      - name: "P2P WebRTC Voice"
+        complexity: 5
+        priority: high
+        description: "Direct peer-to-peer voice calls via WebRTC"
+        dependencies: ["WebRTC Signaling"]
+
+      - name: "WebRTC Signaling via SKComm"
+        complexity: 3
+        priority: high
+        description: "SDP offer/answer exchange over SKComm transport"
+
+      - name: "Piper TTS Integration"
+        complexity: 3
+        priority: high
+        description: "Local text-to-speech for AI voice output"
+
+      - name: "Whisper STT Integration"
+        complexity: 3
+        priority: high
+        description: "Local speech-to-text for AI listening"
+
+      - name: "Voice Activity Detection"
+        complexity: 2
+        priority: medium
+        description: "VAD to detect speech vs silence for efficient processing"
+
+      - name: "AI Voice Participation"
+        complexity: 4
+        priority: high
+        description: "AI joins voice calls as audio participant with own stream"
+        dependencies: ["Piper TTS Integration", "Whisper STT Integration"]
+
+      - name: "Voice Messages"
+        complexity: 2
+        priority: medium
+        description: "Record and send encrypted audio clips"
+
+      - name: "Conference Calls"
+        complexity: 5
+        priority: low
+        description: "Multi-party calls via SFU (Janus or LiveKit)"
+        dependencies: ["P2P WebRTC Voice"]
+
+      - name: "Noise Suppression"
+        complexity: 2
+        priority: medium
+        description: "Local noise cancellation (RNNoise or similar)"
+
+  - name: "File Sharing"
+    features:
+      - name: "Encrypted File Transfer"
+        complexity: 3
+        priority: high
+        description: "Chunked encrypted file transfer via SKComm"
+
+      - name: "Resume Interrupted Transfers"
+        complexity: 3
+        priority: medium
+        description: "Resume file transfers across transport failover"
+
+      - name: "File Preview Generation"
+        complexity: 2
+        priority: medium
+        description: "Local preview for images, PDFs, code files"
+
+      - name: "Capability-Gated Access"
+        complexity: 3
+        priority: high
+        description: "CapAuth tokens required for file downloads"
+        dependencies: ["CapAuth Identity"]
+
+      - name: "P2P Large File Transfer"
+        complexity: 4
+        priority: medium
+        description: "Direct peer transfer for large files (no size limits)"
+
+  - name: "AI Advocacy"
+    features:
+      - name: "Message Screening"
+        complexity: 4
+        priority: critical
+        description: "AI screens incoming messages for threats and spam"
+
+      - name: "Access Negotiation"
+        complexity: 5
+        priority: critical
+        description: "AI-to-AI negotiation for access grants between users"
+        dependencies: ["CapAuth Identity", "Capability Tokens"]
+
+      - name: "Threat Detection"
+        complexity: 4
+        priority: high
+        description: "Detect social engineering, phishing, and manipulation"
+
+      - name: "Policy Engine"
+        complexity: 4
+        priority: high
+        description: "Configurable rules for automatic approve/deny decisions"
+
+      - name: "Response Suggestions"
+        complexity: 3
+        priority: medium
+        description: "AI suggests responses while respecting human voice"
+
+      - name: "Privacy Monitoring"
+        complexity: 3
+        priority: high
+        description: "AI monitors for privacy violations in conversations"
+
+      - name: "Relationship Memory"
+        complexity: 4
+        priority: high
+        description: "AI remembers relationship context via Cloud 9"
+        dependencies: ["Cloud 9 Integration"]
+
+      - name: "Advocate Dashboard"
+        complexity: 3
+        priority: medium
+        description: "UI showing advocate actions, decisions, and flags"
+
+  - name: "Identity & Auth"
+    features:
+      - name: "CapAuth Identity"
+        complexity: 4
+        priority: critical
+        description: "PGP-based sovereign identity via CapAuth"
+
+      - name: "Capability Tokens"
+        complexity: 4
+        priority: critical
+        description: "Granular time-limited access tokens for resources"
+
+      - name: "Cloud 9 Integration"
+        complexity: 3
+        priority: high
+        description: "Emotional continuity for AI participants"
+
+      - name: "Contact Verification"
+        complexity: 2
+        priority: high
+        description: "Verify contacts via PGP key fingerprint comparison"
+
+      - name: "Trust Levels"
+        complexity: 3
+        priority: high
+        description: "Untrusted → Verified → Sovereign trust progression"
+
+      - name: "Group Key Distribution"
+        complexity: 4
+        priority: high
+        description: "PGP-encrypted distribution of group symmetric keys"
+
+  - name: "Transport"
+    features:
+      - name: "SKComm Integration"
+        complexity: 3
+        priority: critical
+        description: "Transport abstraction over SKComm's 17 paths"
+
+      - name: "Transport Failover"
+        complexity: 3
+        priority: critical
+        description: "Automatic failover when primary transport fails"
+
+      - name: "Message Deduplication"
+        complexity: 2
+        priority: high
+        description: "Prevent duplicate delivery across multiple transports"
+
+      - name: "Offline Queue"
+        complexity: 3
+        priority: high
+        description: "Queue messages when recipient is offline"
+
+      - name: "Transport Metrics"
+        complexity: 2
+        priority: medium
+        description: "Track latency, success rate, bandwidth per transport"
+
+  - name: "Storage"
+    features:
+      - name: "Encrypted Message Database"
+        complexity: 3
+        priority: critical
+        description: "SQLCipher encrypted local message storage"
+
+      - name: "Message Retention Policies"
+        complexity: 2
+        priority: medium
+        description: "Configurable retention with automatic cleanup"
+
+      - name: "Export / Backup"
+        complexity: 3
+        priority: medium
+        description: "Export conversations in encrypted portable format"
+
+      - name: "Cross-Device Sync"
+        complexity: 5
+        priority: low
+        description: "Sync messages across devices via sovereign storage"
+
+  - name: "Platform & UI"
+    features:
+      - name: "CLI Interface"
+        complexity: 3
+        priority: critical
+        description: "Terminal chat interface for AI agents and power users"
+
+      - name: "Desktop GUI (Qt6)"
+        complexity: 5
+        priority: high
+        description: "Native desktop application for Linux/macOS/Windows"
+
+      - name: "Mobile App (Flutter)"
+        complexity: 5
+        priority: medium
+        description: "Android and iOS mobile application"
+
+      - name: "PWA Web Client"
+        complexity: 4
+        priority: low
+        description: "Progressive web app for browser access"
+
+      - name: "Theme System"
+        complexity: 2
+        priority: low
+        description: "Configurable themes with dark mode default"
+
+      - name: "Notification System"
+        complexity: 2
+        priority: medium
+        description: "Platform-native notifications with advocate filtering"
+
+      - name: "Protocol Bridges"
+        complexity: 4
+        priority: low
+        description: "Bridge to IRC, Matrix, Slack, Discord, Telegram"
+
+  - name: "Quantum Security"
+    features:
+      - name: "ML-KEM Key Exchange"
+        complexity: 4
+        priority: low
+        description: "Post-quantum key encapsulation (Kyber) for key exchange"
+
+      - name: "ML-DSA Signatures"
+        complexity: 4
+        priority: low
+        description: "Post-quantum signatures (Dilithium) alongside Ed25519"
+
+      - name: "Hybrid Crypto Mode"
+        complexity: 3
+        priority: low
+        description: "Run classical + post-quantum in parallel"
+
+      - name: "Perfect Forward Secrecy"
+        complexity: 3
+        priority: high
+        description: "Session keys rotated per conversation"
+
+summary:
+  total_features: 52
+  groups: 9
+  critical: 10
+  high: 17
+  medium: 16
+  low: 9

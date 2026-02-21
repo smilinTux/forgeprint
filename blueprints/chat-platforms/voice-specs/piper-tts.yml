@@ -1,0 +1,67 @@
+---
+name: "Piper TTS"
+version: "1.4.1"
+license: "GPL-3.0-or-later"
+repository: "https://github.com/OHF-Voice/piper1-gpl"
+pypi: "piper-tts"
+description: "Fast local neural text-to-speech"
+
+architecture:
+  type: "VITS (Variational Inference with adversarial learning)"
+  inference: "ONNX Runtime"
+  platforms: ["Linux", "macOS", "Windows", "Raspberry Pi", "Android"]
+
+capabilities:
+  languages: 35+
+  voices: 100+
+  sample_rates: [16000, 22050]
+  output_formats: ["PCM S16LE", "WAV"]
+  streaming: true
+  gpu_required: false
+  realtime_factor: "< 0.2x on modern CPU"
+
+recommended_models:
+  english:
+    - name: "en_US-amy-medium"
+      quality: "medium"
+      speed: "fast"
+      style: "conversational"
+    - name: "en_US-lessac-high"
+      quality: "high"
+      speed: "moderate"
+      style: "clear"
+    - name: "en_GB-alba-medium"
+      quality: "medium"
+      speed: "fast"
+      style: "british"
+
+skchat_integration:
+  role: "AI voice output"
+  pipeline_position: "After LLM response, before audio output"
+  config:
+    default_model: "en_US-amy-medium"
+    speed_range: [0.5, 2.0]
+    volume_normalization: true
+    sentence_splitting: true
+    cache_audio: false
+  performance:
+    latency_target_ms: 200
+    cpu_cores_recommended: 2
+    memory_mb: 256
+
+strengths:
+  - "Fully local, no cloud dependency"
+  - "GPL-3.0 license (compatible)"
+  - "Fast inference on CPU"
+  - "Wide language support"
+  - "Small model sizes (15-75MB)"
+
+weaknesses:
+  - "Quality below cloud TTS (Eleven Labs, etc.)"
+  - "Limited voice cloning"
+  - "English models strongest, others vary"
+
+notes: |
+  Piper is maintained by the Open Home Foundation (Home Assistant).
+  Originally MIT-licensed by Michael Hansen, now GPL-3.0-or-later.
+  Perfect fit for SKChat's local-first, GPL-3.0 architecture.

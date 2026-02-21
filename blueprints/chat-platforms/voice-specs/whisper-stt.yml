@@ -1,0 +1,94 @@
+---
+name: "Whisper STT"
+version: "latest"
+license: "MIT"
+repository: "https://github.com/openai/whisper"
+alternatives:
+  - name: "faster-whisper"
+    repo: "https://github.com/SYSTRAN/faster-whisper"
+    license: "MIT"
+    note: "CTranslate2 backend, 4x faster, recommended for SKChat"
+  - name: "whisper.cpp"
+    repo: "https://github.com/ggerganov/whisper.cpp"
+    license: "MIT"
+    note: "C++ port, excellent for mobile/embedded"
+description: "Local automatic speech recognition"
+
+architecture:
+  type: "Transformer encoder-decoder"
+  inference: "PyTorch / CTranslate2 / GGML"
+  platforms: ["Linux", "macOS", "Windows", "Android", "iOS"]
+
+capabilities:
+  languages: 99
+  task: ["transcribe", "translate"]
+  streaming: true  # via faster-whisper with VAD
+  timestamps: true
+  speaker_diarization: false  # requires external (pyannote)
+
+models:
+  - name: "tiny"
+    params: "39M"
+    vram_gb: 1
+    speed: "~32x realtime"
+    quality: "lowest"
+  - name: "base"
+    params: "74M"
+    vram_gb: 1
+    speed: "~16x realtime"
+    quality: "good"
+    recommended: true
+  - name: "small"
+    params: "244M"
+    vram_gb: 2
+    speed: "~6x realtime"
+    quality: "better"
+  - name: "medium"
+    params: "769M"
+    vram_gb: 5
+    speed: "~2x realtime"
+    quality: "high"
+  - name: "large-v3"
+    params: "1550M"
+    vram_gb: 10
+    speed: "~1x realtime"
+    quality: "best"
+
+skchat_integration:
+  role: "AI voice input (speech-to-text)"
+  pipeline_position: "After microphone capture, before AI processing"
+  recommended_implementation: "faster-whisper"
+  config:
+    default_model: "base"
+    language: "en"
+    compute_type: "int8"
+    device: "cpu"
+    beam_size: 5
+    vad:
+      enabled: true
+      threshold: 0.5
+      min_speech_ms: 250
+      min_silence_ms: 500
+      speech_pad_ms: 200
+  performance:
+    latency_target_ms: 1000
+    cpu_cores_recommended: 4
+    memory_mb: 512
+
+strengths:
+  - "State-of-the-art accuracy"
+  - "Fully local processing"
+  - "MIT license (very permissive)"
+  - "99 language support"
+  - "Excellent community ecosystem"
+
+weaknesses:
+  - "GPU significantly improves speed for larger models"
+  - "No native streaming (faster-whisper adds it)"
+  - "No speaker diarization built-in"
+
+notes: |
+  For SKChat, we recommend faster-whisper with the base model and
+  VAD (Voice Activity Detection) for real-time conversational use.
+  The int8 quantized mode gives excellent speed on CPU while
+  maintaining good accuracy for conversational English.

@@ -1,0 +1,103 @@
+---
+name: "WebRTC"
+specification: "W3C / IETF"
+license: "BSD-3-Clause (libwebrtc), various (implementations)"
+description: "Peer-to-peer real-time communication for voice, video, and data"
+
+implementations:
+  python:
+    - name: "aiortc"
+      license: "BSD-3-Clause"
+      repo: "https://github.com/aiortc/aiortc"
+      note: "Pure Python WebRTC, good for server-side and CLI"
+    - name: "webrtc-noise-gain"
+      license: "MIT"
+      note: "Audio processing for WebRTC in Python"
+  
+  flutter:
+    - name: "flutter_webrtc"
+      license: "MIT"
+      repo: "https://github.com/flutter-webrtc/flutter-webrtc"
+
+  web:
+    - name: "Native browser API"
+      note: "Built into all modern browsers"
+
+architecture:
+  protocols:
+    media: "SRTP (Secure RTP)"
+    signaling: "Custom (SKComm in our case)"
+    nat_traversal: "ICE (STUN + TURN)"
+    transport: "DTLS over UDP (or TCP fallback)"
+  codecs:
+    audio:
+      - name: "Opus"
+        bitrate: "6-510 kbps"
+        sample_rate: 48000
+        channels: [1, 2]
+        recommended: true
+      - name: "G.711"
+        bitrate: "64 kbps"
+        note: "Fallback for compatibility"
+    video:
+      - name: "VP8/VP9"
+        note: "Royalty-free, good quality"
+      - name: "H.264"
+        note: "Hardware acceleration widely available"
+      - name: "AV1"
+        note: "Next-gen, not yet universal"
+
+skchat_integration:
+  role: "P2P voice and video calls"
+  signaling_transport: "SKComm (any of 17 paths)"
+  nat_traversal:
+    strategy:
+      - "STUN (public STUN servers)"
+      - "Iroh hole-punching (90% success)"
+      - "TURN relay (fallback)"
+    stun_servers:
+      - "stun:stun.l.google.com:19302"
+      - "stun:stun.nextcloud.com:443"
+    turn_servers: "Self-hosted via coturn (optional)"
+
+  ai_participation:
+    description: "AI joins WebRTC session as audio peer"
+    input: "Whisper STT processes incoming audio track"
+    output: "Piper TTS generates outgoing audio track"
+    implementation: |
+      AI connects as a WebRTC peer with:
+      - One audio track (TTS output)
+      - One data channel (text fallback)
+      Audio from human peer → Whisper STT → AI processing
+      AI response → Piper TTS → audio track to human peer
+
+  performance:
+    target_latency_ms: 150
+    jitter_buffer_ms: 50
+    packet_loss_tolerance: "5% with Opus FEC"
+
+strengths:
+  - "Direct P2P, no media server needed for 1:1"
+  - "Built-in encryption (DTLS-SRTP)"
+  - "Adaptive bitrate based on network conditions"
+  - "Opus codec excellent for speech"
+  - "Universal browser and platform support"
+
+weaknesses:
+  - "NAT traversal can fail (need TURN fallback)"
+  - "3+ participants need SFU server"
+  - "Firewall restrictions in corporate environments"
+
+conference_options:
+  - name: "Janus"
+    license: "GPL-3.0"
+    type: "SFU (Selective Forwarding Unit)"
+    note: "Mature, well-tested, GPL-compatible"
+  - name: "LiveKit"
+    license: "Apache-2.0"
+    type: "SFU"
+    note: "Modern, Kubernetes-native, excellent SDK"
+  - name: "mediasoup"
+    license: "ISC"
+    type: "SFU library"
+    note: "Embeddable, Node.js based"
