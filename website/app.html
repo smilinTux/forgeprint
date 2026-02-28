@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SKForge — Blueprint Marketplace</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --navy-lighter: #334155;
+      --cyan: #00d4ff;
+      --cyan-dim: #00d4ff33;
+      --orange: #ff6b35;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --radius: 12px;
+      --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: var(--navy-light);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--cyan);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .logo span { color: var(--text); }
+
+    nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    nav button {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    nav button:hover { color: var(--text); background: var(--navy-lighter); }
+    nav button.active { color: var(--cyan); border-color: var(--cyan-dim); background: var(--cyan-dim); }
+
+    .search-box {
+      margin-left: auto;
+      position: relative;
+    }
+
+    .search-box input {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      width: 280px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus { border-color: var(--cyan); }
+
+    .search-box::before {
+      content: "\1F50D";
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+    }
+
+    /* ─── Main Layout ─── */
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ─── Blueprint Grid ─── */
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p { color: var(--text-dim); }
+
+    .blueprint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .blueprint-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .blueprint-card:hover {
+      border-color: var(--cyan);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.1);
+    }
+
+    .blueprint-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: var(--cyan);
+    }
+
+    .blueprint-card .description {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .blueprint-card .meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-features { background: var(--cyan-dim); color: var(--cyan); }
+    .badge-files { background: rgba(255, 107, 53, 0.15); color: var(--orange); }
+
+    /* ─── Detail View ─── */
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .detail-header .back {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .detail-header .back:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    .detail-tabs {
+      display: flex;
+      gap: 0.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .detail-tabs button {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-dim);
+      padding: 0.75rem 1.25rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .detail-tabs button:hover { color: var(--text); }
+    .detail-tabs button.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ─── Feature Groups ─── */
+    .feature-group {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .feature-group-header {
+      padding: 1rem 1.25rem;
+      background: var(--navy-lighter);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .feature-group-header h4 { font-size: 1rem; }
+    .feature-group-header .count { color: var(--text-muted); font-size: 0.85rem; }
+
+    .feature-list {
+      padding: 0.75rem 1.25rem;
+      display: none;
+    }
+
+    .feature-group.open .feature-list { display: block; }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .feature-item:last-child { border-bottom: none; }
+
+    .feature-item input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: all 0.2s;
+    }
+
+    .feature-item input[type="checkbox"]:checked {
+      background: var(--cyan);
+      border-color: var(--cyan);
+    }
+
+    .feature-item input[type="checkbox"]:checked::after {
+      content: "\2713";
+      display: block;
+      text-align: center;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 14px;
+    }
+
+    .feature-name { font-weight: 500; }
+    .feature-desc { color: var(--text-dim); font-size: 0.85rem; }
+
+    .complexity {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .complexity-low { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+    .complexity-medium { background: rgba(245, 158, 11, 0.15); color: var(--yellow); }
+    .complexity-high { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
+    /* ─── Markdown Content ─── */
+    .markdown-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      white-space: pre-wrap;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--text-dim);
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    /* ─── Driver Builder ─── */
+    .builder-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .builder-panel h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--cyan);
+    }
+
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-group select, .form-group input {
+      width: 100%;
+      background: var(--navy);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    .form-group select:focus, .form-group input:focus {
+      border-color: var(--cyan);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: var(--cyan); color: var(--navy); }
+    .btn-primary:hover { background: #33ddff; transform: translateY(-1px); }
+    .btn-secondary { background: var(--navy-lighter); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--cyan); }
+
+    .driver-output {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      color: var(--green);
+      max-height: 500px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    /* ─── Stacks View ─── */
+    .stack-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .stack-card h3 { color: var(--orange); margin-bottom: 0.75rem; }
+
+    .stack-layers {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .stack-layer {
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .stack-layer.ready { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+    .stack-layer.planned { background: rgba(100, 116, 139, 0.15); color: var(--text-muted); }
+
+    /* ─── Search Results ─── */
+    .search-results {
+      margin-top: 1rem;
+    }
+
+    .search-result {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .search-result:hover { border-color: var(--cyan); }
+    .search-result .result-cat { color: var(--cyan); font-weight: 600; }
+    .search-result .result-type { color: var(--text-muted); font-size: 0.8rem; margin-left: 0.5rem; }
+    .search-result .result-match { color: var(--text-dim); font-size: 0.85rem; margin-top: 0.3rem; }
+
+    /* ─── Loading ─── */
+    .loading {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 768px) {
+      header { flex-wrap: wrap; padding: 1rem; }
+      nav { order: 3; width: 100%; }
+      .search-box { order: 2; }
+      .search-box input { width: 100%; }
+      .blueprint-grid { grid-template-columns: 1fr; }
+      main { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="#" class="logo" onclick="showPage('marketplace')">SK<span>Forge</span></a>
+    <nav>
+      <button onclick="showPage('marketplace')" data-page="marketplace" class="active">Marketplace</button>
+      <button onclick="showPage('builder')" data-page="builder">Driver Builder</button>
+      <button onclick="showPage('stacks')" data-page="stacks">Stacks</button>
+    </nav>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search blueprints..."
+             oninput="handleSearch(this.value)">
+    </div>
+  </header>
+
+  <main>
+    <!-- Marketplace Page -->
+    <div id="page-marketplace" class="page active">
+      <div class="page-header">
+        <h1>Blueprint Marketplace</h1>
+        <p>Browse AI-native software blueprints. Pick, configure, and forge your own.</p>
+      </div>
+      <div id="blueprintGrid" class="blueprint-grid">
+        <div class="loading"><div class="spinner"></div><p>Loading blueprints...</p></div>
+      </div>
+    </div>
+
+    <!-- Detail Page -->
+    <div id="page-detail" class="page">
+      <div class="detail-header">
+        <button class="back" onclick="showPage('marketplace')">&larr; Back</button>
+        <h1 id="detailTitle"></h1>
+        <span id="detailBadge" class="badge badge-features"></span>
+      </div>
+      <div class="detail-tabs" id="detailTabs">
+        <button class="active" onclick="showTab('overview')">Overview</button>
+        <button onclick="showTab('features')">Features</button>
+        <button onclick="showTab('architecture')">Architecture</button>
+        <button onclick="showTab('memory')">Memory Profiles</button>
+      </div>
+      <div id="tab-overview" class="tab-content active">
+        <div id="overviewContent" class="markdown-content"></div>
+      </div>
+      <div id="tab-features" class="tab-content">
+        <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <span id="featureSummary" style="color: var(--text-dim);"></span>
+          <button class="btn btn-primary" onclick="openBuilderWith()">Build with Selected</button>
+        </div>
+        <div id="featureGroups"></div>
+      </div>
+      <div id="tab-architecture" class="tab-content">
+        <div id="archContent" class="markdown-content"></div>
+      </div>
+      <div id="tab-memory" class="tab-content">
+        <div id="memoryContent"></div>
+      </div>
+    </div>
+
+    <!-- Builder Page -->
+    <div id="page-builder" class="page">
+      <div class="page-header">
+        <h1>Driver Builder</h1>
+        <p>Configure and generate your driver.md for AI-powered code generation.</p>
+      </div>
+      <div class="builder-panel">
+        <h3>Configuration</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Blueprint Category</label>
+            <select id="builderCategory" onchange="loadBuilderFeatures()">
+              <option value="">Select a blueprint...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Target Language</label>
+            <select id="builderLanguage">
+              <option value="rust">Rust</option>
+              <option value="go">Go</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="typescript">TypeScript</option>
+              <option value="dotnet">.NET (C#)</option>
+              <option value="zig">Zig</option>
+              <option value="c">C</option>
+              <option value="cpp">C++</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Hardware Profile</label>
+            <select id="builderHardware">
+              <option value="server">Server</option>
+              <option value="cloud-native">Cloud-Native</option>
+              <option value="desktop">Desktop</option>
+              <option value="edge">Edge</option>
+              <option value="embedded">Embedded</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Memory Profile</label>
+            <select id="builderMemory">
+              <option value="standard">Standard (1-8GB)</option>
+              <option value="enterprise">Enterprise (8GB+)</option>
+              <option value="embedded">Embedded (&lt;64MB)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="builder-panel" id="builderFeaturesPanel" style="display:none;">
+        <h3>Features</h3>
+        <div id="builderFeatureGroups"></div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+        <button class="btn btn-primary" onclick="generateDriver()">Generate driver.md</button>
+        <button class="btn btn-secondary" onclick="downloadDriver()">Download</button>
+      </div>
+
+      <div id="driverOutput" class="driver-output" style="display:none;"></div>
+    </div>
+
+    <!-- Stacks Page -->
+    <div id="page-stacks" class="page">
+      <div class="page-header">
+        <h1>Stack Templates</h1>
+        <p>Pre-built vertical stacks combining multiple blueprints for complete systems.</p>
+      </div>
+      <div id="stacksList"></div>
+    </div>
+
+    <!-- Search Results Page -->
+    <div id="page-search" class="page">
+      <div class="page-header">
+        <h1>Search Results</h1>
+        <p id="searchQuery"></p>
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </main>
+
+  <script>
+    const API = '';  // Same origin
+    let blueprintsCache = null;
+    let currentBlueprint = null;
+    let selectedFeatures = {};
+
+    // ─── API ─────────────────────────────────────────────────
+
+    async function fetchJSON(url) {
+      const res = await fetch(API + url);
+      return res.json();
+    }
+
+    // ─── Navigation ──────────────────────────────────────────
+
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      const navBtn = document.querySelector(`nav button[data-page="${page}"]`);
+      if (navBtn) navBtn.classList.add('active');
+
+      if (page === 'marketplace' && !blueprintsCache) loadBlueprints();
+      if (page === 'builder') loadBuilderCategories();
+      if (page === 'stacks') loadStacks();
+    }
+
+    // ─── Marketplace ─────────────────────────────────────────
+
+    async function loadBlueprints() {
+      const grid = document.getElementById('blueprintGrid');
+      try {
+        const blueprints = await fetchJSON('/api/blueprints');
+        blueprintsCache = blueprints;
+
+        if (blueprints.length === 0) {
+          grid.innerHTML = '<p style="color:var(--text-muted)">No blueprints found.</p>';
+          return;
+        }
+
+        grid.innerHTML = blueprints.map(bp => `
+          <div class="blueprint-card" onclick="showBlueprint('${bp.category}')">
+            <h3>${formatName(bp.category)}</h3>
+            <div class="description">${esc(bp.description)}</div>
+            <div class="meta">
+              <span class="badge badge-features">${bp.featureCount} features</span>
+              <span class="badge badge-files">${bp.files.length} files</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        grid.innerHTML = '<p style="color:var(--red)">Failed to load blueprints.</p>';
+      }
+    }
+
+    async function showBlueprint(category) {
+      showPage('detail');
+      const detail = await fetchJSON('/api/blueprints/' + category);
+      currentBlueprint = detail;
+      selectedFeatures = {};
+
+      document.getElementById('detailTitle').textContent = formatName(category);
+      document.getElementById('detailBadge').textContent = detail.featureCount + ' features';
+      document.getElementById('overviewContent').textContent = detail.blueprint || 'No blueprint documentation available.';
+      document.getElementById('archContent').textContent = detail.architecture || 'No architecture documentation available.';
+
+      // Features
+      renderFeatureGroups(detail.features, 'featureGroups');
+      updateFeatureSummary();
+
+      // Memory profiles
+      const memDiv = document.getElementById('memoryContent');
+      const profiles = detail.memoryProfiles || {};
+      if (Object.keys(profiles).length === 0) {
+        memDiv.innerHTML = '<p style="color:var(--text-muted)">No memory profiles available.</p>';
+      } else {
+        memDiv.innerHTML = Object.entries(profiles).map(([name, content]) => `
+          <h3 style="color:var(--cyan); margin: 1rem 0 0.5rem;">${name.charAt(0).toUpperCase() + name.slice(1)}</h3>
+          <div class="markdown-content" style="margin-bottom:1rem;">${esc(content)}</div>
+        `).join('');
+      }
+
+      showTab('overview');
+    }
+
+    function renderFeatureGroups(features, containerId) {
+      const container = document.getElementById(containerId);
+      if (!features || !features.groups || features.groups.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted)">No features catalog available.</p>';
+        return;
+      }
+
+      container.innerHTML = features.groups.map((group, gi) => `
+        <div class="feature-group${gi === 0 ? ' open' : ''}" data-group="${group.id}">
+          <div class="feature-group-header" onclick="toggleGroup(this)">
+            <h4>${esc(group.name)}</h4>
+            <span class="count">${group.features.length} features</span>
+          </div>
+          <div class="feature-list" ${gi === 0 ? 'style="display:block"' : ''}>
+            ${group.features.map((f, fi) => `
+              <div class="feature-item">
+                <input type="checkbox" ${f.default === 'on' ? 'checked' : ''}
+                  onchange="toggleFeature('${group.id}', '${esc(f.name)}', this.checked)"
+                  data-group="${group.id}" data-feature="${esc(f.name)}">
+                <div>
+                  <span class="feature-name">${esc(f.name)}</span>
+                  <span class="complexity complexity-${f.complexity}">${f.complexity}</span>
+                  ${f.description ? `<div class="feature-desc">${esc(f.description)}</div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      // Initialize selectedFeatures from defaults
+      for (const group of features.groups) {
+        for (const f of group.features) {
+          if (f.default === 'on') {
+            if (!selectedFeatures[group.name]) selectedFeatures[group.name] = [];
+            selectedFeatures[group.name].push({ name: f.name, enabled: true });
+          }
+        }
+      }
+    }
+
+    function toggleGroup(header) {
+      const group = header.parentElement;
+      group.classList.toggle('open');
+      const list = group.querySelector('.feature-list');
+      list.style.display = group.classList.contains('open') ? 'block' : 'none';
+    }
+
+    function toggleFeature(groupId, featureName, enabled) {
+      // Find group name from the data
+      if (!currentBlueprint) return;
+      const group = currentBlueprint.features.groups.find(g => g.id === groupId);
+      if (!group) return;
+
+      if (!selectedFeatures[group.name]) selectedFeatures[group.name] = [];
+      const existing = selectedFeatures[group.name].find(f => f.name === featureName);
+      if (existing) {
+        existing.enabled = enabled;
+      } else {
+        selectedFeatures[group.name].push({ name: featureName, enabled });
+      }
+      updateFeatureSummary();
+    }
+
+    function updateFeatureSummary() {
+      let total = 0, selected = 0;
+      for (const features of Object.values(selectedFeatures)) {
+        for (const f of features) {
+          total++;
+          if (f.enabled) selected++;
+        }
+      }
+      const el = document.getElementById('featureSummary');
+      if (el) el.textContent = `${selected} of ${total} features selected`;
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.querySelectorAll('.detail-tabs button').forEach(b => b.classList.remove('active'));
+      const btn = [...document.querySelectorAll('.detail-tabs button')].find(b => b.textContent.toLowerCase().includes(tab.split('-')[0]));
+      if (btn) btn.classList.add('active');
+    }
+
+    // ─── Builder ─────────────────────────────────────────────
+
+    async function loadBuilderCategories() {
+      if (!blueprintsCache) {
+        blueprintsCache = await fetchJSON('/api/blueprints');
+      }
+      const select = document.getElementById('builderCategory');
+      // Only rebuild if empty (preserve selection)
+      if (select.options.length <= 1) {
+        blueprintsCache.forEach(bp => {
+          const opt = document.createElement('option');
+          opt.value = bp.category;
+          opt.textContent = formatName(bp.category) + ` (${bp.featureCount} features)`;
+          select.appendChild(opt);
+        });
+      }
+    }
+
+    async function loadBuilderFeatures() {
+      const category = document.getElementById('builderCategory').value;
+      const panel = document.getElementById('builderFeaturesPanel');
+      if (!category) { panel.style.display = 'none'; return; }
+
+      panel.style.display = 'block';
+      const features = await fetchJSON(`/api/blueprints/${category}/features`);
+      selectedFeatures = {};
+      renderFeatureGroups(features, 'builderFeatureGroups');
+    }
+
+    function openBuilderWith() {
+      if (!currentBlueprint) return;
+      showPage('builder');
+      document.getElementById('builderCategory').value = currentBlueprint.category;
+      loadBuilderFeatures();
+    }
+
+    async function generateDriver() {
+      const category = document.getElementById('builderCategory').value;
+      const language = document.getElementById('builderLanguage').value;
+      const hardware = document.getElementById('builderHardware').value;
+      const memory = document.getElementById('builderMemory').value;
+
+      if (!category) {
+        alert('Please select a blueprint category.');
+        return;
+      }
+
+      // Build feature selection with enabled state
+      const featureConfig = {};
+      for (const [group, features] of Object.entries(selectedFeatures)) {
+        featureConfig[group] = features;
+      }
+
+      const response = await fetch('/api/generate-driver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category, language, hardware, memory,
+          selectedFeatures: featureConfig,
+        }),
+      });
+
+      const data = await response.json();
+      const output = document.getElementById('driverOutput');
+      output.style.display = 'block';
+      output.textContent = data.driver;
+    }
+
+    function downloadDriver() {
+      const content = document.getElementById('driverOutput').textContent;
+      if (!content) { alert('Generate a driver first.'); return; }
+      const blob = new Blob([content], { type: 'text/markdown' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'driver.md';
+      a.click();
+    }
+
+    // ─── Stacks ──────────────────────────────────────────────
+
+    async function loadStacks() {
+      const container = document.getElementById('stacksList');
+      const stacks = await fetchJSON('/api/stacks');
+
+      container.innerHTML = Object.entries(stacks).map(([id, stack]) => `
+        <div class="stack-card">
+          <h3>${stack.name}</h3>
+          <div class="stack-layers">
+            ${stack.layers.map(l => `
+              <span class="stack-layer ${l.ready ? 'ready' : 'planned'}">
+                ${formatName(l.category)} ${l.ready ? '' : '(planned)'}
+              </span>
+            `).join('')}
+          </div>
+          <div style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.85rem;">
+            ${stack.layers.filter(l => l.ready).length}/${stack.layers.length} blueprints ready
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ─── Search ──────────────────────────────────────────────
+
+    let searchTimeout = null;
+
+    function handleSearch(query) {
+      clearTimeout(searchTimeout);
+      if (!query.trim()) {
+        showPage('marketplace');
+        return;
+      }
+      searchTimeout = setTimeout(async () => {
+        showPage('search');
+        document.getElementById('searchQuery').textContent = `Results for "${query}"`;
+        const results = await fetchJSON('/api/search?q=' + encodeURIComponent(query));
+        const container = document.getElementById('searchResults');
+
+        if (results.length === 0) {
+          container.innerHTML = '<p style="color:var(--text-muted)">No results found.</p>';
+          return;
+        }
+
+        container.innerHTML = results.map(r => `
+          <div class="search-result" onclick="showBlueprint('${r.category}')">
+            <span class="result-cat">${formatName(r.category)}</span>
+            <span class="result-type">${r.type}</span>
+            ${r.match ? `<div class="result-match">${esc(r.match)}</div>` : ''}
+          </div>
+        `).join('');
+      }, 300);
+    }
+
+    // ─── Utilities ───────────────────────────────────────────
+
+    function formatName(slug) {
+      return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ─── Init ────────────────────────────────────────────────
+    loadBlueprints();
+  </script>
+</body>
+</html>

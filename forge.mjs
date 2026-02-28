@@ -76,6 +76,7 @@ ${c.bold('COMMANDS')}
   ${c.green('search')} ${c.dim('<q>')}    Search blueprints and features
   ${c.green('doctor')}        Check your setup (AI providers, tools)
   ${c.green('update')}        Pull latest blueprints from registry
+  ${c.green('serve')}         Launch web UI + blueprint marketplace
   ${c.green('new')}    ${c.dim('<name>')} Create a new blueprint (for contributors)
   ${c.green('version')}       Show version
 
@@ -555,6 +556,14 @@ async function cmdUpdate() {
   console.log(c.dim('  Or: pnpm update -g skforge'));
 }
 
+async function cmdServe() {
+  const portArg = args.indexOf('--port');
+  const port = portArg !== -1 ? parseInt(args[portArg + 1]) || 3000 : 3000;
+
+  const { startServer } = await import('./cli/serve.mjs');
+  startServer(port);
+}
+
 // ─── Main ────────────────────────────────────────────────────────────
 const [,, cmd, ...args] = process.argv;
 
@@ -563,6 +572,7 @@ const commands = {
   init: () => cmdInit(args[0]),
   build: () => cmdBuild(args[0]),
   stack: () => cmdStack(args[0]),
+  serve: () => cmdServe(),
   list: () => cmdList(),
   info: () => cmdInfo(args[0]),
   search: () => cmdSearch(args[0]),
