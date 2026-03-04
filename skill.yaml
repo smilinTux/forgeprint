@@ -1,0 +1,26 @@
+name: skforge
+version: "0.1.0"
+description: >
+  Sovereign AI-assisted code generation forge. Blueprint-driven feature
+  generation, catalog management, and driver synthesis for sovereign
+  application development.
+
+author:
+  name: smilinTux.org
+  email: hello@smilintux.org
+
+tags: [codegen, forge, blueprints, ai, generation, development]
+category: tools
+
+tools:
+  - name: forge_generate
+    description: Generate code from a blueprint specification
+    entrypoint: skforge.skill:generate
+
+  - name: forge_list_blueprints
+    description: List available blueprint templates
+    entrypoint: skforge.skill:list_blueprints
+
+  - name: forge_catalog
+    description: Browse the skforge blueprint catalog
+    entrypoint: skforge.skill:catalog

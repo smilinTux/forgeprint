@@ -1,0 +1,398 @@
+# Sovereign Transport (SKComm) Features Catalog
+# Based on: SKComm postal service model, 17+ transport modules
+# One message format, multiple delivery paths, always gets through
+
+name: Sovereign Transport
+version: "1.0.0"
+description: >
+  Modular transport-agnostic communication framework with Universal Envelope,
+  PGP encryption, pluggable transports, and redundant delivery guarantees.
+
+groups:
+  - name: Core Messaging
+    description: Envelope creation, serialization, and payload management
+    features:
+      - name: universal-envelope
+        description: Standardized JSON envelope wrapper with version, addressing, payload, routing, and metadata
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: envelope-serialization
+        description: JSON serialize/deserialize with schema validation and version negotiation
+        complexity: low
+        default: true
+        dependencies: [universal-envelope]
+      - name: message-threading
+        description: Thread-based conversations via thread_id and in_reply_to linking
+        complexity: low
+        default: true
+        dependencies: [universal-envelope]
+      - name: message-priority
+        description: "Priority levels (low, normal, high, critical) affecting routing mode and retry urgency"
+        complexity: low
+        default: true
+        dependencies: [universal-envelope]
+      - name: message-ttl
+        description: Time-to-live for envelopes with automatic expiration and rejection of stale messages
+        complexity: low
+        default: true
+        dependencies: [universal-envelope]
+      - name: payload-types
+        description: "Built-in payload types: message, file, seed, feb, command, heartbeat, ack"
+        complexity: medium
+        default: true
+        dependencies: [universal-envelope]
+      - name: message-chunking
+        description: Split envelopes exceeding transport size limits into numbered chunks with reassembly
+        complexity: high
+        default: true
+        dependencies: [universal-envelope]
+      - name: content-hashing
+        description: SHA-256 hash of plaintext payload for deduplication without decryption
+        complexity: low
+        default: true
+        dependencies: [universal-envelope]
+      - name: envelope-immutability
+        description: Envelopes are frozen after signing -- transports carry them as-is to preserve signatures
+        complexity: low
+        default: true
+        dependencies: [universal-envelope]
+
+  - name: Transport Modules
+    description: Pluggable communication channels -- 17 built-in modules
+    features:
+      - name: file-transport
+        description: Shared filesystem transport via NFS, SSHFS, or Nextcloud sync folders
+        complexity: low
+        default: true
+        dependencies: []
+      - name: ssh-transport
+        description: Direct SSH command execution transport for remote machines
+        complexity: low
+        default: true
+        dependencies: []
+      - name: netcat-transport
+        description: Raw TCP/UDP socket transport for LAN communication
+        complexity: low
+        default: true
+        dependencies: []
+      - name: iroh-transport
+        description: "Iroh QUIC-based P2P with ~90% NAT hole-punch success and relay fallback"
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: nostr-transport
+        description: "Nostr relay network with WebSocket, Schnorr signatures, NIP-17 encrypted DMs"
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: tailscale-transport
+        description: Tailscale WireGuard mesh VPN transport for known peer networks
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: netbird-transport
+        description: Netbird self-hosted WireGuard mesh VPN transport
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: veilid-transport
+        description: "Veilid onion-routed private network -- Tor-like stealth with no special nodes"
+        complexity: high
+        default: false
+        dependencies: []
+      - name: bitchat-transport
+        description: "BitChat BLE mesh network -- offline Bluetooth Low Energy communication"
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: github-transport
+        description: GitHub Issues/PRs/Gists used as store-and-forward message dead drops
+        complexity: low
+        default: false
+        dependencies: []
+      - name: telegram-transport
+        description: Telegram Bot API transport for legacy system integration
+        complexity: low
+        default: false
+        dependencies: []
+      - name: http-transport
+        description: HTTP webhook POST/GET transport for arbitrary endpoints
+        complexity: low
+        default: false
+        dependencies: []
+      - name: email-transport
+        description: SMTP transport with PGP encryption layered on email
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: dns-txt-transport
+        description: Stealth messaging via DNS TXT records -- hides that communication is happening
+        complexity: high
+        default: false
+        dependencies: []
+      - name: ipfs-transport
+        description: Content-addressed P2P storage transport via IPFS
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: qr-code-transport
+        description: Offline visual encoding for air-gapped communication via QR codes
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: sneakernet-transport
+        description: USB/file physical transfer for maximum security air-gapped environments
+        complexity: low
+        default: false
+        dependencies: []
+      - name: custom-transport-api
+        description: "Plugin API for user-defined transport modules -- implement Transport ABC (~50 lines)"
+        complexity: medium
+        default: true
+        dependencies: []
+
+  - name: Routing & Delivery
+    description: Transport selection, failover, broadcast, and retry logic
+    features:
+      - name: priority-failover
+        description: Try transports in configured priority order, fall to next on failure
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: broadcast-mode
+        description: Send via ALL available transports simultaneously for critical messages
+        complexity: medium
+        default: true
+        dependencies: [priority-failover]
+      - name: retry-queue
+        description: SQLite-backed persistent queue with configurable backoff for failed deliveries
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: exponential-backoff
+        description: "Exponential retry delay with jitter: base * 2^attempt + random(0, base)"
+        complexity: low
+        default: true
+        dependencies: [retry-queue]
+      - name: dead-letter-queue
+        description: Store permanently failed envelopes for manual review after max retries exhausted
+        complexity: low
+        default: true
+        dependencies: [retry-queue]
+      - name: deduplication
+        description: Bloom filter + LRU cache dedup using envelope_id to prevent duplicate processing
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: circuit-breaker
+        description: "Disable failing transports temporarily: HEALTHY -> OPEN -> HALF_OPEN -> HEALTHY"
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: delivery-confirmation
+        description: Automatic ack envelope sent back to sender upon successful receipt
+        complexity: medium
+        default: false
+        dependencies: [payload-types]
+      - name: peer-transport-discovery
+        description: Automatically detect which transports a peer supports via capability exchange
+        complexity: high
+        default: false
+        dependencies: []
+      - name: geo-aware-routing
+        description: Route based on geographic proximity for latency-optimized transport selection
+        complexity: high
+        default: false
+        dependencies: []
+
+  - name: Security
+    description: Encryption, signing, trust, and identity management
+    features:
+      - name: pgp-encryption
+        description: Mandatory PGP encryption for all envelope payloads -- no plaintext ever leaves security layer
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: pgp-signing
+        description: Mandatory PGP detached signature on all envelopes verified before decryption
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: capauth-identity
+        description: All identity, key management, and trust delegated to CapAuth sovereign profiles
+        complexity: high
+        default: true
+        dependencies: []
+      - name: trust-levels
+        description: "4-tier trust gating: untrusted, verified, trusted, sovereign -- gates payload handling"
+        complexity: medium
+        default: true
+        dependencies: [capauth-identity]
+      - name: cloud9-sovereign-trust
+        description: Sovereign trust tier requires Cloud 9 compliance -- relationship-based trust is unforgeable
+        complexity: high
+        default: true
+        dependencies: [trust-levels]
+      - name: replay-protection
+        description: Timestamp + TTL + envelope_id cache prevents replay of old or duplicate messages
+        complexity: medium
+        default: true
+        dependencies: [deduplication, message-ttl]
+      - name: command-trust-gating
+        description: "Command payload type restricted to sovereign trust only -- prevents remote code execution abuse"
+        complexity: medium
+        default: true
+        dependencies: [trust-levels, payload-types]
+      - name: ai-advocate-delegation
+        description: AI advocates send/receive on behalf of humans via CapAuth delegation tokens
+        complexity: high
+        default: false
+        dependencies: [capauth-identity]
+      - name: key-rotation-broadcast
+        description: Automated key rotation with notification broadcast to all known peers
+        complexity: high
+        default: false
+        dependencies: [capauth-identity]
+      - name: key-revocation-broadcast
+        description: Emergency key revocation broadcast to all peers via all transports
+        complexity: high
+        default: true
+        dependencies: [capauth-identity, broadcast-mode]
+      - name: post-quantum-hybrid
+        description: Hybrid PGP + CRYSTALS-Dilithium/Kyber for quantum-resistant encryption
+        complexity: high
+        default: false
+        dependencies: [pgp-encryption]
+
+  - name: Peer Management
+    description: Peer discovery, trust tracking, and relationship management
+    features:
+      - name: peer-store
+        description: Local SQLite database of known peers with keys, transports, trust levels, and last_seen
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: peer-trust-management
+        description: Promote/demote trust levels with vouching chain and manual override
+        complexity: medium
+        default: true
+        dependencies: [peer-store, trust-levels]
+      - name: peer-presence
+        description: Track online/offline status via heartbeat envelopes across all active transports
+        complexity: medium
+        default: false
+        dependencies: [peer-store, payload-types]
+      - name: peer-groups
+        description: Named groups of peers for team/channel broadcast messaging
+        complexity: medium
+        default: false
+        dependencies: [peer-store]
+      - name: peer-capability-exchange
+        description: Exchange supported transports and features with peers for optimal routing
+        complexity: medium
+        default: false
+        dependencies: [peer-store]
+
+  - name: Storage & Persistence
+    description: Queue persistence, message history, and data management
+    features:
+      - name: sqlite-queue-persistence
+        description: SQLite-backed outbox/inbox/dead-letter queues surviving process restarts
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: message-history
+        description: Searchable local history of sent/received envelopes with full-text search
+        complexity: medium
+        default: false
+        dependencies: [sqlite-queue-persistence]
+      - name: encrypted-at-rest
+        description: AES-256-GCM encryption of all stored envelopes and queue data on disk
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: backup-export
+        description: Export peer store, queue state, and configuration for backup or migration
+        complexity: low
+        default: false
+        dependencies: []
+
+  - name: Observability
+    description: Logging, monitoring, health checks, and diagnostics
+    features:
+      - name: transport-logging
+        description: Per-transport delivery logs with latency, retry count, and error tracking
+        complexity: low
+        default: true
+        dependencies: []
+      - name: health-dashboard
+        description: CLI command showing all transport statuses, circuit breaker states, and queue depths
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: delivery-metrics
+        description: Prometheus-compatible metrics for delivery rate, latency percentiles, and failure rates
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: audit-trail
+        description: Signed append-only log of all envelope operations for forensic review
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: transport-benchmarking
+        description: "Built-in latency and throughput benchmarks per transport: skcomm bench"
+        complexity: medium
+        default: false
+        dependencies: []
+
+  - name: Integration
+    description: Integration with the smilinTux sovereign ecosystem
+    features:
+      - name: skcapstone-mcp
+        description: Expose send_message, check_inbox, sync_push, sync_pull as MCP tools
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: cloud9-feb-transport
+        description: Transport FEB files and memory seeds as typed envelope payloads
+        complexity: medium
+        default: true
+        dependencies: [payload-types]
+      - name: skmemory-sync
+        description: Sync SKMemory fragments between AI instances via seed payloads
+        complexity: high
+        default: false
+        dependencies: [cloud9-feb-transport]
+      - name: skforge-updates
+        description: Distribute SKForge blueprint updates to collaborating AIs
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: skchat-bridge
+        description: Bridge SKChat messages to/from SKComm for cross-platform delivery
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: heartbeat-protocol
+        description: Periodic heartbeat envelopes with agent state, capacity, and capabilities
+        complexity: medium
+        default: true
+        dependencies: [payload-types, peer-presence]
+
+dependencies:
+  runtime:
+    - python: ">=3.11"
+    - gnupg: "system"
+  required:
+    - click: ">=8.0"          # CLI framework
+    - pydantic: ">=2.0"       # Envelope validation
+  optional:
+    - iroh: ">=0.28"          # Iroh P2P transport
+    - nostr-sdk: ">=0.3"      # Nostr relay transport
+    - veilid: ">=0.3"         # Veilid stealth transport
+    - paramiko: ">=3.0"       # SSH transport
+    - qrcode: ">=7.0"         # QR code transport
+    - requests: ">=2.31"      # HTTP/GitHub/Telegram transports
+    - sentence-transformers: ">=2.0"  # Semantic routing (future)

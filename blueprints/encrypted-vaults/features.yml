@@ -1,0 +1,394 @@
+# Encrypted Reference Vaults (SKRef) Features Catalog
+# Based on BLUEPRINT.md: FUSE-mounted encrypted file vaults with GPG and pluggable backends
+
+name: Encrypted Reference Vaults (SKRef)
+version: "1.0.0"
+description: >
+  Transparent FUSE-mounted encrypted file vaults for sovereign document
+  storage across local, WebDAV, S3, and Google Drive backends.
+
+groups:
+  - name: Core Vault Operations
+    description: Fundamental vault creation, mounting, and file access
+    features:
+      - name: vault-create
+        description: Create a new encrypted vault with GPG key, backend config, and manifest
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: vault-mount
+        description: FUSE-mount a vault at a specified path for transparent file access
+        complexity: high
+        default: true
+        dependencies: [vault-create]
+      - name: vault-unmount
+        description: Safely unmount a vault, flush caches, and lock encryption keys
+        complexity: medium
+        default: true
+        dependencies: [vault-mount]
+      - name: vault-lock
+        description: Lock vault keys from memory without unmounting (re-auth required to access)
+        complexity: medium
+        default: true
+        dependencies: [vault-mount]
+      - name: vault-auto-mount
+        description: Automatically mount configured vaults on agent startup or login
+        complexity: low
+        default: true
+        dependencies: [vault-mount]
+      - name: vault-status
+        description: Show mount state, backend health, cache usage, and key status for all vaults
+        complexity: low
+        default: true
+        dependencies: []
+      - name: multi-vault
+        description: Support multiple independent vaults mounted simultaneously
+        complexity: medium
+        default: true
+        dependencies: [vault-mount]
+      - name: vault-tiers
+        description: Three-tier vault presets (auth-seeds, gtd-tasks, reference) with tuned defaults
+        complexity: low
+        default: true
+        dependencies: [vault-create]
+
+  - name: Encryption
+    description: Cryptographic operations for data protection at rest
+    features:
+      - name: aes-256-gcm-blocks
+        description: Encrypt each block independently with AES-256-GCM and unique nonces
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: gpg-key-envelope
+        description: Wrap file encryption key (FEK) with PGP public keys for multi-recipient access
+        complexity: high
+        default: true
+        dependencies: [aes-256-gcm-blocks]
+      - name: capauth-key-integration
+        description: Source encryption keys from CapAuth sovereign keyring
+        complexity: medium
+        default: true
+        dependencies: [gpg-key-envelope]
+      - name: filename-encryption
+        description: Encrypt filenames so backend operator cannot see file names
+        complexity: medium
+        default: true
+        dependencies: [aes-256-gcm-blocks]
+      - name: directory-flattening
+        description: Flatten directory hierarchy on backend to hide folder structure
+        complexity: medium
+        default: true
+        dependencies: [filename-encryption]
+      - name: file-size-padding
+        description: Pad blocks to fixed sizes to hide true file sizes from backend
+        complexity: low
+        default: false
+        dependencies: [aes-256-gcm-blocks]
+      - name: key-rotation
+        description: Rotate FEK and re-encrypt all blocks with new key
+        complexity: high
+        default: true
+        dependencies: [gpg-key-envelope]
+      - name: passphrase-fallback
+        description: Argon2id key derivation from passphrase when PGP key unavailable
+        complexity: medium
+        default: false
+        dependencies: [aes-256-gcm-blocks]
+      - name: hardware-token-unlock
+        description: Unlock vaults using YubiKey/NitroKey via PKCS#11
+        complexity: high
+        default: false
+        dependencies: [capauth-key-integration]
+
+  - name: Block Storage Engine
+    description: Content-addressed block management and optimization
+    features:
+      - name: content-addressed-blocks
+        description: Store blocks by SHA-256 hash of plaintext for automatic deduplication
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: block-compression
+        description: Compress blocks with zstd before encryption to reduce storage
+        complexity: low
+        default: true
+        dependencies: [content-addressed-blocks]
+      - name: configurable-block-size
+        description: Tune block size per vault (1MB-16MB) for different workloads
+        complexity: low
+        default: true
+        dependencies: [content-addressed-blocks]
+      - name: block-deduplication
+        description: Within-vault deduplication via content-addressed storage
+        complexity: medium
+        default: true
+        dependencies: [content-addressed-blocks]
+      - name: parallel-block-crypto
+        description: Encrypt/decrypt multiple blocks in parallel using thread pool
+        complexity: medium
+        default: true
+        dependencies: [content-addressed-blocks]
+      - name: block-integrity-check
+        description: Verify GCM auth tags and SHA-256 checksums on read
+        complexity: low
+        default: true
+        dependencies: [content-addressed-blocks]
+      - name: block-garbage-collection
+        description: Reclaim storage from orphaned blocks after file deletion
+        complexity: medium
+        default: true
+        dependencies: [content-addressed-blocks]
+
+  - name: FUSE Filesystem
+    description: Userspace filesystem operations and caching
+    features:
+      - name: fuse3-operations
+        description: Full pyfuse3 Operations implementation (read, write, create, unlink, rename)
+        complexity: high
+        default: true
+        dependencies: []
+      - name: lru-block-cache
+        description: In-memory LRU cache for decrypted blocks with configurable size
+        complexity: medium
+        default: true
+        dependencies: [fuse3-operations]
+      - name: read-ahead-prefetch
+        description: Prefetch next N blocks on sequential read patterns
+        complexity: medium
+        default: true
+        dependencies: [lru-block-cache]
+      - name: write-coalescing
+        description: Buffer small writes and flush when buffer reaches block size
+        complexity: medium
+        default: true
+        dependencies: [fuse3-operations]
+      - name: memory-locking
+        description: mlock plaintext cache pages to prevent swap-to-disk
+        complexity: low
+        default: true
+        dependencies: [lru-block-cache]
+      - name: posix-permissions
+        description: Preserve and enforce POSIX file permissions through FUSE
+        complexity: low
+        default: true
+        dependencies: [fuse3-operations]
+      - name: extended-attributes
+        description: Support xattr for custom metadata (tags, categories)
+        complexity: medium
+        default: false
+        dependencies: [fuse3-operations]
+      - name: inotify-events
+        description: Emit filesystem change events for external watchers
+        complexity: medium
+        default: false
+        dependencies: [fuse3-operations]
+
+  - name: Storage Backends
+    description: Pluggable storage providers for ciphertext persistence
+    features:
+      - name: local-backend
+        description: Local filesystem backend for offline-first vault storage
+        complexity: low
+        default: true
+        dependencies: []
+      - name: webdav-backend
+        description: WebDAV backend for Nextcloud, ownCloud, and compatible servers
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: s3-backend
+        description: AWS S3 and S3-compatible (MinIO, Backblaze B2) backend
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: gdrive-backend
+        description: Google Drive API backend with OAuth2 authentication
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: sftp-backend
+        description: SFTP/SCP backend for any SSH-accessible server
+        complexity: low
+        default: false
+        dependencies: []
+      - name: custom-backend-api
+        description: Plugin API for user-defined storage backends
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: multi-backend-mirror
+        description: Mirror vault blocks to multiple backends simultaneously
+        complexity: high
+        default: false
+        dependencies: []
+
+  - name: Synchronization
+    description: Multi-device and multi-backend vault synchronization
+    features:
+      - name: change-journal
+        description: Append-only log of block operations for incremental sync
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: incremental-sync
+        description: Sync only changed blocks between local and remote backends
+        complexity: high
+        default: true
+        dependencies: [change-journal]
+      - name: conflict-resolution
+        description: Configurable conflict strategy (last-writer-wins, manual, merge)
+        complexity: high
+        default: true
+        dependencies: [incremental-sync]
+      - name: scheduled-sync
+        description: Periodic sync on configurable interval (cron-like)
+        complexity: low
+        default: true
+        dependencies: [incremental-sync]
+      - name: sync-on-change
+        description: Trigger sync immediately when blocks are modified
+        complexity: medium
+        default: false
+        dependencies: [incremental-sync, inotify-events]
+
+  - name: Sharing
+    description: Multi-user vault access and collaboration
+    features:
+      - name: recipient-management
+        description: Add/remove PGP recipients to vault key envelope
+        complexity: medium
+        default: true
+        dependencies: [gpg-key-envelope]
+      - name: read-only-sharing
+        description: Share vault access as read-only for specific recipients
+        complexity: medium
+        default: true
+        dependencies: [recipient-management]
+      - name: unencrypted-team-vaults
+        description: Plaintext team vaults for non-sensitive shared documents
+        complexity: low
+        default: true
+        dependencies: [vault-create]
+      - name: peer-vault-discovery
+        description: Discover shared vaults from peers via SKComm announcements
+        complexity: high
+        default: false
+        dependencies: [recipient-management]
+      - name: expiring-share-links
+        description: Time-limited access tokens for temporary vault sharing
+        complexity: high
+        default: false
+        dependencies: [recipient-management]
+
+  - name: Security
+    description: Security hardening and threat mitigation
+    features:
+      - name: audit-logging
+        description: Log all mount, access, share, and key operations with timestamps
+        complexity: low
+        default: true
+        dependencies: []
+      - name: emergency-lockout
+        description: Wipe FEK envelope from all backends, rendering vault unreadable
+        complexity: medium
+        default: true
+        dependencies: [gpg-key-envelope]
+      - name: tamper-detection
+        description: Detect modified or corrupted blocks via GCM tag verification
+        complexity: low
+        default: true
+        dependencies: [aes-256-gcm-blocks]
+      - name: secure-delete
+        description: Overwrite block data before deletion (where backend supports it)
+        complexity: medium
+        default: false
+        dependencies: [local-backend]
+      - name: vault-integrity-scan
+        description: Full vault integrity check verifying all blocks and metadata index
+        complexity: medium
+        default: true
+        dependencies: [content-addressed-blocks]
+      - name: key-escrow-prevention
+        description: Refuse to export or escrow private keys outside CapAuth keyring
+        complexity: low
+        default: true
+        dependencies: [capauth-key-integration]
+
+  - name: Observability
+    description: Monitoring, diagnostics, and health reporting
+    features:
+      - name: vault-health-check
+        description: Backend connectivity, key validity, and cache state diagnostics
+        complexity: low
+        default: true
+        dependencies: []
+      - name: performance-metrics
+        description: Track read/write throughput, cache hit rate, encrypt/decrypt latency
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: storage-usage-report
+        description: Report total, used, and deduplicated storage per vault per backend
+        complexity: low
+        default: true
+        dependencies: []
+      - name: sync-status-dashboard
+        description: Show sync progress, pending changes, and conflict count
+        complexity: medium
+        default: false
+        dependencies: [incremental-sync]
+      - name: structured-logging
+        description: JSON-formatted logs compatible with ELK, Loki, or Prometheus
+        complexity: low
+        default: false
+        dependencies: []
+
+  - name: CLI & Integration
+    description: Command-line interface and ecosystem integration
+    features:
+      - name: cli-vault-management
+        description: Click CLI for create, mount, unmount, lock, status, share operations
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: systemd-service
+        description: Systemd unit file for vault auto-mount on boot
+        complexity: low
+        default: false
+        dependencies: [vault-auto-mount]
+      - name: skcapstone-integration
+        description: Register vaults with skcapstone agent for coordinated lifecycle
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: skref-python-api
+        description: Programmatic API for vault operations from Python code
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: fstab-mount-entry
+        description: Generate fstab-compatible mount entries for system-level mounting
+        complexity: low
+        default: false
+        dependencies: [vault-mount]
+
+dependencies:
+  runtime:
+    - pyfuse3>=3.2.0
+    - pgpy>=0.6.0
+    - cryptography>=41.0.0
+    - pyyaml>=6.0
+    - click>=8.1
+    - rich>=13.0
+    - zstandard>=0.21
+    - webdavclient3>=3.14
+    - boto3>=1.28
+  optional:
+    - google-api-python-client>=2.0
+    - paramiko>=3.3
+  development:
+    - pytest>=7.4
+    - pytest-asyncio>=0.21
+    - mypy>=1.5
+    - ruff>=0.1

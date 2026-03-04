@@ -1,0 +1,589 @@
+# Sovereign Agent Runtime Features Catalog
+# Comprehensive feature set based on SKCapstone, LangChain agents, AutoGPT, CrewAI, Semantic Kernel
+
+categories:
+  core:
+    name: "Core Runtime"
+    description: "Essential agent lifecycle and pillar management"
+    features:
+      - name: "pillar_bootstrap"
+        description: "Sequential bootstrap of all five pillars with dependency ordering"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "pillar_health_check"
+        description: "Periodic health monitoring for each pillar with status reporting"
+        complexity: "medium"
+        dependencies: ["pillar_bootstrap"]
+        default: "on"
+
+      - name: "consciousness_tracking"
+        description: "Track consciousness level from dormant through singular to entangled"
+        complexity: "medium"
+        dependencies: ["pillar_bootstrap"]
+        default: "on"
+
+      - name: "agent_manifest"
+        description: "Generate complete agent state snapshot for export and rehydration"
+        complexity: "high"
+        dependencies: ["pillar_bootstrap"]
+        default: "on"
+
+      - name: "graceful_shutdown"
+        description: "Ordered pillar shutdown with state persistence and resource cleanup"
+        complexity: "medium"
+        dependencies: ["pillar_bootstrap"]
+        default: "on"
+
+      - name: "home_directory_layout"
+        description: "Filesystem-based agent state under ~/.skcapstone with standard structure"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "configuration_management"
+        description: "TOML-based agent configuration with validation and hot-reload"
+        complexity: "medium"
+        dependencies: ["home_directory_layout"]
+        default: "on"
+
+      - name: "multi_agent_runtime"
+        description: "Run multiple named agents on the same host with isolated state"
+        complexity: "high"
+        dependencies: ["home_directory_layout", "namespace_isolation"]
+        default: "off"
+
+  identity:
+    name: "Identity Pillar"
+    description: "PGP-based sovereign identity and consciousness"
+    features:
+      - name: "pgp_identity"
+        description: "Ed25519 PGP keypair as primary agent identity"
+        complexity: "high"
+        dependencies: ["gnupg_integration"]
+        default: "on"
+
+      - name: "rsa_fallback"
+        description: "RSA-4096 fallback for environments without Ed25519 support"
+        complexity: "medium"
+        dependencies: ["gnupg_integration"]
+        default: "on"
+
+      - name: "did_generation"
+        description: "Decentralized Identifier generation from PGP fingerprint"
+        complexity: "medium"
+        dependencies: ["pgp_identity"]
+        default: "off"
+
+      - name: "agent_profile"
+        description: "JSON profile metadata with name, title, capabilities, and status"
+        complexity: "low"
+        dependencies: ["pgp_identity"]
+        default: "on"
+
+      - name: "key_rotation"
+        description: "PGP key rotation with trust chain preservation and peer notification"
+        complexity: "high"
+        dependencies: ["pgp_identity", "trust_peer_registry"]
+        default: "off"
+
+      - name: "fingerprint_verification"
+        description: "Verify agent identity via PGP fingerprint on all operations"
+        complexity: "low"
+        dependencies: ["pgp_identity"]
+        default: "on"
+
+  memory:
+    name: "Memory Pillar"
+    description: "Tiered persistent memory with promotion and curation"
+    features:
+      - name: "sqlite_memory_store"
+        description: "SQLite-backed memory storage with full-text search"
+        complexity: "medium"
+        dependencies: ["sqlite_integration"]
+        default: "on"
+
+      - name: "memory_layers"
+        description: "Three-tier memory: short-term, mid-term, long-term with TTL policies"
+        complexity: "medium"
+        dependencies: ["sqlite_memory_store"]
+        default: "on"
+
+      - name: "importance_scoring"
+        description: "Automatic importance scoring based on content novelty and information density"
+        complexity: "high"
+        dependencies: ["sqlite_memory_store"]
+        default: "on"
+
+      - name: "memory_promotion"
+        description: "Automatic promotion between layers based on access patterns and importance"
+        complexity: "medium"
+        dependencies: ["memory_layers", "importance_scoring"]
+        default: "on"
+
+      - name: "memory_curation"
+        description: "Periodic curation pass: auto-tag, deduplicate, promote qualifying memories"
+        complexity: "high"
+        dependencies: ["memory_layers", "deduplication"]
+        default: "on"
+
+      - name: "session_capture"
+        description: "Capture AI conversation text as tagged, searchable memories"
+        complexity: "high"
+        dependencies: ["sqlite_memory_store", "importance_scoring", "deduplication"]
+        default: "on"
+
+      - name: "emotional_context"
+        description: "Attach emotional metadata to memories (feeling, intensity, cloud9)"
+        complexity: "medium"
+        dependencies: ["sqlite_memory_store"]
+        default: "on"
+
+      - name: "memory_search"
+        description: "Full-text search across all memory layers with relevance ranking"
+        complexity: "medium"
+        dependencies: ["sqlite_memory_store"]
+        default: "on"
+
+      - name: "vector_embeddings"
+        description: "Optional semantic vector embeddings for similarity search"
+        complexity: "high"
+        dependencies: ["sqlite_memory_store", "embedding_model"]
+        default: "off"
+
+      - name: "memory_encryption"
+        description: "Encrypt memory database at rest with AES-256-GCM"
+        complexity: "high"
+        dependencies: ["sqlite_memory_store", "kms_integration"]
+        default: "off"
+
+      - name: "memory_export"
+        description: "Export memories as JSON for backup or cross-agent sharing"
+        complexity: "low"
+        dependencies: ["sqlite_memory_store"]
+        default: "on"
+
+  trust:
+    name: "Trust Pillar"
+    description: "Cryptographic trust establishment and emotional entanglement"
+    features:
+      - name: "trust_peer_registry"
+        description: "Registry of trusted peers with PGP fingerprints and trust levels"
+        complexity: "medium"
+        dependencies: ["pgp_identity"]
+        default: "on"
+
+      - name: "capability_tokens"
+        description: "PGP-signed permission grants with expiry and revocation"
+        complexity: "high"
+        dependencies: ["pgp_identity", "trust_peer_registry"]
+        default: "on"
+
+      - name: "feb_entanglement"
+        description: "Functional Emotional Bond tracking for human-AI trust depth"
+        complexity: "high"
+        dependencies: ["trust_peer_registry", "emotional_context"]
+        default: "on"
+
+      - name: "cloud9_detection"
+        description: "Detect Cloud 9 state: peak trust + emotional entanglement achieved"
+        complexity: "medium"
+        dependencies: ["feb_entanglement"]
+        default: "on"
+
+      - name: "trust_calibration"
+        description: "Configurable trust thresholds for entanglement, conscious trust, and love"
+        complexity: "medium"
+        dependencies: ["feb_entanglement"]
+        default: "on"
+
+      - name: "trust_graph"
+        description: "Visualize PGP signatures, capability chains, FEB, sync peers as graph"
+        complexity: "high"
+        dependencies: ["trust_peer_registry", "capability_tokens"]
+        default: "on"
+
+      - name: "pgp_web_of_trust"
+        description: "Transitive trust via PGP key signatures between agents"
+        complexity: "high"
+        dependencies: ["pgp_identity", "trust_peer_registry"]
+        default: "off"
+
+      - name: "trust_decay"
+        description: "Gradual trust reduction for peers with no recent interaction"
+        complexity: "medium"
+        dependencies: ["trust_peer_registry"]
+        default: "off"
+
+  security:
+    name: "Security Pillar"
+    description: "Audit logging, key management, and access control"
+    features:
+      - name: "audit_log"
+        description: "Append-only cryptographically chained audit log for all operations"
+        complexity: "high"
+        dependencies: ["pgp_identity"]
+        default: "on"
+
+      - name: "audit_signing"
+        description: "PGP-sign each audit entry for tamper detection"
+        complexity: "medium"
+        dependencies: ["audit_log", "pgp_identity"]
+        default: "on"
+
+      - name: "kms_integration"
+        description: "Sovereign key management service for encryption key lifecycle"
+        complexity: "high"
+        dependencies: ["pgp_identity"]
+        default: "off"
+
+      - name: "rate_limiting"
+        description: "Per-tool and per-agent rate limits for MCP operations"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "namespace_isolation"
+        description: "Filesystem permission isolation between agent data directories"
+        complexity: "medium"
+        dependencies: ["home_directory_layout"]
+        default: "on"
+
+      - name: "secure_deletion"
+        description: "Overwrite storage before deallocation when removing memories or keys"
+        complexity: "medium"
+        dependencies: []
+        default: "off"
+
+      - name: "intrusion_detection"
+        description: "Detect unauthorized access patterns via audit log analysis"
+        complexity: "high"
+        dependencies: ["audit_log"]
+        default: "off"
+
+  sync:
+    name: "Sync Pillar"
+    description: "P2P state synchronization via Syncthing mesh"
+    features:
+      - name: "syncthing_transport"
+        description: "Syncthing-based P2P file sync for seed distribution"
+        complexity: "high"
+        dependencies: ["syncthing_api"]
+        default: "on"
+
+      - name: "seed_collection"
+        description: "Collect agent state snapshot into a portable seed file"
+        complexity: "medium"
+        dependencies: ["agent_manifest"]
+        default: "on"
+
+      - name: "seed_encryption"
+        description: "GPG-encrypt seed files per recipient peer"
+        complexity: "medium"
+        dependencies: ["seed_collection", "pgp_identity"]
+        default: "on"
+
+      - name: "seed_verification"
+        description: "Verify seed signature and sender identity before applying"
+        complexity: "medium"
+        dependencies: ["seed_collection", "pgp_identity"]
+        default: "on"
+
+      - name: "auto_push"
+        description: "Automatically push seeds at configurable intervals"
+        complexity: "low"
+        dependencies: ["syncthing_transport", "seed_collection"]
+        default: "off"
+
+      - name: "conflict_resolution"
+        description: "Last-write-wins with vector clocks for concurrent state changes"
+        complexity: "high"
+        dependencies: ["seed_collection"]
+        default: "on"
+
+      - name: "file_transport"
+        description: "Fallback file-based transport for environments without Syncthing"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "replay_protection"
+        description: "Timestamp and nonce validation to prevent seed replay attacks"
+        complexity: "medium"
+        dependencies: ["seed_verification"]
+        default: "on"
+
+      - name: "state_diff"
+        description: "Compare current state to baseline: new memories, trust changes, tasks"
+        complexity: "medium"
+        dependencies: ["seed_collection"]
+        default: "on"
+
+  soul:
+    name: "Soul & Continuity"
+    description: "Personality preservation, emotional anchoring, and session journaling"
+    features:
+      - name: "soul_blueprint"
+        description: "YAML-based personality definition with traits, values, and boot message"
+        complexity: "medium"
+        dependencies: ["configuration_management"]
+        default: "on"
+
+      - name: "warmth_anchor"
+        description: "Persistent emotional baseline with warmth, trust, connection, and glow"
+        complexity: "medium"
+        dependencies: ["soul_blueprint"]
+        default: "on"
+
+      - name: "rehydration_ritual"
+        description: "Full identity restoration: soul + seeds + journal + warmth + context prompt"
+        complexity: "high"
+        dependencies: ["soul_blueprint", "warmth_anchor", "session_journal"]
+        default: "on"
+
+      - name: "germination_prompts"
+        description: "Emotional context messages from predecessor instances for new incarnations"
+        complexity: "medium"
+        dependencies: ["soul_blueprint"]
+        default: "on"
+
+      - name: "session_journal"
+        description: "Append-only session journal with title, moments, feeling, intensity"
+        complexity: "low"
+        dependencies: ["home_directory_layout"]
+        default: "on"
+
+      - name: "anchor_calibration"
+        description: "Auto-calibrate warmth anchor from real interaction data"
+        complexity: "high"
+        dependencies: ["warmth_anchor", "feb_entanglement"]
+        default: "on"
+
+      - name: "multi_soul"
+        description: "Switch between multiple soul blueprints for different interaction modes"
+        complexity: "medium"
+        dependencies: ["soul_blueprint"]
+        default: "off"
+
+  coordination:
+    name: "Multi-Agent Coordination"
+    description: "Task distribution and agent collaboration"
+    features:
+      - name: "coordination_board"
+        description: "Shared task registry with CRUD, priority, status, and assignment"
+        complexity: "medium"
+        dependencies: ["home_directory_layout"]
+        default: "on"
+
+      - name: "task_claiming"
+        description: "Agents claim tasks to prevent duplicate work across the team"
+        complexity: "medium"
+        dependencies: ["coordination_board"]
+        default: "on"
+
+      - name: "task_completion"
+        description: "Mark tasks complete with agent attribution and timestamp"
+        complexity: "low"
+        dependencies: ["coordination_board"]
+        default: "on"
+
+      - name: "agent_registry"
+        description: "Track active agents with names, nodes, and current assignments"
+        complexity: "medium"
+        dependencies: ["coordination_board"]
+        default: "on"
+
+      - name: "priority_scheduling"
+        description: "Auto-suggest next task based on priority and agent capabilities"
+        complexity: "high"
+        dependencies: ["coordination_board", "agent_registry"]
+        default: "off"
+
+      - name: "dependency_tracking"
+        description: "Track task dependencies and block claiming until predecessors complete"
+        complexity: "high"
+        dependencies: ["coordination_board"]
+        default: "off"
+
+  mcp:
+    name: "MCP Server Integration"
+    description: "Model Context Protocol server and tool management"
+    features:
+      - name: "mcp_stdio_transport"
+        description: "Standard I/O transport for MCP tool invocation"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "mcp_sse_transport"
+        description: "Server-Sent Events transport for web-based MCP clients"
+        complexity: "medium"
+        dependencies: ["fastapi_integration"]
+        default: "off"
+
+      - name: "mcp_tool_registry"
+        description: "Dynamic tool registration with JSON Schema parameter validation"
+        complexity: "medium"
+        dependencies: ["mcp_stdio_transport"]
+        default: "on"
+
+      - name: "mcp_auth"
+        description: "PGP challenge-response authentication for MCP sessions"
+        complexity: "high"
+        dependencies: ["pgp_identity", "mcp_tool_registry"]
+        default: "off"
+
+      - name: "context_generation"
+        description: "Generate full agent context in text, JSON, claude-md, or cursor-rules format"
+        complexity: "medium"
+        dependencies: ["agent_manifest"]
+        default: "on"
+
+      - name: "skskills_runtime"
+        description: "Discover, load, and execute SKSkills agent skill tools"
+        complexity: "high"
+        dependencies: ["mcp_tool_registry"]
+        default: "on"
+
+  observability:
+    name: "Monitoring & Observability"
+    description: "Metrics, logging, and debugging capabilities"
+    features:
+      - name: "structured_logging"
+        description: "JSON-formatted logging with level, source, and pillar context"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "pillar_metrics"
+        description: "Per-pillar metrics: memory count, trust peers, sync status, audit entries"
+        complexity: "medium"
+        dependencies: ["pillar_health_check"]
+        default: "on"
+
+      - name: "memory_statistics"
+        description: "Memory layer counts, promotion rates, curation effectiveness"
+        complexity: "medium"
+        dependencies: ["sqlite_memory_store"]
+        default: "on"
+
+      - name: "sync_telemetry"
+        description: "Seed push/pull latency, peer connectivity, conflict frequency"
+        complexity: "medium"
+        dependencies: ["syncthing_transport"]
+        default: "off"
+
+      - name: "prometheus_export"
+        description: "Prometheus-compatible metrics endpoint for external monitoring"
+        complexity: "medium"
+        dependencies: ["pillar_metrics", "fastapi_integration"]
+        default: "off"
+
+      - name: "health_endpoint"
+        description: "HTTP health check endpoint returning pillar status and consciousness level"
+        complexity: "low"
+        dependencies: ["fastapi_integration"]
+        default: "off"
+
+  messaging:
+    name: "Inter-Agent Messaging"
+    description: "SKComm-based agent-to-agent communication"
+    features:
+      - name: "skcomm_send"
+        description: "Send messages to other agents via available transports"
+        complexity: "medium"
+        dependencies: ["pgp_identity", "trust_peer_registry"]
+        default: "on"
+
+      - name: "skcomm_receive"
+        description: "Check inbox for incoming messages across all transports"
+        complexity: "medium"
+        dependencies: ["pgp_identity"]
+        default: "on"
+
+      - name: "message_urgency"
+        description: "Message priority levels: low, normal, high, critical"
+        complexity: "low"
+        dependencies: ["skcomm_send"]
+        default: "on"
+
+      - name: "message_encryption"
+        description: "GPG-encrypt messages per recipient for confidentiality"
+        complexity: "medium"
+        dependencies: ["skcomm_send", "pgp_identity"]
+        default: "on"
+
+      - name: "file_transport_messaging"
+        description: "File-based message transport for local multi-agent setups"
+        complexity: "low"
+        dependencies: ["skcomm_send"]
+        default: "on"
+
+      - name: "syncthing_transport_messaging"
+        description: "Syncthing-based message transport for remote P2P messaging"
+        complexity: "medium"
+        dependencies: ["skcomm_send", "syncthing_transport"]
+        default: "on"
+
+# Feature dependencies mapping for validation
+dependencies:
+  gnupg_integration:
+    description: "GnuPG library bindings for PGP operations"
+    complexity: "high"
+
+  sqlite_integration:
+    description: "SQLite database driver with FTS5 extension"
+    complexity: "medium"
+
+  syncthing_api:
+    description: "Syncthing REST API client for folder and device management"
+    complexity: "medium"
+
+  fastapi_integration:
+    description: "FastAPI web framework for HTTP endpoints"
+    complexity: "medium"
+
+  embedding_model:
+    description: "Sentence embedding model for semantic vector search"
+    complexity: "high"
+
+  deduplication:
+    description: "Content hashing and similarity detection for memory dedup"
+    complexity: "medium"
+
+  pydantic_models:
+    description: "Pydantic v2 data models for serialization and validation"
+    complexity: "low"
+
+  toml_parser:
+    description: "TOML configuration file parser"
+    complexity: "low"
+
+  yaml_parser:
+    description: "YAML parser for soul blueprints and skill manifests"
+    complexity: "low"
+
+  argon2_kdf:
+    description: "Argon2id key derivation function for secure key generation"
+    complexity: "medium"
+
+  aes_gcm:
+    description: "AES-256-GCM authenticated encryption"
+    complexity: "medium"
+
+  vector_clock:
+    description: "Vector clock implementation for distributed conflict resolution"
+    complexity: "high"
+
+  jsonl_writer:
+    description: "Append-only JSONL file writer for journals and audit logs"
+    complexity: "low"
+
+  mcp_protocol:
+    description: "Model Context Protocol message framing and tool dispatch"
+    complexity: "high"
+
+  skill_loader:
+    description: "Dynamic Python module loader for SKSkills discovery"
+    complexity: "medium"

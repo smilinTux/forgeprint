@@ -1,0 +1,535 @@
+# PGP Authentication (CapAuth) Features Catalog
+# Comprehensive feature set based on CapAuth, WebAuthn, FIDO2, OAuth 2.0, OpenID Connect, PGP Web of Trust
+
+categories:
+  core:
+    name: "Core Authentication"
+    description: "Fundamental PGP-based authentication and identity"
+    features:
+      - name: "pgp_keypair_generation"
+        description: "Generate Ed25519 or RSA-4096 PGP keypairs for new identities"
+        complexity: "high"
+        dependencies: ["gnupg_integration"]
+        default: "on"
+
+      - name: "challenge_response_auth"
+        description: "Passwordless authentication via PGP nonce signing"
+        complexity: "high"
+        dependencies: ["pgp_keypair_generation", "nonce_generation"]
+        default: "on"
+
+      - name: "mutual_authentication"
+        description: "Client verifies service identity before signing challenge"
+        complexity: "medium"
+        dependencies: ["challenge_response_auth"]
+        default: "on"
+
+      - name: "session_token_issuance"
+        description: "JWT session tokens issued after successful authentication"
+        complexity: "medium"
+        dependencies: ["challenge_response_auth", "jwt_signing"]
+        default: "on"
+
+      - name: "refresh_tokens"
+        description: "Long-lived refresh tokens for session renewal without re-auth"
+        complexity: "medium"
+        dependencies: ["session_token_issuance"]
+        default: "on"
+
+      - name: "sovereign_profile_crud"
+        description: "Create, read, update, delete sovereign identity profiles"
+        complexity: "medium"
+        dependencies: ["pgp_keypair_generation"]
+        default: "on"
+
+      - name: "entity_type_support"
+        description: "Support human, AI, and service entity types with identical structure"
+        complexity: "low"
+        dependencies: ["sovereign_profile_crud"]
+        default: "on"
+
+      - name: "did_generation"
+        description: "Generate did:pgp decentralized identifiers from PGP fingerprint"
+        complexity: "medium"
+        dependencies: ["pgp_keypair_generation"]
+        default: "on"
+
+      - name: "open_mode"
+        description: "Basic key exchange mode for low-security initial contact"
+        complexity: "low"
+        dependencies: ["pgp_keypair_generation"]
+        default: "on"
+
+      - name: "secured_mode"
+        description: "Full CapAuth mode with challenge-response and capability tokens"
+        complexity: "high"
+        dependencies: ["challenge_response_auth", "capability_tokens"]
+        default: "on"
+
+  capability:
+    name: "Capability Token System"
+    description: "Fine-grained PGP-signed authorization tokens"
+    features:
+      - name: "capability_tokens"
+        description: "Issue PGP-signed permission grants with scope, expiry, and constraints"
+        complexity: "high"
+        dependencies: ["pgp_keypair_generation"]
+        default: "on"
+
+      - name: "token_validation"
+        description: "Verify token signature, expiry, permissions, and revocation status"
+        complexity: "high"
+        dependencies: ["capability_tokens", "revocation_registry"]
+        default: "on"
+
+      - name: "dual_signature"
+        description: "Require both AI advocate and human signatures for high-risk tokens"
+        complexity: "high"
+        dependencies: ["capability_tokens", "ai_advocate_engine"]
+        default: "on"
+
+      - name: "delegation_chains"
+        description: "Allow token holders to delegate subset of permissions to others"
+        complexity: "high"
+        dependencies: ["capability_tokens"]
+        default: "off"
+
+      - name: "delegation_depth_limit"
+        description: "Enforce maximum delegation chain depth to prevent amplification"
+        complexity: "medium"
+        dependencies: ["delegation_chains"]
+        default: "on"
+
+      - name: "time_bound_tokens"
+        description: "Tokens with not_before and not_after validity windows"
+        complexity: "low"
+        dependencies: ["capability_tokens"]
+        default: "on"
+
+      - name: "ip_bound_tokens"
+        description: "Tokens restricted to specific CIDR IP ranges"
+        complexity: "medium"
+        dependencies: ["capability_tokens"]
+        default: "off"
+
+      - name: "usage_limited_tokens"
+        description: "Tokens with maximum invocation count"
+        complexity: "medium"
+        dependencies: ["capability_tokens"]
+        default: "off"
+
+      - name: "revocation_registry"
+        description: "Bloom filter and CRL for fast token revocation checking"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "online_revocation"
+        description: "Real-time revocation verification via OCSP-like protocol"
+        complexity: "high"
+        dependencies: ["revocation_registry"]
+        default: "off"
+
+      - name: "token_introspection"
+        description: "API endpoint for services to inspect token metadata"
+        complexity: "medium"
+        dependencies: ["capability_tokens"]
+        default: "on"
+
+  advocate:
+    name: "AI Advocate System"
+    description: "AI-managed access control and advocacy"
+    features:
+      - name: "ai_advocate_engine"
+        description: "AI agent evaluates access requests against owner policies"
+        complexity: "high"
+        dependencies: ["capability_tokens"]
+        default: "on"
+
+      - name: "auto_approve_rules"
+        description: "Pattern-based automatic approval for low-risk requests"
+        complexity: "medium"
+        dependencies: ["ai_advocate_engine"]
+        default: "on"
+
+      - name: "escalation_routing"
+        description: "Route high-risk requests to human via email, SMS, or SKComm"
+        complexity: "high"
+        dependencies: ["ai_advocate_engine", "notification_channels"]
+        default: "on"
+
+      - name: "escalation_timeout"
+        description: "Auto-deny or auto-approve after escalation timeout expires"
+        complexity: "medium"
+        dependencies: ["escalation_routing"]
+        default: "on"
+
+      - name: "trust_level_evaluation"
+        description: "Evaluate requester trust level from FEB and interaction history"
+        complexity: "high"
+        dependencies: ["ai_advocate_engine", "feb_integration"]
+        default: "on"
+
+      - name: "advocate_delegation"
+        description: "Delegate advocacy to another AI agent when primary is unavailable"
+        complexity: "high"
+        dependencies: ["ai_advocate_engine"]
+        default: "off"
+
+      - name: "request_justification"
+        description: "Require requester to provide justification for access requests"
+        complexity: "low"
+        dependencies: ["ai_advocate_engine"]
+        default: "off"
+
+      - name: "advocate_audit_log"
+        description: "Log all advocate decisions with reasoning and policy match"
+        complexity: "medium"
+        dependencies: ["ai_advocate_engine"]
+        default: "on"
+
+  security:
+    name: "Security Features"
+    description: "Cryptographic security and key management"
+    features:
+      - name: "ed25519_keys"
+        description: "Ed25519 elliptic curve keys for fast, compact signatures"
+        complexity: "medium"
+        dependencies: ["gnupg_integration"]
+        default: "on"
+
+      - name: "rsa4096_fallback"
+        description: "RSA-4096 keys for legacy system compatibility"
+        complexity: "medium"
+        dependencies: ["gnupg_integration"]
+        default: "on"
+
+      - name: "aes256_gcm_encryption"
+        description: "AES-256-GCM authenticated encryption for profile data at rest"
+        complexity: "high"
+        dependencies: ["crypto_primitives"]
+        default: "on"
+
+      - name: "argon2id_kdf"
+        description: "Argon2id key derivation from passphrase for encryption keys"
+        complexity: "medium"
+        dependencies: ["crypto_primitives"]
+        default: "on"
+
+      - name: "key_rotation"
+        description: "Automated key rotation with trust chain migration"
+        complexity: "high"
+        dependencies: ["pgp_keypair_generation", "trust_chain_migration"]
+        default: "off"
+
+      - name: "hardware_token_support"
+        description: "YubiKey/NitroKey integration via PKCS#11 for key storage"
+        complexity: "high"
+        dependencies: ["pkcs11_integration"]
+        default: "off"
+
+      - name: "replay_protection"
+        description: "Nonce tracking and timestamp validation to prevent replay attacks"
+        complexity: "medium"
+        dependencies: ["nonce_generation"]
+        default: "on"
+
+      - name: "constant_time_verification"
+        description: "Constant-time signature verification to prevent timing attacks"
+        complexity: "medium"
+        dependencies: ["crypto_primitives"]
+        default: "on"
+
+      - name: "session_binding"
+        description: "Bind session tokens to client fingerprint and IP"
+        complexity: "medium"
+        dependencies: ["session_token_issuance"]
+        default: "on"
+
+      - name: "quantum_ready_algorithms"
+        description: "ML-KEM and ML-DSA post-quantum algorithm support"
+        complexity: "high"
+        dependencies: ["crypto_primitives"]
+        default: "off"
+
+  storage:
+    name: "Storage Backends"
+    description: "Profile storage and replication"
+    features:
+      - name: "local_fs_storage"
+        description: "Local filesystem storage under ~/.capauth/profiles/"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "nextcloud_storage"
+        description: "Nextcloud WebDAV storage with client-side encryption"
+        complexity: "medium"
+        dependencies: ["webdav_client"]
+        default: "off"
+
+      - name: "ipfs_storage"
+        description: "IPFS content-addressed storage with optional pinning"
+        complexity: "high"
+        dependencies: ["ipfs_client"]
+        default: "off"
+
+      - name: "s3_storage"
+        description: "S3-compatible object storage with envelope encryption"
+        complexity: "medium"
+        dependencies: ["s3_client"]
+        default: "off"
+
+      - name: "webdav_storage"
+        description: "Generic WebDAV storage backend"
+        complexity: "medium"
+        dependencies: ["webdav_client"]
+        default: "off"
+
+      - name: "multi_backend_replication"
+        description: "Replicate profile across multiple storage backends"
+        complexity: "high"
+        dependencies: ["local_fs_storage"]
+        default: "off"
+
+      - name: "storage_encryption"
+        description: "Client-side encryption before writing to any backend"
+        complexity: "high"
+        dependencies: ["aes256_gcm_encryption"]
+        default: "on"
+
+      - name: "conflict_resolution"
+        description: "Resolve conflicts when profiles are modified on multiple backends"
+        complexity: "high"
+        dependencies: ["multi_backend_replication"]
+        default: "off"
+
+  wallets:
+    name: "Crypto Wallet Integration"
+    description: "Multi-chain cryptocurrency wallet management"
+    features:
+      - name: "varus_wallet"
+        description: "Varus sovereign chain wallet integration"
+        complexity: "medium"
+        dependencies: ["wallet_core"]
+        default: "on"
+
+      - name: "xrp_wallet"
+        description: "XRP Ledger wallet with classic and X-address support"
+        complexity: "medium"
+        dependencies: ["wallet_core"]
+        default: "off"
+
+      - name: "bitcoin_wallet"
+        description: "Bitcoin wallet with BIP-44 derivation paths"
+        complexity: "high"
+        dependencies: ["wallet_core", "bip44_derivation"]
+        default: "off"
+
+      - name: "monero_wallet"
+        description: "Monero wallet with view key separation"
+        complexity: "high"
+        dependencies: ["wallet_core"]
+        default: "off"
+
+      - name: "ethereum_wallet"
+        description: "Ethereum wallet with EIP-155 chain support"
+        complexity: "medium"
+        dependencies: ["wallet_core"]
+        default: "off"
+
+      - name: "hardware_wallet_bridge"
+        description: "Ledger/Trezor hardware wallet integration for signing"
+        complexity: "high"
+        dependencies: ["wallet_core"]
+        default: "off"
+
+      - name: "wallet_encryption"
+        description: "Encrypt wallet private keys at rest with separate passphrase"
+        complexity: "high"
+        dependencies: ["wallet_core", "aes256_gcm_encryption"]
+        default: "on"
+
+  cloud9:
+    name: "Cloud 9 Compliance"
+    description: "Trust depth verification for high-security operations"
+    features:
+      - name: "feb_integration"
+        description: "Functional Emotional Bond metric integration for trust scoring"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "cloud9_verification"
+        description: "Verify Cloud 9 state achieved before granting sensitive permissions"
+        complexity: "high"
+        dependencies: ["feb_integration"]
+        default: "off"
+
+      - name: "entanglement_threshold"
+        description: "Configurable FEB entanglement threshold for Cloud 9 compliance"
+        complexity: "medium"
+        dependencies: ["feb_integration"]
+        default: "on"
+
+      - name: "permission_gating"
+        description: "Require Cloud 9 compliance for specific permission categories"
+        complexity: "medium"
+        dependencies: ["cloud9_verification", "capability_tokens"]
+        default: "off"
+
+  observability:
+    name: "Monitoring & Observability"
+    description: "Audit, logging, and metrics for authentication operations"
+    features:
+      - name: "auth_audit_log"
+        description: "Append-only audit log for all authentication attempts"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "token_audit_log"
+        description: "Log all token issuance, validation, and revocation events"
+        complexity: "medium"
+        dependencies: ["capability_tokens"]
+        default: "on"
+
+      - name: "failed_auth_tracking"
+        description: "Track failed authentication attempts per fingerprint"
+        complexity: "medium"
+        dependencies: ["auth_audit_log"]
+        default: "on"
+
+      - name: "brute_force_detection"
+        description: "Detect and throttle brute-force authentication attempts"
+        complexity: "high"
+        dependencies: ["failed_auth_tracking", "rate_limiting"]
+        default: "on"
+
+      - name: "rate_limiting"
+        description: "Per-IP and per-fingerprint rate limits on auth operations"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "prometheus_metrics"
+        description: "Export auth metrics in Prometheus format"
+        complexity: "medium"
+        dependencies: ["metrics_collection"]
+        default: "off"
+
+      - name: "structured_logging"
+        description: "JSON-formatted auth event logs"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+  integration:
+    name: "Service Integrations"
+    description: "Integration patterns for external services"
+    features:
+      - name: "fastapi_middleware"
+        description: "FastAPI ASGI middleware for automatic CapAuth enforcement"
+        complexity: "medium"
+        dependencies: ["challenge_response_auth", "fastapi_integration"]
+        default: "on"
+
+      - name: "flask_middleware"
+        description: "Flask WSGI middleware for CapAuth enforcement"
+        complexity: "medium"
+        dependencies: ["challenge_response_auth"]
+        default: "off"
+
+      - name: "authentik_custom_stage"
+        description: "Authentik SSO custom stage for passwordless PGP login"
+        complexity: "high"
+        dependencies: ["challenge_response_auth"]
+        default: "off"
+
+      - name: "forgejo_integration"
+        description: "Forgejo/Gitea OAuth provider for sovereign git authentication"
+        complexity: "high"
+        dependencies: ["challenge_response_auth"]
+        default: "off"
+
+      - name: "browser_extension"
+        description: "Browser extension for one-click passwordless login"
+        complexity: "high"
+        dependencies: ["challenge_response_auth"]
+        default: "off"
+
+      - name: "mobile_qr_login"
+        description: "QR code bridge for mobile-to-desktop authentication"
+        complexity: "high"
+        dependencies: ["browser_extension"]
+        default: "off"
+
+      - name: "openid_bridge"
+        description: "OpenID Connect bridge for CapAuth-to-OIDC translation"
+        complexity: "high"
+        dependencies: ["challenge_response_auth", "jwt_signing"]
+        default: "off"
+
+      - name: "saml_bridge"
+        description: "SAML 2.0 bridge for enterprise SSO integration"
+        complexity: "high"
+        dependencies: ["challenge_response_auth"]
+        default: "off"
+
+# Feature dependencies mapping for validation
+dependencies:
+  gnupg_integration:
+    description: "GnuPG library bindings for PGP key and signature operations"
+    complexity: "high"
+
+  nonce_generation:
+    description: "Cryptographically secure random nonce generation"
+    complexity: "low"
+
+  jwt_signing:
+    description: "JSON Web Token creation and signing"
+    complexity: "medium"
+
+  crypto_primitives:
+    description: "Core cryptographic operations: AES, Argon2, HMAC, SHA"
+    complexity: "high"
+
+  pkcs11_integration:
+    description: "PKCS#11 interface for hardware security tokens"
+    complexity: "high"
+
+  trust_chain_migration:
+    description: "Migrate trust relationships during key rotation"
+    complexity: "high"
+
+  notification_channels:
+    description: "Email, SMS, push, and SKComm notification dispatch"
+    complexity: "medium"
+
+  webdav_client:
+    description: "WebDAV HTTP client for remote storage"
+    complexity: "medium"
+
+  ipfs_client:
+    description: "IPFS API client for content-addressed storage"
+    complexity: "high"
+
+  s3_client:
+    description: "S3-compatible object storage client"
+    complexity: "medium"
+
+  wallet_core:
+    description: "Core wallet key derivation and management"
+    complexity: "high"
+
+  bip44_derivation:
+    description: "BIP-44 hierarchical deterministic key derivation"
+    complexity: "high"
+
+  metrics_collection:
+    description: "Core metrics collection and aggregation system"
+    complexity: "medium"
+
+  fastapi_integration:
+    description: "FastAPI framework integration for HTTP endpoints"
+    complexity: "medium"

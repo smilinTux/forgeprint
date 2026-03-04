@@ -1,0 +1,532 @@
+# AI-Powered Form Filling (SKPDF) Features Catalog
+# Based on BLUEPRINT.md: intelligent PDF extraction, form filling, and GTD filing
+
+name: AI-Powered Form Filling (SKPDF)
+version: "1.0.0"
+description: >
+  Intelligent PDF form field extraction, auto-fill from CapAuth profiles,
+  conversational question flow, sensitive field gating, and GTD document filing.
+
+groups:
+  - name: Core Form Session
+    description: Session lifecycle from PDF intake through filling to filing
+    features:
+      - name: form-session
+        description: Stateful session tracking fields, mappings, approvals, and answers
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: session-persistence
+        description: Save and resume sessions across process restarts
+        complexity: medium
+        default: true
+        dependencies: [form-session]
+      - name: session-history
+        description: Searchable log of completed sessions with metadata
+        complexity: low
+        default: true
+        dependencies: [form-session]
+      - name: batch-processing
+        description: Process multiple PDFs in a single batch with shared profile
+        complexity: medium
+        default: false
+        dependencies: [form-session]
+      - name: session-undo
+        description: Undo individual field fills or roll back entire session
+        complexity: medium
+        default: true
+        dependencies: [form-session]
+
+  - name: PDF Extraction
+    description: Form field detection and extraction from PDF documents
+    features:
+      - name: acroform-extraction
+        description: Extract interactive AcroForm fields with names, types, and options
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: xfa-extraction
+        description: Extract fields from XFA (XML Forms Architecture) documents
+        complexity: high
+        default: true
+        dependencies: []
+      - name: ocr-extraction
+        description: Extract fields from scanned PDFs using Tesseract OCR with layout analysis
+        complexity: high
+        default: true
+        dependencies: []
+      - name: ocr-preprocessing
+        description: Deskew, denoise, binarize, and DPI-normalize scanned pages before OCR
+        complexity: medium
+        default: true
+        dependencies: [ocr-extraction]
+      - name: multi-page-support
+        description: Handle multi-page forms with cross-page field grouping
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: mixed-mode-extraction
+        description: Handle PDFs with both interactive fields and scanned regions
+        complexity: high
+        default: true
+        dependencies: [acroform-extraction, ocr-extraction]
+      - name: field-type-detection
+        description: Detect field types (text, checkbox, radio, dropdown, date, signature)
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: label-extraction
+        description: Extract human-readable labels associated with form fields
+        complexity: medium
+        default: true
+        dependencies: [field-type-detection]
+      - name: required-field-detection
+        description: Identify required fields from PDF metadata or visual indicators
+        complexity: medium
+        default: true
+        dependencies: [field-type-detection]
+
+  - name: Field Mapping
+    description: Map extracted fields to CapAuth profile data paths
+    features:
+      - name: template-matching
+        description: Fingerprint-based instant recognition of known forms (IRS, SSA, DMV)
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: exact-label-match
+        description: Match field labels exactly to profile path labels
+        complexity: low
+        default: true
+        dependencies: []
+      - name: fuzzy-label-match
+        description: Levenshtein distance fuzzy matching for field labels
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: semantic-matching
+        description: LLM-assisted semantic field-to-profile mapping for ambiguous labels
+        complexity: high
+        default: true
+        dependencies: []
+      - name: mapping-pipeline
+        description: Chained strategy execution (template > exact > fuzzy > semantic)
+        complexity: medium
+        default: true
+        dependencies: [template-matching, exact-label-match, fuzzy-label-match]
+      - name: confidence-scoring
+        description: Score each mapping 0.0-1.0 with configurable auto-accept threshold
+        complexity: medium
+        default: true
+        dependencies: [mapping-pipeline]
+      - name: custom-mapping-strategy
+        description: Plugin API for user-defined field mapping strategies
+        complexity: medium
+        default: true
+        dependencies: [mapping-pipeline]
+      - name: mapping-cache
+        description: Cache successful mappings to speed up repeated form types
+        complexity: low
+        default: true
+        dependencies: [mapping-pipeline]
+
+  - name: Profile Integration
+    description: CapAuth sovereign profile data loading and field population
+    features:
+      - name: capauth-profile-load
+        description: Load full profile from CapAuth sovereign identity (identity, contact, medical)
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: identity-fields
+        description: "Auto-fill identity data: name, DOB, SSN, gender, marital status"
+        complexity: low
+        default: true
+        dependencies: [capauth-profile-load]
+      - name: contact-fields
+        description: "Auto-fill contact data: email, phone, address"
+        complexity: low
+        default: true
+        dependencies: [capauth-profile-load]
+      - name: employment-fields
+        description: "Auto-fill employment data: employer, title, income"
+        complexity: low
+        default: true
+        dependencies: [capauth-profile-load]
+      - name: medical-fields
+        description: "Auto-fill medical data: insurance, physician, medications, conditions"
+        complexity: medium
+        default: true
+        dependencies: [capauth-profile-load]
+      - name: financial-fields
+        description: "Auto-fill financial data: bank, routing, account, tax status"
+        complexity: medium
+        default: true
+        dependencies: [capauth-profile-load]
+      - name: vehicle-fields
+        description: "Auto-fill vehicle data: make, model, year, VIN, plate"
+        complexity: low
+        default: true
+        dependencies: [capauth-profile-load]
+      - name: dependent-fields
+        description: "Auto-fill dependent data: name, relationship, DOB, SSN"
+        complexity: medium
+        default: true
+        dependencies: [capauth-profile-load]
+      - name: profile-snapshot
+        description: Freeze profile at session start to prevent mid-fill inconsistency
+        complexity: low
+        default: true
+        dependencies: [capauth-profile-load]
+
+  - name: Auto-Fill Engine
+    description: Automatic form population from mapped profile data
+    features:
+      - name: auto-fill-non-sensitive
+        description: Automatically fill all non-sensitive mapped fields without user input
+        complexity: medium
+        default: true
+        dependencies: [mapping-pipeline, capauth-profile-load]
+      - name: sensitive-field-gating
+        description: Require explicit approval before writing SSN, medical, financial fields
+        complexity: medium
+        default: true
+        dependencies: [auto-fill-non-sensitive]
+      - name: masked-display
+        description: Show sensitive values masked (***-**-1234) until user explicitly reveals
+        complexity: low
+        default: true
+        dependencies: [sensitive-field-gating]
+      - name: approval-audit-log
+        description: Log every sensitive field approval/denial with timestamp and session ID
+        complexity: low
+        default: true
+        dependencies: [sensitive-field-gating]
+      - name: field-transforms
+        description: Apply transforms to profile values (date formatting, name concatenation)
+        complexity: medium
+        default: true
+        dependencies: [auto-fill-non-sensitive]
+      - name: conditional-fill
+        description: Fill fields conditionally based on other field values (if married, fill spouse)
+        complexity: high
+        default: false
+        dependencies: [auto-fill-non-sensitive]
+
+  - name: Question Engine
+    description: Conversational prompting for missing or ambiguous fields
+    features:
+      - name: question-generation
+        description: Generate natural language questions for unmapped fields
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: field-grouping
+        description: Group related fields into single questions (all address fields together)
+        complexity: medium
+        default: true
+        dependencies: [question-generation]
+      - name: question-ordering
+        description: Order questions by page number, position, and logical flow
+        complexity: low
+        default: true
+        dependencies: [question-generation]
+      - name: input-validation
+        description: Validate user answers against field type constraints (date format, number range)
+        complexity: medium
+        default: true
+        dependencies: [question-generation]
+      - name: contextual-hints
+        description: Provide context hints from form title and surrounding labels
+        complexity: low
+        default: true
+        dependencies: [question-generation]
+      - name: skip-optional
+        description: Allow users to skip optional fields during question flow
+        complexity: low
+        default: true
+        dependencies: [question-generation]
+      - name: chat-integration
+        description: Deliver questions via SKChat for conversational form filling
+        complexity: high
+        default: false
+        dependencies: [question-generation]
+
+  - name: PDF Writing
+    description: Write filled values back to PDF documents
+    features:
+      - name: acroform-writing
+        description: Write values to interactive AcroForm fields preserving formatting
+        complexity: medium
+        default: true
+        dependencies: [acroform-extraction]
+      - name: xfa-writing
+        description: Write values to XFA XML data preserving schema
+        complexity: high
+        default: true
+        dependencies: [xfa-extraction]
+      - name: overlay-writing
+        description: Overlay text on scanned PDFs at detected field positions
+        complexity: high
+        default: true
+        dependencies: [ocr-extraction]
+      - name: form-flattening
+        description: Optionally flatten form fields after fill (makes non-editable)
+        complexity: low
+        default: false
+        dependencies: [acroform-writing]
+      - name: preserve-original
+        description: Keep unfilled copy alongside completed PDF
+        complexity: low
+        default: true
+        dependencies: []
+      - name: pdf-integrity
+        description: SHA-256 checksum of original and filled PDF for tamper detection
+        complexity: low
+        default: true
+        dependencies: []
+      - name: signed-pdf-warning
+        description: Warn users when filling fields in digitally signed PDFs
+        complexity: low
+        default: true
+        dependencies: []
+      - name: encrypted-pdf-support
+        description: Decrypt password-protected PDFs for filling, re-encrypt after
+        complexity: medium
+        default: true
+        dependencies: []
+
+  - name: Template Library
+    description: Pre-mapped form definitions for common documents
+    features:
+      - name: irs-form-templates
+        description: "IRS form templates: W-4, W-9, 1040, 1099, W-2"
+        complexity: medium
+        default: true
+        dependencies: [template-matching]
+      - name: ssa-form-templates
+        description: "Social Security Administration: SS-5, disability application"
+        complexity: medium
+        default: true
+        dependencies: [template-matching]
+      - name: dmv-form-templates
+        description: "DMV forms: license application, registration, title transfer (by state)"
+        complexity: medium
+        default: true
+        dependencies: [template-matching]
+      - name: medical-form-templates
+        description: "Medical forms: patient intake, HIPAA authorization, insurance claims"
+        complexity: medium
+        default: true
+        dependencies: [template-matching]
+      - name: financial-form-templates
+        description: "Financial forms: bank account application, loan application, direct deposit"
+        complexity: medium
+        default: true
+        dependencies: [template-matching]
+      - name: custom-template-creation
+        description: CLI and API for creating custom form templates from filled examples
+        complexity: high
+        default: true
+        dependencies: [template-matching]
+      - name: community-templates
+        description: Import and share form templates with the community repository
+        complexity: medium
+        default: false
+        dependencies: [custom-template-creation]
+
+  - name: GTD Filing
+    description: Automatic document categorization and filing
+    features:
+      - name: gtd-categorization
+        description: Auto-classify documents as medical, tax, legal, insurance, government, financial
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: gtd-action-routing
+        description: "Route to GTD categories: @Inbox, @Action, @Reference, @Projects, @Archive"
+        complexity: medium
+        default: true
+        dependencies: [gtd-categorization]
+      - name: configurable-naming
+        description: Template-based filename generation ({date}_{type}_{description})
+        complexity: low
+        default: true
+        dependencies: [gtd-categorization]
+      - name: metadata-sidecars
+        description: Generate .meta.yml companion files with fill history and checksums
+        complexity: medium
+        default: true
+        dependencies: [gtd-categorization]
+      - name: local-filing
+        description: File completed documents to local filesystem GTD directory
+        complexity: low
+        default: true
+        dependencies: [gtd-action-routing]
+      - name: webdav-filing
+        description: File to Nextcloud/ownCloud via WebDAV
+        complexity: medium
+        default: true
+        dependencies: [gtd-action-routing]
+      - name: gdrive-filing
+        description: File to Google Drive folders
+        complexity: medium
+        default: false
+        dependencies: [gtd-action-routing]
+      - name: email-filing
+        description: Email completed documents to specified addresses
+        complexity: medium
+        default: false
+        dependencies: [gtd-action-routing]
+      - name: ipfs-filing
+        description: Pin completed documents to IPFS for permanent storage
+        complexity: high
+        default: false
+        dependencies: [gtd-action-routing]
+      - name: custom-filing-destination
+        description: Plugin API for user-defined filing destinations
+        complexity: medium
+        default: true
+        dependencies: [gtd-action-routing]
+
+  - name: Security
+    description: Data protection, audit compliance, and sovereignty
+    features:
+      - name: local-only-processing
+        description: All extraction and filling happens locally, no cloud API calls
+        complexity: low
+        default: true
+        dependencies: []
+      - name: sensitive-field-masking
+        description: Mask SSN, account numbers in all UI and logs by default
+        complexity: low
+        default: true
+        dependencies: []
+      - name: audit-trail
+        description: Signed append-only log of all field access, fill, and approval operations
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: hipaa-compliance
+        description: Medical form fills logged with access timestamps for HIPAA compliance
+        complexity: medium
+        default: true
+        dependencies: [audit-trail]
+      - name: pci-dss-compliance
+        description: Financial fields masked in all logs and outputs for PCI-DSS
+        complexity: medium
+        default: true
+        dependencies: [audit-trail, sensitive-field-masking]
+      - name: gpg-filed-encryption
+        description: Optional GPG encryption of filed PDFs at rest
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: pdf-sandbox
+        description: Sandbox PDF parsing with no JavaScript execution for malicious PDF protection
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: capauth-filing-auth
+        description: Authenticate remote filing destinations via CapAuth tokens
+        complexity: medium
+        default: true
+        dependencies: [capauth-profile-load]
+
+  - name: Observability
+    description: Logging, monitoring, and diagnostics
+    features:
+      - name: structured-logging
+        description: JSON-formatted runtime logs with configurable level and rotation
+        complexity: low
+        default: true
+        dependencies: []
+      - name: extraction-metrics
+        description: Track extraction time, field count, OCR confidence per session
+        complexity: low
+        default: true
+        dependencies: []
+      - name: mapping-metrics
+        description: Track mapping success rate by strategy and confidence distribution
+        complexity: low
+        default: true
+        dependencies: []
+      - name: filing-metrics
+        description: Track filing destination success rate and latency
+        complexity: low
+        default: false
+        dependencies: []
+      - name: audit-log-export
+        description: Export audit logs for external compliance systems
+        complexity: medium
+        default: false
+        dependencies: [audit-trail]
+
+  - name: CLI & API
+    description: Command-line interface and programmatic API
+    features:
+      - name: cli-fill
+        description: "Click CLI: skpdf fill <pdf> -- run complete fill flow interactively"
+        complexity: medium
+        default: true
+        dependencies: [form-session]
+      - name: cli-extract
+        description: "Click CLI: skpdf extract <pdf> -- show extracted fields without filling"
+        complexity: low
+        default: true
+        dependencies: [acroform-extraction]
+      - name: cli-template
+        description: "Click CLI: skpdf template <pdf> -- create template from a filled form"
+        complexity: medium
+        default: true
+        dependencies: [custom-template-creation]
+      - name: cli-file
+        description: "Click CLI: skpdf file <pdf> -- file an already-filled PDF into GTD"
+        complexity: low
+        default: true
+        dependencies: [gtd-action-routing]
+      - name: cli-status
+        description: "Click CLI: skpdf status -- show session history and template library"
+        complexity: low
+        default: true
+        dependencies: []
+      - name: fastapi-server
+        description: Optional FastAPI server for form filling as a web service
+        complexity: high
+        default: false
+        dependencies: [form-session]
+      - name: python-api
+        description: Programmatic Python API for all operations (extract, map, fill, file)
+        complexity: medium
+        default: true
+        dependencies: [form-session]
+      - name: rich-output
+        description: Rich terminal formatting with tables, progress bars, and field previews
+        complexity: low
+        default: true
+        dependencies: []
+
+dependencies:
+  runtime:
+    - pikepdf>=8.0
+    - pdfplumber>=0.10
+    - pytesseract>=0.3.10
+    - reportlab>=4.0
+    - pydantic>=2.4
+    - pyyaml>=6.0
+    - click>=8.1
+    - rich>=13.0
+    - Levenshtein>=0.21
+  optional:
+    - fastapi>=0.100
+    - uvicorn>=0.23
+    - capauth>=0.1.0
+    - webdavclient3>=3.14
+    - google-api-python-client>=2.0
+    - ipfshttpclient>=0.8
+  system:
+    - tesseract-ocr>=5.0
+  development:
+    - pytest>=7.4
+    - mypy>=1.5
+    - ruff>=0.1

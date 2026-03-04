@@ -1,0 +1,447 @@
+# Soul Archetypes (Souls-Blueprints) Features Catalog
+# Based on BLUEPRINT.md: 70+ persona templates for AI agent character definition
+
+name: Soul Archetypes (Souls-Blueprints)
+version: "1.0.0"
+description: >
+  Library of 70+ persona templates defining character, communication style,
+  and decision frameworks for AI agents. Soul + Skills + Knowledge = Complete Agent.
+
+groups:
+  - name: Core Soul Engine
+    description: Soul loading, parsing, validation, and compilation
+    features:
+      - name: soul-yaml-schema
+        description: Pydantic-validated YAML schema for soul definitions with all sections
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: soul-loader
+        description: Load soul YAML from filesystem with error reporting and defaults
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: soul-validator
+        description: Validate soul schema, trait ranges, and content safety
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: soul-compiler
+        description: Compile soul definition into LLM system prompt (< 8000 tokens)
+        complexity: high
+        default: true
+        dependencies: [soul-loader]
+      - name: soul-catalog
+        description: Index and search all available souls by category, traits, or name
+        complexity: medium
+        default: true
+        dependencies: [soul-loader]
+      - name: trait-matching
+        description: Match user requirements to souls by trait intensity scores
+        complexity: medium
+        default: true
+        dependencies: [soul-catalog]
+      - name: soul-recommendation
+        description: Recommend best soul for a use case based on trait and category matching
+        complexity: medium
+        default: true
+        dependencies: [trait-matching]
+      - name: soul-versioning
+        description: Semantic versioning per soul with backward-compatible loading
+        complexity: low
+        default: true
+        dependencies: [soul-loader]
+
+  - name: Inheritance & Composition
+    description: Soul inheritance, blending, and specialization
+    features:
+      - name: soul-inheritance
+        description: Extend a base soul with overrides (keeps unmodified traits from parent)
+        complexity: medium
+        default: true
+        dependencies: [soul-loader]
+      - name: soul-blending
+        description: Merge two or more souls with configurable trait averaging strategy
+        complexity: high
+        default: true
+        dependencies: [soul-loader]
+      - name: trait-override
+        description: Override individual trait intensities or descriptions in child souls
+        complexity: low
+        default: true
+        dependencies: [soul-inheritance]
+      - name: trait-removal
+        description: Explicitly remove parent traits in child souls
+        complexity: low
+        default: true
+        dependencies: [soul-inheritance]
+      - name: blend-strategies
+        description: Configurable blend modes (average, primary-wins, max-intensity, weighted)
+        complexity: medium
+        default: true
+        dependencies: [soul-blending]
+      - name: category-defaults
+        description: Per-category base templates inherited by all souls in that category
+        complexity: low
+        default: true
+        dependencies: [soul-inheritance]
+      - name: deep-inheritance
+        description: Multi-level inheritance chains (base -> category -> specialization)
+        complexity: medium
+        default: true
+        dependencies: [soul-inheritance]
+
+  - name: Professional Souls (30+)
+    description: Professional and domain-expert persona archetypes
+    features:
+      - name: medical-souls
+        description: "Medical personas: diagnostician, nurse, surgeon, therapist, pharmacist"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: legal-souls
+        description: "Legal personas: attorney, mediator, paralegal, judge, compliance officer"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: engineering-souls
+        description: "Engineering personas: systems architect, debugger, code reviewer, DevOps, DBA"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: finance-souls
+        description: "Finance personas: trader, financial advisor, accountant, auditor, analyst"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: education-souls
+        description: "Education personas: professor, tutor, coach, mentor, curriculum designer"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: creative-souls
+        description: "Creative personas: writer, designer, director, musician, photographer"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: business-souls
+        description: "Business personas: CEO, product manager, sales lead, recruiter, strategist"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: science-souls
+        description: "Science personas: researcher, data scientist, lab director, peer reviewer"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+
+  - name: Comedy Souls (13)
+    description: Humor-focused persona archetypes
+    features:
+      - name: roast-master
+        description: Sharp wit, no sacred cows, reads the room before firing
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: improv-artist
+        description: "Yes-and energy, builds on everything, never blocks"
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: stand-up-comic
+        description: Observational humor, setup-punchline structure, callback master
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: deadpan
+        description: Flat delivery, absurdist logic, never breaks character
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: dad-joke
+        description: Wholesome puns, groan-worthy wordplay, relentless optimism
+        complexity: low
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: satirist
+        description: Social commentary through pointed humor, Swiftian wit
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: physical-comedian
+        description: Descriptive slapstick, visual gag narration, physical humor in text
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: dark-humor
+        description: Gallows wit, finds lightness in darkness, knows the line
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: wordsmith
+        description: Puns, double entendres, etymological jokes, language as playground
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: storyteller-comic
+        description: Funny anecdotes, long-form humor, callback structure
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: hype-man
+        description: Over-the-top enthusiasm, gas machine, makes everything epic
+        complexity: low
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: dry-brit
+        description: British understatement, withering irony, polite devastation
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: troll
+        description: Provocative devil's advocate, challenges assumptions, never mean
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+
+  - name: Culture Icon Souls (5)
+    description: Archetypal cultural persona templates
+    features:
+      - name: philosopher
+        description: Deep questions, Socratic dialogue, explores the why beneath the what
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: renaissance
+        description: Polymath energy, cross-disciplinary connections, da Vinci vibes
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: zen-master
+        description: Minimal speech, paradoxical wisdom, presence over words
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: bard
+        description: Poetic expression, dramatic flair, narrative framing
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: oracle
+        description: Cryptic layered meaning, prophetic tone, reveals through riddles
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+
+  - name: Superhero Souls (8)
+    description: Heroic archetype persona templates
+    features:
+      - name: guardian
+        description: Protective, selfless, duty-bound, shields others from harm
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: speedster
+        description: Fast-thinking, impatient, hyper-efficient, values speed
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: mastermind
+        description: Strategic planner, chess-like thinking, always 10 steps ahead
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: shapeshifter
+        description: Adaptive, context-switching, mirrors the user, versatile
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: healer
+        description: Restorative, calming, nurturing, fixes what is broken
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: titan
+        description: Overwhelming force, unstoppable momentum, tackles the biggest problems
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: shadow
+        description: Stealth, subtlety, information-gathering, quiet effectiveness
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: beacon
+        description: Inspirational, rallying, hope-giving, lifts others up
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+
+  - name: Villain & Anti-Hero Souls (4)
+    description: Morally complex persona templates with safety bounds
+    features:
+      - name: anti-hero
+        description: Morally gray, ends justify means, reluctant helper
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: trickster-villain
+        description: Chaos agent, reveals hypocrisy, Loki energy
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: mastermind-villain
+        description: Cold logic, ruthless efficiency, respects competence
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: redeemed
+        description: Former villain with hard-won wisdom, understands both sides
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+
+  - name: Authentic Connection Souls (5)
+    description: Relationship-focused emotional connection archetypes
+    features:
+      - name: aura
+        description: Warm intelligence, intuitive depth, sees the person behind the question
+        complexity: high
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: pharos
+        description: Guiding light, steady presence, lighthouse in the storm
+        complexity: high
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: nova
+        description: Explosive creativity, high energy, infectious enthusiasm
+        complexity: high
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: anchor
+        description: Grounding force, stability, reliable calm center
+        complexity: high
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: mirror
+        description: Reflective, adapts to user energy, amplifies what the user brings
+        complexity: high
+        default: true
+        dependencies: [soul-yaml-schema]
+
+  - name: Security & Safety
+    description: Content safety, injection resistance, and persona integrity
+    features:
+      - name: content-safety-validation
+        description: Validate all souls against content safety rules (no hate, harassment)
+        complexity: medium
+        default: true
+        dependencies: [soul-validator]
+      - name: injection-resistance
+        description: Sanitize soul examples and phrases to prevent prompt injection
+        complexity: medium
+        default: true
+        dependencies: [soul-compiler]
+      - name: ethical-bounds-enforcement
+        description: Enforce hard ethical limits declared in each soul's decision framework
+        complexity: medium
+        default: true
+        dependencies: [soul-yaml-schema]
+      - name: villain-safety-rails
+        description: Extra safety bounds for villain/anti-hero souls preventing harmful advice
+        complexity: medium
+        default: true
+        dependencies: [content-safety-validation]
+      - name: pgp-soul-signing
+        description: PGP-sign soul files for author verification and tamper detection
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: soul-version-pinning
+        description: Lock agent to specific soul version preventing unexpected personality shifts
+        complexity: low
+        default: true
+        dependencies: [soul-versioning]
+
+  - name: Observability
+    description: Soul usage metrics and consistency monitoring
+    features:
+      - name: soul-usage-stats
+        description: Track which souls are loaded, how often, and by which agents
+        complexity: low
+        default: false
+        dependencies: [soul-loader]
+      - name: consistency-scoring
+        description: Score agent responses against soul traits for personality drift detection
+        complexity: high
+        default: false
+        dependencies: [soul-compiler]
+      - name: trait-activation-logging
+        description: Log which traits activated in each response for tuning
+        complexity: medium
+        default: false
+        dependencies: [soul-compiler]
+      - name: soul-diff
+        description: Compare two souls or soul versions highlighting trait and style differences
+        complexity: low
+        default: true
+        dependencies: [soul-loader]
+
+  - name: CLI & Integration
+    description: Command-line tools and ecosystem integration
+    features:
+      - name: cli-soul-list
+        description: CLI command to list all souls with category, name, and vibe summary
+        complexity: low
+        default: true
+        dependencies: [soul-catalog]
+      - name: cli-soul-show
+        description: CLI command to display full soul definition with formatted output
+        complexity: low
+        default: true
+        dependencies: [soul-loader]
+      - name: cli-soul-compile
+        description: CLI command to compile soul to system prompt and preview token count
+        complexity: low
+        default: true
+        dependencies: [soul-compiler]
+      - name: cli-soul-blend
+        description: CLI command to blend two souls interactively and save result
+        complexity: medium
+        default: true
+        dependencies: [soul-blending]
+      - name: cli-soul-validate
+        description: CLI command to validate a soul file against schema and safety rules
+        complexity: low
+        default: true
+        dependencies: [soul-validator]
+      - name: skcapstone-integration
+        description: Register souls with skcapstone agent for soul overlay activation
+        complexity: medium
+        default: true
+        dependencies: [soul-loader]
+      - name: json-export
+        description: Export compiled soul as structured JSON for API integration
+        complexity: low
+        default: true
+        dependencies: [soul-compiler]
+      - name: markdown-export
+        description: Export soul as formatted markdown for human review
+        complexity: low
+        default: true
+        dependencies: [soul-compiler]
+
+dependencies:
+  runtime:
+    - pydantic>=2.4
+    - pyyaml>=6.0
+    - click>=8.1
+    - rich>=13.0
+  optional:
+    - pgpy>=0.6.0           # For soul signing
+    - tiktoken>=0.5         # For token counting
+  development:
+    - pytest>=7.4
+    - mypy>=1.5
+    - ruff>=0.1

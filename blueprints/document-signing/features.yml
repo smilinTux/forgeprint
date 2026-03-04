@@ -1,0 +1,386 @@
+# Sovereign Document Signing (SKSeal) Features Catalog
+# Based on SKSeal blueprint, pgpy, pypdf, FastAPI
+
+name: Sovereign Document Signing
+version: "1.0.0"
+description: >
+  PGP-backed document signing with detached signatures, tamper-evident
+  audit trails, template-based workflows, and CapAuth access control.
+
+groups:
+  - name: Core Signing
+    description: Fundamental PGP signing and verification operations
+    features:
+      - name: detached-pgp-signing
+        description: Create PGP detached signatures over document SHA-256 hashes
+        complexity: medium
+        default: true
+      - name: signature-verification
+        description: Verify detached PGP signatures against signer public key and document hash
+        complexity: medium
+        default: true
+      - name: multi-algorithm-hash
+        description: Support SHA-256, SHA-512, and SHA3-256 hash algorithms
+        complexity: low
+        default: true
+      - name: embedded-signature-mode
+        description: Optionally embed signature metadata into PDF form fields
+        complexity: high
+        default: false
+        dependencies: [template-engine, pdf-manipulation]
+      - name: batch-signing
+        description: Sign multiple documents in a single operation with the same key
+        complexity: medium
+        default: false
+      - name: batch-verification
+        description: Verify signatures across multiple documents in parallel
+        complexity: medium
+        default: false
+      - name: signature-revocation
+        description: Revoke a previously issued signature with audit trail record
+        complexity: medium
+        default: true
+      - name: signature-expiry
+        description: Auto-expire signatures after configurable time window
+        complexity: low
+        default: false
+      - name: countersignature
+        description: Sign an existing signature to create a chain of endorsement
+        complexity: high
+        default: true
+      - name: witness-signatures
+        description: Non-binding witness attestation signatures for ceremonial signing
+        complexity: medium
+        default: false
+
+  - name: Multi-Signature Workflows
+    description: Coordinated signing across multiple parties
+    features:
+      - name: sequential-signing
+        description: Enforce signing order where each signer unlocks the next
+        complexity: high
+        default: true
+      - name: parallel-signing
+        description: Allow all signers to sign independently in any order
+        complexity: medium
+        default: true
+      - name: role-based-signing
+        description: Assign signer roles (author, reviewer, approver) with field constraints
+        complexity: high
+        default: true
+      - name: signing-session-management
+        description: Create, track, and complete multi-signer signing sessions
+        complexity: high
+        default: true
+      - name: signing-deadlines
+        description: Set expiration deadlines for signing sessions with reminders
+        complexity: medium
+        default: false
+        dependencies: [notification-events]
+      - name: signing-delegation
+        description: Delegate signing authority to another party via CapAuth token
+        complexity: high
+        default: false
+        dependencies: [capauth-integration]
+
+  - name: Template System
+    description: Reusable document field layouts and signing workflows
+    features:
+      - name: template-engine
+        description: Define and apply field layout templates to documents
+        complexity: high
+        default: true
+      - name: template-versioning
+        description: Semantic versioning for templates with migration support
+        complexity: medium
+        default: true
+      - name: signature-field-types
+        description: "Support field types: signature, date, text, checkbox, initials"
+        complexity: medium
+        default: true
+      - name: field-validation
+        description: Regex and constraint validation on template fields
+        complexity: medium
+        default: true
+      - name: template-sharing
+        description: Export and import templates between SKSeal instances
+        complexity: low
+        default: true
+      - name: built-in-templates
+        description: Pre-built templates for NDA, contracts, invoices, and consent forms
+        complexity: medium
+        default: true
+      - name: visual-template-builder
+        description: Vue.js drag-and-drop field placement on PDF preview
+        complexity: high
+        default: false
+
+  - name: PDF Processing
+    description: PDF-specific document manipulation and rendering
+    features:
+      - name: pdf-manipulation
+        description: Read, write, and modify PDF files via pypdf
+        complexity: medium
+        default: true
+      - name: pdf-signature-rendering
+        description: Render visual signature stamps on PDF pages at template positions
+        complexity: high
+        default: true
+        dependencies: [template-engine]
+      - name: pdf-form-filling
+        description: Auto-fill PDF form fields from template data
+        complexity: medium
+        default: true
+      - name: pdf-flatten
+        description: Flatten signed PDF to prevent further form modifications
+        complexity: low
+        default: true
+      - name: pdf-metadata-embedding
+        description: Embed signature metadata in PDF document properties
+        complexity: low
+        default: true
+      - name: pdf-watermark
+        description: Apply status watermarks (DRAFT, SIGNED, REVOKED) to PDF pages
+        complexity: medium
+        default: false
+      - name: pdf-page-extraction
+        description: Extract specific pages for partial document signing
+        complexity: medium
+        default: false
+
+  - name: Document Management
+    description: Document lifecycle tracking, storage, and versioning
+    features:
+      - name: document-tracking
+        description: SQLite-backed document registry with lifecycle status tracking
+        complexity: medium
+        default: true
+      - name: document-upload
+        description: Import documents into SKSeal storage with hash verification
+        complexity: low
+        default: true
+      - name: document-versioning
+        description: Track document versions when content changes between signing rounds
+        complexity: medium
+        default: false
+      - name: document-status-lifecycle
+        description: "Status machine: draft, pending, partially_signed, fully_signed, expired, revoked"
+        complexity: medium
+        default: true
+      - name: document-search
+        description: Full-text and metadata search across tracked documents
+        complexity: medium
+        default: false
+      - name: document-export
+        description: Export signed documents with all signatures and audit trail
+        complexity: medium
+        default: true
+      - name: document-archival
+        description: Archive completed documents with compressed storage
+        complexity: low
+        default: false
+
+  - name: Audit Trail
+    description: Tamper-evident logging and compliance chain
+    features:
+      - name: append-only-audit
+        description: Per-document .audit.jsonl with immutable append-only records
+        complexity: medium
+        default: true
+      - name: hash-chain-integrity
+        description: Each audit record links to previous via SHA-256 hash chain
+        complexity: medium
+        default: true
+      - name: pgp-signed-records
+        description: Each audit record PGP-signed by SKSeal system key
+        complexity: medium
+        default: true
+      - name: audit-chain-verification
+        description: Verify full audit chain integrity from first to last record
+        complexity: medium
+        default: true
+      - name: global-audit-log
+        description: Cross-document system-wide audit trail for all operations
+        complexity: medium
+        default: true
+      - name: audit-export
+        description: Export audit trails in JSONL, CSV, or PDF report format
+        complexity: medium
+        default: true
+      - name: rfc3161-timestamping
+        description: RFC 3161 Timestamp Authority integration for legal non-repudiation
+        complexity: high
+        default: false
+      - name: audit-search
+        description: Search audit records by signer, date, event type, document
+        complexity: medium
+        default: false
+
+  - name: Security
+    description: Cryptographic security and access control
+    features:
+      - name: capauth-integration
+        description: CapAuth capability token validation for all gated operations
+        complexity: high
+        default: true
+      - name: per-document-acl
+        description: Fine-grained permissions scoped to individual documents
+        complexity: medium
+        default: true
+        dependencies: [capauth-integration]
+      - name: per-template-acl
+        description: Permission scoping for template creation and usage
+        complexity: medium
+        default: true
+        dependencies: [capauth-integration]
+      - name: key-revocation-check
+        description: Check key revocation status before accepting any signature
+        complexity: medium
+        default: true
+      - name: path-traversal-protection
+        description: Validate all file paths against directory traversal attacks
+        complexity: low
+        default: true
+      - name: upload-size-limits
+        description: Configurable maximum upload size with enforcement
+        complexity: low
+        default: true
+      - name: rate-limiting
+        description: Per-endpoint rate limiting on REST API
+        complexity: low
+        default: true
+      - name: tls-enforcement
+        description: Enforce HTTPS-only in production deployment
+        complexity: low
+        default: true
+      - name: hardware-token-signing
+        description: "YubiKey/NitroKey support via PKCS#11 for key-never-leaves-hardware"
+        complexity: high
+        default: false
+      - name: post-quantum-hybrid
+        description: Hybrid PGP + CRYSTALS-Dilithium signatures for quantum resistance
+        complexity: high
+        default: false
+
+  - name: API & Interface
+    description: REST API and CLI access interfaces
+    features:
+      - name: fastapi-server
+        description: FastAPI REST API with OpenAPI docs for all signing operations
+        complexity: medium
+        default: true
+      - name: cli-interface
+        description: Rich CLI with click for all operations (sign, verify, audit, serve)
+        complexity: medium
+        default: true
+      - name: openapi-docs
+        description: Auto-generated OpenAPI/Swagger documentation
+        complexity: low
+        default: true
+      - name: json-responses
+        description: Structured JSON responses with consistent error format
+        complexity: low
+        default: true
+      - name: webhook-notifications
+        description: HTTP webhook callbacks on signing events
+        complexity: medium
+        default: false
+      - name: python-sdk
+        description: Importable Python library for programmatic signing
+        complexity: medium
+        default: true
+
+  - name: Notifications
+    description: Event-driven notifications for signing workflows
+    features:
+      - name: notification-events
+        description: Emit events on sign, countersign, verify, revoke operations
+        complexity: medium
+        default: true
+      - name: skcomm-notifications
+        description: Send signing notifications via SKComm P2P transport
+        complexity: medium
+        default: false
+        dependencies: [notification-events]
+      - name: email-notifications
+        description: Send signing request and completion emails
+        complexity: medium
+        default: false
+        dependencies: [notification-events]
+      - name: webhook-callbacks
+        description: HTTP POST callbacks on configurable signing events
+        complexity: low
+        default: false
+        dependencies: [notification-events]
+
+  - name: Observability
+    description: Logging, monitoring, and diagnostics
+    features:
+      - name: structured-logging
+        description: JSON-structured application logging with configurable levels
+        complexity: low
+        default: true
+      - name: log-rotation
+        description: Size-based log rotation with configurable retention
+        complexity: low
+        default: true
+      - name: prometheus-metrics
+        description: Prometheus-compatible metrics for signing operations and latencies
+        complexity: medium
+        default: false
+      - name: health-endpoint
+        description: /health endpoint for liveness and readiness probes
+        complexity: low
+        default: true
+      - name: signing-statistics
+        description: Dashboard-ready stats on documents signed, verified, pending
+        complexity: medium
+        default: false
+
+  - name: Integration
+    description: Integration with sovereign ecosystem and external systems
+    features:
+      - name: skcapstone-agent
+        description: Run as SKCapstone MCP skill providing signing tools to agents
+        complexity: high
+        default: false
+      - name: skcomm-transport
+        description: Receive signing requests and deliver signatures via SKComm
+        complexity: high
+        default: false
+      - name: skmemory-audit-sync
+        description: Sync audit trail summaries to SKMemory for agent recall
+        complexity: medium
+        default: false
+      - name: cloud9-compliance
+        description: Sign Cloud 9 FEB files for tamper-evident emotional records
+        complexity: medium
+        default: false
+      - name: forgejo-integration
+        description: Git commit signing verification via SKSeal
+        complexity: medium
+        default: false
+
+dependencies:
+  runtime:
+    - python: ">=3.11"
+    - pgpy: ">=0.6.0"
+    - pypdf: ">=4.0.0"
+    - fastapi: ">=0.110.0"
+    - uvicorn: ">=0.27.0"
+    - click: ">=8.1.0"
+    - rich: ">=13.0.0"
+    - pydantic: ">=2.0.0"
+    - aiosqlite: ">=0.20.0"
+    - pillow: ">=10.0.0"
+  optional:
+    - skcomm: ">=0.1.0"
+    - capauth-sdk: ">=0.1.0"
+    - skcapstone-sdk: ">=0.1.0"
+    - prometheus-client: ">=0.20.0"
+  development:
+    - pytest: ">=8.0.0"
+    - pytest-asyncio: ">=0.23.0"
+    - httpx: ">=0.27.0"
+    - mypy: ">=1.8.0"
+    - ruff: ">=0.3.0"

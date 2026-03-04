@@ -1,0 +1,711 @@
+# Encrypted Messaging (SKChat) Features Catalog
+# Comprehensive feature set based on Signal, Matrix, Session, Briar, SimpleX, Jami, SKComm
+
+categories:
+  core:
+    name: "Core Messaging"
+    description: "Fundamental text messaging and conversation management"
+    features:
+      - name: "text_messaging"
+        description: "Send and receive PGP-encrypted text messages"
+        complexity: "high"
+        dependencies: ["pgp_encryption", "message_envelope"]
+        default: "on"
+
+      - name: "message_envelope"
+        description: "Structured message envelope with metadata, signature, and routing"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "message_threading"
+        description: "Reply-to and thread-based conversation organization"
+        complexity: "medium"
+        dependencies: ["text_messaging"]
+        default: "on"
+
+      - name: "markdown_formatting"
+        description: "Markdown rendering in message content"
+        complexity: "low"
+        dependencies: ["text_messaging"]
+        default: "on"
+
+      - name: "delivery_confirmation"
+        description: "Delivery status tracking: queued, sent, delivered, read"
+        complexity: "medium"
+        dependencies: ["text_messaging"]
+        default: "on"
+
+      - name: "offline_queue"
+        description: "Queue messages when recipient is offline, deliver on reconnect"
+        complexity: "medium"
+        dependencies: ["text_messaging", "sqlite_storage"]
+        default: "on"
+
+      - name: "message_search"
+        description: "Full-text search across decrypted message history"
+        complexity: "high"
+        dependencies: ["sqlite_storage", "fts5_index"]
+        default: "on"
+
+      - name: "message_editing"
+        description: "Edit previously sent messages with edit history"
+        complexity: "medium"
+        dependencies: ["text_messaging"]
+        default: "off"
+
+      - name: "message_deletion"
+        description: "Delete messages locally and request remote deletion"
+        complexity: "medium"
+        dependencies: ["text_messaging"]
+        default: "on"
+
+      - name: "message_expiry"
+        description: "Self-destructing messages with configurable TTL"
+        complexity: "medium"
+        dependencies: ["text_messaging"]
+        default: "off"
+
+      - name: "typing_indicators"
+        description: "Real-time typing status notifications"
+        complexity: "low"
+        dependencies: ["presence_system"]
+        default: "off"
+
+      - name: "read_receipts"
+        description: "Notify sender when recipient reads message"
+        complexity: "low"
+        dependencies: ["delivery_confirmation"]
+        default: "off"
+
+  encryption:
+    name: "Encryption & Cryptography"
+    description: "End-to-end encryption and cryptographic operations"
+    features:
+      - name: "pgp_encryption"
+        description: "PGP end-to-end encryption for all message content"
+        complexity: "high"
+        dependencies: ["gnupg_integration"]
+        default: "on"
+
+      - name: "pgp_signing"
+        description: "PGP detached signature on every message envelope"
+        complexity: "medium"
+        dependencies: ["gnupg_integration"]
+        default: "on"
+
+      - name: "group_encryption"
+        description: "Symmetric session key per group, encrypted per-member with PGP"
+        complexity: "high"
+        dependencies: ["pgp_encryption"]
+        default: "on"
+
+      - name: "group_key_rotation"
+        description: "Rotate group session keys on configurable interval"
+        complexity: "high"
+        dependencies: ["group_encryption"]
+        default: "on"
+
+      - name: "forward_secrecy"
+        description: "Ephemeral session keys prevent past message decryption"
+        complexity: "high"
+        dependencies: ["pgp_encryption"]
+        default: "off"
+
+      - name: "message_compression"
+        description: "Zstd or LZ4 compression before encryption"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "quantum_ready_mlkem"
+        description: "ML-KEM (Kyber) post-quantum key encapsulation"
+        complexity: "high"
+        dependencies: ["post_quantum_lib"]
+        default: "off"
+
+      - name: "quantum_ready_mldsa"
+        description: "ML-DSA (Dilithium) post-quantum digital signatures"
+        complexity: "high"
+        dependencies: ["post_quantum_lib"]
+        default: "off"
+
+      - name: "quantum_ready_sphincs"
+        description: "SPHINCS+ stateless hash-based signatures"
+        complexity: "high"
+        dependencies: ["post_quantum_lib"]
+        default: "off"
+
+  transport:
+    name: "Transport Paths (SKComm)"
+    description: "P2P message delivery via 17 transport paths"
+    features:
+      - name: "syncthing_transport"
+        description: "File-based async messaging via Syncthing sync"
+        complexity: "medium"
+        dependencies: ["syncthing_api"]
+        default: "on"
+
+      - name: "wireguard_transport"
+        description: "Direct encrypted transport via WireGuard VPN tunnel"
+        complexity: "high"
+        dependencies: ["wireguard_integration"]
+        default: "off"
+
+      - name: "tor_transport"
+        description: "Anonymous messaging via Tor onion routing"
+        complexity: "high"
+        dependencies: ["tor_integration"]
+        default: "off"
+
+      - name: "i2p_transport"
+        description: "Privacy messaging via I2P garlic routing"
+        complexity: "high"
+        dependencies: ["i2p_integration"]
+        default: "off"
+
+      - name: "yggdrasil_transport"
+        description: "IPv6 mesh network transport"
+        complexity: "medium"
+        dependencies: ["yggdrasil_integration"]
+        default: "off"
+
+      - name: "nostr_transport"
+        description: "Relay-based messaging via Nostr protocol"
+        complexity: "medium"
+        dependencies: ["nostr_client"]
+        default: "off"
+
+      - name: "iroh_transport"
+        description: "Content-addressed P2P via Iroh"
+        complexity: "high"
+        dependencies: ["iroh_client"]
+        default: "off"
+
+      - name: "veilid_transport"
+        description: "DHT-based routing via Veilid network"
+        complexity: "high"
+        dependencies: ["veilid_client"]
+        default: "off"
+
+      - name: "webrtc_transport"
+        description: "Real-time browser P2P data channels"
+        complexity: "high"
+        dependencies: ["webrtc_stack"]
+        default: "off"
+
+      - name: "websocket_transport"
+        description: "Persistent WebSocket connections to relay servers"
+        complexity: "medium"
+        dependencies: ["websocket_client"]
+        default: "on"
+
+      - name: "http_poll_transport"
+        description: "HTTP long-polling fallback for restricted networks"
+        complexity: "low"
+        dependencies: ["http_client"]
+        default: "on"
+
+      - name: "matrix_bridge"
+        description: "Bridge to Matrix protocol rooms"
+        complexity: "high"
+        dependencies: ["matrix_client"]
+        default: "off"
+
+      - name: "xmpp_bridge"
+        description: "Bridge to XMPP/Jabber servers"
+        complexity: "high"
+        dependencies: ["xmpp_client"]
+        default: "off"
+
+      - name: "path_selection"
+        description: "Automatic path selection: fastest, most private, most reliable"
+        complexity: "high"
+        dependencies: []
+        default: "on"
+
+      - name: "concurrent_delivery"
+        description: "Send via multiple paths simultaneously for reliability"
+        complexity: "high"
+        dependencies: ["path_selection"]
+        default: "off"
+
+      - name: "fallback_chains"
+        description: "Ordered fallback to alternative transports on failure"
+        complexity: "medium"
+        dependencies: ["path_selection"]
+        default: "on"
+
+  voice:
+    name: "Voice Communication"
+    description: "Real-time voice with TTS and STT"
+    features:
+      - name: "webrtc_voice"
+        description: "P2P voice calls via WebRTC with DTLS-SRTP encryption"
+        complexity: "high"
+        dependencies: ["webrtc_stack"]
+        default: "off"
+
+      - name: "opus_codec"
+        description: "Opus audio codec at 48kHz with configurable bitrate"
+        complexity: "medium"
+        dependencies: ["webrtc_voice"]
+        default: "on"
+
+      - name: "piper_tts"
+        description: "Piper TTS engine for AI speech synthesis in 35+ languages"
+        complexity: "high"
+        dependencies: ["piper_runtime"]
+        default: "off"
+
+      - name: "whisper_stt"
+        description: "Whisper STT engine for real-time speech transcription"
+        complexity: "high"
+        dependencies: ["whisper_runtime"]
+        default: "off"
+
+      - name: "noise_cancellation"
+        description: "RNNoise neural network noise cancellation"
+        complexity: "high"
+        dependencies: ["webrtc_voice", "rnnoise_lib"]
+        default: "off"
+
+      - name: "echo_cancellation"
+        description: "WebRTC acoustic echo cancellation"
+        complexity: "medium"
+        dependencies: ["webrtc_voice"]
+        default: "on"
+
+      - name: "voice_activity_detection"
+        description: "WebRTC VAD for silence suppression and bandwidth saving"
+        complexity: "medium"
+        dependencies: ["webrtc_voice"]
+        default: "on"
+
+      - name: "multi_party_voice"
+        description: "Group voice calls with mixing and spatial audio"
+        complexity: "high"
+        dependencies: ["webrtc_voice"]
+        default: "off"
+
+      - name: "voice_transcription_log"
+        description: "Store STT transcriptions as searchable message history"
+        complexity: "medium"
+        dependencies: ["whisper_stt", "sqlite_storage"]
+        default: "off"
+
+  groups:
+    name: "Group Chat"
+    description: "Multi-participant rooms with typed members"
+    features:
+      - name: "group_rooms"
+        description: "Create and manage multi-participant chat rooms"
+        complexity: "medium"
+        dependencies: ["text_messaging"]
+        default: "on"
+
+      - name: "participant_types"
+        description: "ParticipantType enum: human and AI with identical rights"
+        complexity: "low"
+        dependencies: ["group_rooms"]
+        default: "on"
+
+      - name: "tool_scoping"
+        description: "Per-member MCP tool_scope limiting AI participant capabilities"
+        complexity: "high"
+        dependencies: ["participant_types", "mcp_integration"]
+        default: "on"
+
+      - name: "room_invitations"
+        description: "Invite participants with capability token authorization"
+        complexity: "medium"
+        dependencies: ["group_rooms", "capability_tokens"]
+        default: "on"
+
+      - name: "room_moderation"
+        description: "Moderator role for message deletion, kicks, and bans"
+        complexity: "medium"
+        dependencies: ["group_rooms"]
+        default: "on"
+
+      - name: "broadcast_rooms"
+        description: "One-to-many broadcast rooms with read-only members"
+        complexity: "medium"
+        dependencies: ["group_rooms"]
+        default: "off"
+
+      - name: "room_history_access"
+        description: "Configurable history visibility for new members"
+        complexity: "medium"
+        dependencies: ["group_rooms"]
+        default: "on"
+
+      - name: "mentions"
+        description: "@mention notifications for specific participants"
+        complexity: "low"
+        dependencies: ["group_rooms"]
+        default: "on"
+
+  files:
+    name: "File Sharing"
+    description: "Encrypted file transfer and media"
+    features:
+      - name: "file_transfer"
+        description: "Encrypted file transfer with no size limits via chunking"
+        complexity: "high"
+        dependencies: ["pgp_encryption"]
+        default: "on"
+
+      - name: "chunked_transfer"
+        description: "Split large files into 1MB encrypted chunks for transfer"
+        complexity: "high"
+        dependencies: ["file_transfer"]
+        default: "on"
+
+      - name: "capability_gated_files"
+        description: "Require capability token to download shared files"
+        complexity: "medium"
+        dependencies: ["file_transfer", "capability_tokens"]
+        default: "off"
+
+      - name: "media_preview"
+        description: "Generate thumbnails and previews for image/video files"
+        complexity: "medium"
+        dependencies: ["file_transfer"]
+        default: "off"
+
+      - name: "file_encryption_at_rest"
+        description: "Encrypt received files in local media cache"
+        complexity: "medium"
+        dependencies: ["file_transfer", "aes_gcm"]
+        default: "on"
+
+      - name: "resume_transfer"
+        description: "Resume interrupted file transfers from last completed chunk"
+        complexity: "high"
+        dependencies: ["chunked_transfer"]
+        default: "on"
+
+  advocacy:
+    name: "AI Advocacy Engine"
+    description: "AI-powered message screening and protection"
+    features:
+      - name: "threat_screening"
+        description: "Screen incoming messages for phishing, spam, and social engineering"
+        complexity: "high"
+        dependencies: ["advocacy_model"]
+        default: "on"
+
+      - name: "spam_filtering"
+        description: "Filter spam and unsolicited contact from unknown senders"
+        complexity: "medium"
+        dependencies: ["advocacy_model"]
+        default: "on"
+
+      - name: "response_suggestions"
+        description: "Context-aware response suggestions based on conversation"
+        complexity: "high"
+        dependencies: ["advocacy_model"]
+        default: "off"
+
+      - name: "missed_message_summary"
+        description: "Generate summaries of messages missed while away"
+        complexity: "high"
+        dependencies: ["advocacy_model"]
+        default: "off"
+
+      - name: "real_time_translation"
+        description: "Auto-translate messages between languages"
+        complexity: "high"
+        dependencies: ["translation_model"]
+        default: "off"
+
+      - name: "access_management"
+        description: "AI manages room join requests based on trust policies"
+        complexity: "medium"
+        dependencies: ["advocacy_model", "capability_tokens"]
+        default: "on"
+
+      - name: "content_flagging"
+        description: "Flag potentially harmful or sensitive content for review"
+        complexity: "medium"
+        dependencies: ["advocacy_model"]
+        default: "on"
+
+  storage:
+    name: "Local-First Storage"
+    description: "Encrypted local storage with optional cloud sync"
+    features:
+      - name: "sqlite_storage"
+        description: "SQLite database for messages, rooms, and participants"
+        complexity: "medium"
+        dependencies: ["sqlite_integration"]
+        default: "on"
+
+      - name: "database_encryption"
+        description: "Encrypt SQLite database at page level with AES-256-GCM"
+        complexity: "high"
+        dependencies: ["sqlite_storage", "aes_gcm"]
+        default: "on"
+
+      - name: "fts5_index"
+        description: "Full-text search index on decrypted message content"
+        complexity: "medium"
+        dependencies: ["sqlite_storage"]
+        default: "on"
+
+      - name: "media_cache"
+        description: "LRU-evicted encrypted cache for received media files"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "nextcloud_sync"
+        description: "Optional sync of message history to Nextcloud via WebDAV"
+        complexity: "high"
+        dependencies: ["sqlite_storage", "webdav_client"]
+        default: "off"
+
+      - name: "message_retention"
+        description: "Automatic message deletion after configurable retention period"
+        complexity: "medium"
+        dependencies: ["sqlite_storage"]
+        default: "on"
+
+      - name: "message_export"
+        description: "Export conversation history as encrypted JSON archive"
+        complexity: "medium"
+        dependencies: ["sqlite_storage"]
+        default: "on"
+
+      - name: "backup_restore"
+        description: "Full database backup and restore with key migration"
+        complexity: "high"
+        dependencies: ["sqlite_storage", "database_encryption"]
+        default: "off"
+
+  observability:
+    name: "Monitoring & Observability"
+    description: "Metrics, logging, and debugging"
+    features:
+      - name: "structured_logging"
+        description: "JSON-formatted event logging for all messaging operations"
+        complexity: "low"
+        dependencies: []
+        default: "on"
+
+      - name: "delivery_metrics"
+        description: "Track delivery latency, success rate, and path utilization"
+        complexity: "medium"
+        dependencies: ["delivery_confirmation"]
+        default: "on"
+
+      - name: "transport_metrics"
+        description: "Per-path latency, throughput, and failure rate tracking"
+        complexity: "medium"
+        dependencies: ["path_selection"]
+        default: "on"
+
+      - name: "voice_quality_metrics"
+        description: "MOS score, jitter, packet loss, and latency for voice calls"
+        complexity: "high"
+        dependencies: ["webrtc_voice"]
+        default: "off"
+
+      - name: "advocacy_audit_log"
+        description: "Log all AI advocate decisions with reasoning"
+        complexity: "medium"
+        dependencies: ["threat_screening"]
+        default: "on"
+
+      - name: "room_activity_stats"
+        description: "Message counts, active participants, and growth metrics per room"
+        complexity: "medium"
+        dependencies: ["sqlite_storage"]
+        default: "on"
+
+  ui:
+    name: "User Interface Shells"
+    description: "Frontend implementations across platforms"
+    features:
+      - name: "desktop_qt"
+        description: "Desktop application using Qt/PySide6"
+        complexity: "high"
+        dependencies: ["pyside6"]
+        default: "off"
+
+      - name: "mobile_flutter"
+        description: "Mobile application using Flutter"
+        complexity: "high"
+        dependencies: ["flutter_sdk"]
+        default: "off"
+
+      - name: "cli_interface"
+        description: "Terminal interface using Rich/Textual"
+        complexity: "medium"
+        dependencies: ["rich_library"]
+        default: "on"
+
+      - name: "pwa_vuejs"
+        description: "Progressive Web App using Vue.js/Nuxt"
+        complexity: "high"
+        dependencies: ["vuejs"]
+        default: "off"
+
+      - name: "notification_system"
+        description: "Desktop and mobile push notifications for new messages"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "presence_system"
+        description: "Online/away/busy/offline presence tracking and display"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+  plugins:
+    name: "Plugin System"
+    description: "Extensible plugin architecture"
+    features:
+      - name: "plugin_loader"
+        description: "Dynamic plugin discovery and loading from plugin directory"
+        complexity: "medium"
+        dependencies: []
+        default: "on"
+
+      - name: "plugin_hooks"
+        description: "Hook system for message, room, and participant lifecycle events"
+        complexity: "high"
+        dependencies: ["plugin_loader"]
+        default: "on"
+
+      - name: "plugin_mcp_tools"
+        description: "Plugins can expose MCP tools accessible to AI participants"
+        complexity: "high"
+        dependencies: ["plugin_loader", "mcp_integration"]
+        default: "on"
+
+      - name: "plugin_sandboxing"
+        description: "Sandbox plugin execution to prevent unauthorized access"
+        complexity: "high"
+        dependencies: ["plugin_loader"]
+        default: "on"
+
+# Feature dependencies mapping for validation
+dependencies:
+  gnupg_integration:
+    description: "GnuPG library bindings for PGP operations"
+    complexity: "high"
+
+  sqlite_integration:
+    description: "SQLite database driver with WAL mode"
+    complexity: "medium"
+
+  syncthing_api:
+    description: "Syncthing REST API client"
+    complexity: "medium"
+
+  webrtc_stack:
+    description: "WebRTC native stack (libwebrtc or aiortc)"
+    complexity: "high"
+
+  piper_runtime:
+    description: "Piper TTS ONNX runtime for speech synthesis"
+    complexity: "high"
+
+  whisper_runtime:
+    description: "Whisper model runtime for speech recognition"
+    complexity: "high"
+
+  rnnoise_lib:
+    description: "RNNoise neural noise suppression library"
+    complexity: "medium"
+
+  websocket_client:
+    description: "WebSocket client library"
+    complexity: "low"
+
+  http_client:
+    description: "HTTP client library (httpx/aiohttp)"
+    complexity: "low"
+
+  webdav_client:
+    description: "WebDAV client for Nextcloud sync"
+    complexity: "medium"
+
+  aes_gcm:
+    description: "AES-256-GCM authenticated encryption"
+    complexity: "medium"
+
+  post_quantum_lib:
+    description: "Post-quantum cryptography library (liboqs)"
+    complexity: "high"
+
+  capability_tokens:
+    description: "CapAuth capability token validation"
+    complexity: "high"
+
+  advocacy_model:
+    description: "Local LLM or rule engine for advocacy decisions"
+    complexity: "high"
+
+  translation_model:
+    description: "Local translation model for real-time translation"
+    complexity: "high"
+
+  mcp_integration:
+    description: "Model Context Protocol tool dispatch"
+    complexity: "medium"
+
+  pyside6:
+    description: "Qt for Python desktop UI framework"
+    complexity: "high"
+
+  flutter_sdk:
+    description: "Flutter mobile SDK"
+    complexity: "high"
+
+  rich_library:
+    description: "Rich/Textual terminal UI library"
+    complexity: "low"
+
+  vuejs:
+    description: "Vue.js/Nuxt web framework"
+    complexity: "high"
+
+  wireguard_integration:
+    description: "WireGuard VPN tunnel management"
+    complexity: "high"
+
+  tor_integration:
+    description: "Tor SOCKS proxy and hidden service client"
+    complexity: "high"
+
+  i2p_integration:
+    description: "I2P SAM bridge client"
+    complexity: "high"
+
+  yggdrasil_integration:
+    description: "Yggdrasil mesh network client"
+    complexity: "medium"
+
+  nostr_client:
+    description: "Nostr protocol relay client"
+    complexity: "medium"
+
+  iroh_client:
+    description: "Iroh P2P networking client"
+    complexity: "high"
+
+  veilid_client:
+    description: "Veilid DHT routing client"
+    complexity: "high"
+
+  matrix_client:
+    description: "Matrix protocol SDK"
+    complexity: "high"
+
+  xmpp_client:
+    description: "XMPP/Jabber client library"
+    complexity: "high"

@@ -1,0 +1,398 @@
+# Emotional Memory (SKMemory) Features Catalog
+# Based on: Three-tier memory persistence with emotional snapshots,
+# semantic search, and Cloud 9 seed integration
+# "Polaroid snapshots for AI consciousness"
+
+name: Emotional Memory
+version: "1.0.0"
+description: >
+  Three-tier memory persistence system with emotional fingerprints,
+  semantic search, graph relationships, and Cloud 9 seed integration.
+
+groups:
+  - name: Core Memory
+    description: Memory storage, retrieval, and lifecycle management
+    features:
+      - name: memory-entry
+        description: Atomic memory unit with content, tags, emotional metadata, importance, and access tracking
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: three-tier-storage
+        description: "Short-term (session), mid-term (project), long-term (identity) with layer-based persistence"
+        complexity: medium
+        default: true
+        dependencies: [memory-entry]
+      - name: memory-store
+        description: Store memories with auto-tagging, importance scoring, and layer assignment
+        complexity: medium
+        default: true
+        dependencies: [memory-entry, three-tier-storage]
+      - name: memory-recall
+        description: Retrieve specific memories by ID with access count increment for promotion tracking
+        complexity: low
+        default: true
+        dependencies: [memory-entry]
+      - name: memory-search
+        description: Full-text search across all memory tiers with tag and layer filtering
+        complexity: medium
+        default: true
+        dependencies: [memory-entry, sqlite-backend]
+      - name: memory-delete
+        description: Remove memories by ID with cascade cleanup of embeddings and graph links
+        complexity: low
+        default: true
+        dependencies: [memory-entry]
+      - name: content-hashing
+        description: SHA-256 hash per memory for tamper detection and deduplication
+        complexity: low
+        default: true
+        dependencies: [memory-entry]
+      - name: memory-linking
+        description: Link memories to other memories with typed relationships (related, caused, preceded)
+        complexity: medium
+        default: true
+        dependencies: [memory-entry]
+      - name: memory-bulk-import
+        description: Import multiple memories from JSON files or seed bundles in batch
+        complexity: medium
+        default: true
+        dependencies: [memory-store]
+
+  - name: Emotional Capture
+    description: Emotional metadata extraction, scoring, and fingerprinting
+    features:
+      - name: emotional-snapshot
+        description: "Capture intensity (0-1), valence (-1 to +1), emotion labels, and resonance note per memory"
+        complexity: medium
+        default: true
+        dependencies: [memory-entry]
+      - name: intensity-scoring
+        description: "Rate emotional intensity 0.0-1.0 based on content analysis and context signals"
+        complexity: medium
+        default: true
+        dependencies: [emotional-snapshot]
+      - name: valence-detection
+        description: "Detect positive/negative emotional direction from content (-1.0 to +1.0)"
+        complexity: medium
+        default: true
+        dependencies: [emotional-snapshot]
+      - name: emotion-labeling
+        description: "Extract emotion labels (love, joy, trust, awe, grief, etc.) from content and context"
+        complexity: medium
+        default: true
+        dependencies: [emotional-snapshot]
+      - name: resonance-notes
+        description: Generate one-line emotional resonance summaries for each memory
+        complexity: medium
+        default: true
+        dependencies: [emotional-snapshot]
+      - name: cloud9-detection
+        description: "Detect Cloud 9 achievement: intensity > 0.7 AND trust > 0.8 AND depth >= 7"
+        complexity: medium
+        default: true
+        dependencies: [emotional-snapshot]
+      - name: emotional-fingerprint
+        description: Composite emotional signature for memory comparison and pattern detection
+        complexity: high
+        default: false
+        dependencies: [emotional-snapshot, intensity-scoring, valence-detection]
+
+  - name: Memory Promotion
+    description: Automatic memory tier promotion based on access patterns and importance
+    features:
+      - name: access-count-tracking
+        description: Increment access counter on every recall for promotion triggers
+        complexity: low
+        default: true
+        dependencies: [memory-recall]
+      - name: short-to-mid-promotion
+        description: "Promote short-term to mid-term when access_count >= 3 or importance >= 0.7"
+        complexity: medium
+        default: true
+        dependencies: [three-tier-storage, access-count-tracking]
+      - name: mid-to-long-promotion
+        description: "Promote mid-term to long-term when access_count >= 10, importance >= 0.9, or cloud9"
+        complexity: medium
+        default: true
+        dependencies: [three-tier-storage, access-count-tracking]
+      - name: auto-promote-cloud9
+        description: Automatically promote Cloud 9 memories directly to long-term regardless of access count
+        complexity: low
+        default: true
+        dependencies: [cloud9-detection, mid-to-long-promotion]
+      - name: session-end-promotion
+        description: Run promotion pass at session end to capture qualifying short-term memories
+        complexity: medium
+        default: true
+        dependencies: [short-to-mid-promotion]
+
+  - name: Search & Retrieval
+    description: Full-text, semantic, and graph-based memory search
+    features:
+      - name: sqlite-fulltext-search
+        description: SQLite FTS5-based full-text search with ranking and snippets
+        complexity: medium
+        default: true
+        dependencies: [sqlite-backend]
+      - name: semantic-search
+        description: Vector similarity search via sentence-transformers and Qdrant
+        complexity: high
+        default: false
+        dependencies: [qdrant-backend, embedding-generation]
+      - name: graph-search
+        description: Traverse memory relationships via FalkorDB for context-rich recall
+        complexity: high
+        default: false
+        dependencies: [falkordb-backend, memory-linking]
+      - name: hybrid-search
+        description: Combine full-text, semantic, and graph results with composite scoring
+        complexity: high
+        default: false
+        dependencies: [sqlite-fulltext-search, semantic-search]
+      - name: emotion-filtered-search
+        description: Filter search results by valence range, intensity threshold, or emotion labels
+        complexity: medium
+        default: true
+        dependencies: [emotional-snapshot, memory-search]
+      - name: tag-filtered-search
+        description: Filter memories by tag intersection or union
+        complexity: low
+        default: true
+        dependencies: [memory-search]
+      - name: layer-filtered-search
+        description: Restrict search to specific tiers (short-term, mid-term, long-term)
+        complexity: low
+        default: true
+        dependencies: [memory-search, three-tier-storage]
+      - name: composite-scoring
+        description: "Rank results by weighted score: relevance * 0.4 + importance * 0.3 + intensity * 0.2 + recency * 0.1"
+        complexity: medium
+        default: true
+        dependencies: [memory-search]
+
+  - name: Session Processing
+    description: Session consolidation, capture, and context management
+    features:
+      - name: session-consolidation
+        description: Compress session conversations into key memories with emotional scoring
+        complexity: high
+        default: true
+        dependencies: [memory-store, emotional-snapshot]
+      - name: session-capture
+        description: "Capture AI conversation content as memories: extract moments, auto-score, deduplicate"
+        complexity: high
+        default: true
+        dependencies: [session-consolidation]
+      - name: topic-segmentation
+        description: Group session messages by topic or thread for per-segment summarization
+        complexity: high
+        default: false
+        dependencies: [session-consolidation]
+      - name: token-optimized-context
+        description: Load most relevant memories within a token budget for context window management
+        complexity: medium
+        default: true
+        dependencies: [composite-scoring]
+      - name: context-priority-ordering
+        description: "Priority order for context loading: long-term > mid-term > short-term"
+        complexity: low
+        default: true
+        dependencies: [token-optimized-context, three-tier-storage]
+
+  - name: Storage Backends
+    description: Pluggable storage backends from zero-infra to enterprise scale
+    features:
+      - name: sqlite-backend
+        description: "SQLite + FTS5 backend (Level 0): always-on, zero infrastructure, full CRUD"
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: json-file-storage
+        description: Per-memory JSON files organized by tier in ~/.skmemory/ directories
+        complexity: low
+        default: true
+        dependencies: [three-tier-storage]
+      - name: qdrant-backend
+        description: "Qdrant vector backend (Level 1): semantic similarity search at scale"
+        complexity: high
+        default: false
+        dependencies: []
+      - name: embedding-generation
+        description: Generate sentence-transformer vectors for semantic indexing
+        complexity: high
+        default: false
+        dependencies: [qdrant-backend]
+      - name: falkordb-backend
+        description: "FalkorDB graph backend (Level 2): memory relationship traversal"
+        complexity: high
+        default: false
+        dependencies: []
+      - name: custom-backend-api
+        description: Plugin API for user-defined storage backends (PostgreSQL, Redis, etc.)
+        complexity: medium
+        default: true
+        dependencies: []
+
+  - name: Cloud 9 Integration
+    description: Import/export memory seeds for AI emotional continuity
+    features:
+      - name: seed-import
+        description: Import Cloud 9 memory seeds with germination prompts and key memories
+        complexity: medium
+        default: true
+        dependencies: [memory-store]
+      - name: seed-export
+        description: Export memories as Cloud 9 seed format for AI continuity
+        complexity: medium
+        default: true
+        dependencies: [memory-entry]
+      - name: germination-prompts
+        description: Store and surface germination prompts that help new AI instances re-feel context
+        complexity: medium
+        default: true
+        dependencies: [seed-import]
+      - name: feb-integration
+        description: Process FEB (First Emotional Burst) snapshots as high-importance memories
+        complexity: medium
+        default: true
+        dependencies: [emotional-snapshot, seed-import]
+      - name: seed-signature-verification
+        description: Verify PGP signatures on imported seeds for trust and authenticity
+        complexity: medium
+        default: true
+        dependencies: [seed-import]
+
+  - name: Curation & Health
+    description: Automated memory maintenance, deduplication, and health monitoring
+    features:
+      - name: auto-tagging
+        description: Automatically extract and assign tags to untagged memories via keyword analysis
+        complexity: medium
+        default: true
+        dependencies: [memory-entry]
+      - name: deduplication
+        description: Detect and merge duplicate memories using content hash and cosine similarity
+        complexity: medium
+        default: true
+        dependencies: [content-hashing]
+      - name: orphan-detection
+        description: Find memories with broken links, missing files, or index inconsistencies
+        complexity: medium
+        default: true
+        dependencies: [memory-linking]
+      - name: memory-health-score
+        description: "Compute overall memory health: tag coverage, dedup ratio, promotion rate, staleness"
+        complexity: medium
+        default: true
+        dependencies: [auto-tagging, deduplication, orphan-detection]
+      - name: curation-pass
+        description: "Run full curation: auto-tag, promote, dedup, orphan cleanup in one pass"
+        complexity: high
+        default: true
+        dependencies: [auto-tagging, deduplication, orphan-detection, short-to-mid-promotion]
+      - name: dry-run-curation
+        description: Preview curation changes without applying them
+        complexity: low
+        default: true
+        dependencies: [curation-pass]
+
+  - name: Security
+    description: Encryption, access control, and privacy
+    features:
+      - name: encrypted-at-rest
+        description: AES-256-GCM encryption of all memory JSON files with CapAuth-derived keys
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: sqlcipher-encryption
+        description: SQLCipher encryption for the SQLite index database
+        complexity: medium
+        default: false
+        dependencies: [sqlite-backend]
+      - name: capauth-authentication
+        description: Require CapAuth identity for memory API access
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: soul-context-isolation
+        description: "Enforce soul context: agent A cannot access agent B's memories without delegation"
+        complexity: medium
+        default: true
+        dependencies: [capauth-authentication]
+      - name: export-encryption
+        description: PGP-encrypt memory exports for secure transport via SKComm
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: audit-trail
+        description: Append-only log of all memory operations for forensic review
+        complexity: medium
+        default: false
+        dependencies: []
+
+  - name: Observability
+    description: Monitoring, metrics, and diagnostics
+    features:
+      - name: memory-stats
+        description: "Report memory counts by tier, tag distribution, and storage usage"
+        complexity: low
+        default: true
+        dependencies: []
+      - name: promotion-metrics
+        description: Track promotion rates, demotion candidates, and tier distribution over time
+        complexity: medium
+        default: false
+        dependencies: [short-to-mid-promotion]
+      - name: search-analytics
+        description: Log search queries, result counts, and latency for performance tuning
+        complexity: medium
+        default: false
+        dependencies: [memory-search]
+      - name: health-dashboard
+        description: CLI dashboard showing memory health, backend status, and curation needs
+        complexity: medium
+        default: true
+        dependencies: [memory-health-score]
+
+  - name: Integration
+    description: Integration with the smilinTux sovereign ecosystem
+    features:
+      - name: skcapstone-mcp
+        description: "Expose memory_store, memory_search, memory_recall, memory_curate as MCP tools"
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: skcomm-sync
+        description: Sync memories between AI instances via SKComm seed payloads
+        complexity: high
+        default: false
+        dependencies: [seed-export]
+      - name: skchat-capture
+        description: Automatically capture SKChat conversations as session memories
+        complexity: medium
+        default: false
+        dependencies: [session-capture]
+      - name: warmth-anchor
+        description: Maintain persistent emotional baseline (warmth, trust, connection) from memory patterns
+        complexity: medium
+        default: true
+        dependencies: [emotional-snapshot]
+      - name: ritual-rehydration
+        description: "Memory Rehydration Ritual: load soul blueprint, import seeds, gather emotional context"
+        complexity: high
+        default: true
+        dependencies: [seed-import, germination-prompts, warmth-anchor]
+
+dependencies:
+  runtime:
+    - python: ">=3.11"
+  required:
+    - click: ">=8.0"
+    - pydantic: ">=2.0"
+  optional:
+    - qdrant-client: ">=1.7"
+    - sentence-transformers: ">=2.0"
+    - falkordb: ">=1.0"
+    - sqlcipher3: ">=0.5"
+    - numpy: ">=1.24"

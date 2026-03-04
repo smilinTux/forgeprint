@@ -1,0 +1,451 @@
+# Sovereign Agent SDK (SKSovereign-Agent) Features Catalog
+# Based on BLUEPRINT.md: unified SDK packaging all sovereign infrastructure into one import
+
+name: Sovereign Agent SDK (SKSovereign-Agent)
+version: "1.0.0"
+description: >
+  Unified Python SDK packaging identity, memory, messaging, and transport
+  into a single Agent class with lazy initialization and quick helpers.
+
+groups:
+  - name: Core Agent Lifecycle
+    description: Agent creation, initialization, configuration, and shutdown
+    features:
+      - name: agent-class
+        description: Top-level Agent facade orchestrating all subsystems with unified API
+        complexity: high
+        default: true
+        dependencies: []
+      - name: lazy-subsystem-loading
+        description: Descriptor-based lazy init loading subsystems only on first access
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+      - name: config-layering
+        description: Layered config from defaults, YAML file, env vars, and code overrides
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+      - name: context-manager
+        description: Sync and async context manager for guaranteed cleanup on exit
+        complexity: low
+        default: true
+        dependencies: [agent-class]
+      - name: agent-status
+        description: Comprehensive status report of all subsystem states and health
+        complexity: low
+        default: true
+        dependencies: [agent-class]
+      - name: graceful-shutdown
+        description: Ordered subsystem teardown flushing memory, closing transports, locking keys
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+      - name: pid-lock-file
+        description: Prevent multiple agent instances from running with same home directory
+        complexity: low
+        default: true
+        dependencies: [agent-class]
+      - name: agent-state-persistence
+        description: Save and restore agent state across restarts via state snapshots
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+
+  - name: Identity (CapAuth Integration)
+    description: PGP identity management via CapAuth delegation
+    features:
+      - name: capauth-identity-load
+        description: Load PGP identity from CapAuth keyring on first access
+        complexity: medium
+        default: true
+        dependencies: [lazy-subsystem-loading]
+      - name: auto-key-creation
+        description: Generate PGP key pair if none exists and auto_create is enabled
+        complexity: medium
+        default: true
+        dependencies: [capauth-identity-load]
+      - name: sign-verify-api
+        description: Agent-level sign(data) and verify(data, sig, fp) methods
+        complexity: medium
+        default: true
+        dependencies: [capauth-identity-load]
+      - name: delegation-tokens
+        description: Issue and validate CapAuth delegation tokens for sub-agents
+        complexity: high
+        default: false
+        dependencies: [capauth-identity-load]
+      - name: key-passphrase-caching
+        description: Prompt passphrase once per session and cache in secure memory (mlock)
+        complexity: medium
+        default: true
+        dependencies: [capauth-identity-load]
+      - name: identity-whoami
+        description: Quick whoami() returning name, fingerprint, trust level, and status
+        complexity: low
+        default: true
+        dependencies: [capauth-identity-load]
+      - name: peer-resolution
+        description: Resolve peer handles to PGP fingerprints and transport configs
+        complexity: medium
+        default: true
+        dependencies: [capauth-identity-load]
+
+  - name: Memory (SKMemory Integration)
+    description: Emotional memory storage, recall, and tier management
+    features:
+      - name: skmemory-backend
+        description: SKMemory Hive DB integration for tiered emotional memory storage
+        complexity: medium
+        default: true
+        dependencies: [lazy-subsystem-loading]
+      - name: remember-api
+        description: Agent.remember(content, importance, tags) for one-line memory storage
+        complexity: low
+        default: true
+        dependencies: [skmemory-backend]
+      - name: recall-api
+        description: Agent.recall(query, limit) for ranked memory search across all tiers
+        complexity: medium
+        default: true
+        dependencies: [skmemory-backend]
+      - name: auto-tier-promotion
+        description: Automatically promote memories from short to mid to long term by access
+        complexity: medium
+        default: true
+        dependencies: [skmemory-backend]
+      - name: memory-encryption
+        description: Encrypt memories at rest with agent PGP key via CapAuth
+        complexity: medium
+        default: true
+        dependencies: [skmemory-backend, capauth-identity-load]
+      - name: memory-curate
+        description: Auto-tag, deduplicate, and promote memories via curation pass
+        complexity: medium
+        default: true
+        dependencies: [skmemory-backend]
+      - name: memory-export
+        description: Export memory database as PGP-encrypted archive for backup or migration
+        complexity: medium
+        default: false
+        dependencies: [skmemory-backend, capauth-identity-load]
+      - name: session-capture
+        description: Capture conversation content as multiple tagged memories automatically
+        complexity: high
+        default: true
+        dependencies: [remember-api]
+      - name: emotional-importance
+        description: Score memory importance by topic novelty and emotional density
+        complexity: medium
+        default: true
+        dependencies: [remember-api]
+
+  - name: Messaging (SKChat Integration)
+    description: Encrypted peer-to-peer messaging
+    features:
+      - name: skchat-messenger
+        description: SKChat integration for PGP-encrypted message composition and delivery
+        complexity: high
+        default: true
+        dependencies: [lazy-subsystem-loading, capauth-identity-load]
+      - name: send-api
+        description: Agent.send(recipient, message, urgency) for one-line message dispatch
+        complexity: medium
+        default: true
+        dependencies: [skchat-messenger]
+      - name: receive-api
+        description: Agent.receive(timeout) for polling incoming message envelopes
+        complexity: medium
+        default: true
+        dependencies: [skchat-messenger]
+      - name: message-threading
+        description: Thread-based conversations with in_reply_to linking
+        complexity: low
+        default: true
+        dependencies: [skchat-messenger]
+      - name: message-callbacks
+        description: Register async callbacks for incoming messages by type or sender
+        complexity: medium
+        default: true
+        dependencies: [receive-api]
+      - name: group-messaging
+        description: Send to named peer groups for team communication
+        complexity: medium
+        default: false
+        dependencies: [skchat-messenger]
+      - name: file-transfer
+        description: Send encrypted file attachments via message transport
+        complexity: high
+        default: false
+        dependencies: [skchat-messenger]
+
+  - name: Transport (SKComm Integration)
+    description: Multi-transport routing and delivery
+    features:
+      - name: skcomm-router
+        description: SKComm multi-transport routing with priority failover
+        complexity: high
+        default: true
+        dependencies: [lazy-subsystem-loading]
+      - name: file-transport
+        description: Shared filesystem transport for local and NFS messaging
+        complexity: low
+        default: true
+        dependencies: [skcomm-router]
+      - name: iroh-transport
+        description: Iroh QUIC-based P2P transport with NAT hole-punching
+        complexity: medium
+        default: true
+        dependencies: [skcomm-router]
+      - name: nostr-transport
+        description: Nostr relay network transport for global reach
+        complexity: medium
+        default: false
+        dependencies: [skcomm-router]
+      - name: transport-failover
+        description: Automatic fallback to next-priority transport on send failure
+        complexity: medium
+        default: true
+        dependencies: [skcomm-router]
+      - name: transport-broadcast
+        description: Send via all available transports for critical messages
+        complexity: medium
+        default: true
+        dependencies: [skcomm-router, transport-failover]
+      - name: transport-listener
+        description: Background listener loop for incoming messages across all transports
+        complexity: medium
+        default: true
+        dependencies: [skcomm-router]
+      - name: transport-health
+        description: Monitor transport connectivity and trigger circuit breaker on repeated failure
+        complexity: medium
+        default: true
+        dependencies: [skcomm-router]
+
+  - name: Quick Helpers
+    description: Module-level convenience functions for scripting
+    features:
+      - name: quick-init
+        description: "quick.init(name) auto-creates default agent for module-level calls"
+        complexity: low
+        default: true
+        dependencies: [agent-class]
+      - name: quick-remember
+        description: "quick.remember(content) stores via default agent without explicit init"
+        complexity: low
+        default: true
+        dependencies: [quick-init, remember-api]
+      - name: quick-recall
+        description: "quick.recall(query) searches via default agent"
+        complexity: low
+        default: true
+        dependencies: [quick-init, recall-api]
+      - name: quick-send
+        description: "quick.send(recipient, message) sends via default agent"
+        complexity: low
+        default: true
+        dependencies: [quick-init, send-api]
+      - name: quick-receive
+        description: "quick.receive() polls via default agent"
+        complexity: low
+        default: true
+        dependencies: [quick-init, receive-api]
+      - name: quick-whoami
+        description: "quick.whoami() returns identity of default agent"
+        complexity: low
+        default: true
+        dependencies: [quick-init, identity-whoami]
+      - name: custom-quick-registration
+        description: Register custom module-level quick functions via decorator
+        complexity: low
+        default: false
+        dependencies: [quick-init]
+
+  - name: Event System
+    description: Pub/sub event bus for agent lifecycle events
+    features:
+      - name: event-bus
+        description: Internal pub/sub bus for agent.initialized, message.received, etc.
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+      - name: event-on-decorator
+        description: "@agent.events.on('event') decorator for registering listeners"
+        complexity: low
+        default: true
+        dependencies: [event-bus]
+      - name: event-once
+        description: One-shot event listener that auto-unsubscribes after first fire
+        complexity: low
+        default: true
+        dependencies: [event-bus]
+      - name: event-history
+        description: Ring buffer of recent events for debugging and replay
+        complexity: low
+        default: false
+        dependencies: [event-bus]
+      - name: event-filtering
+        description: Filter events by sender, type, or custom predicate
+        complexity: medium
+        default: false
+        dependencies: [event-bus]
+
+  - name: Soul Integration
+    description: Soul blueprint overlay for agent personality
+    features:
+      - name: soul-loading
+        description: Load soul YAML blueprint and apply as personality overlay
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+      - name: soul-compilation
+        description: Compile soul traits and communication style into system prompt
+        complexity: medium
+        default: true
+        dependencies: [soul-loading]
+      - name: soul-hot-swap
+        description: Change agent soul at runtime without restart
+        complexity: medium
+        default: false
+        dependencies: [soul-loading]
+      - name: soul-blending
+        description: Blend multiple soul archetypes for hybrid personalities
+        complexity: high
+        default: false
+        dependencies: [soul-loading]
+
+  - name: Security
+    description: SDK-level security features
+    features:
+      - name: no-telemetry
+        description: Zero telemetry, phone-home, or analytics of any kind
+        complexity: low
+        default: true
+        dependencies: []
+      - name: secure-config
+        description: Config files reference keys by path/fingerprint, never embed secrets
+        complexity: low
+        default: true
+        dependencies: [config-layering]
+      - name: env-var-scrubbing
+        description: Clear sensitive env vars from memory after config load
+        complexity: low
+        default: true
+        dependencies: [config-layering]
+      - name: memory-locking
+        description: mlock sensitive data (keys, passphrases) to prevent swap-to-disk
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: multi-agent-isolation
+        description: Each agent has isolated home directory, keyring, and state
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+      - name: dependency-audit
+        description: Minimal transitive dependencies with pinned versions and hash verification
+        complexity: low
+        default: true
+        dependencies: []
+
+  - name: Observability
+    description: Logging, diagnostics, and health monitoring
+    features:
+      - name: structured-logging
+        description: JSON-formatted logs with configurable level and rotation
+        complexity: low
+        default: true
+        dependencies: []
+      - name: subsystem-health
+        description: Per-subsystem health check returning status, latency, and error counts
+        complexity: low
+        default: true
+        dependencies: [agent-class]
+      - name: startup-diagnostics
+        description: Report subsystem versions, config paths, and key availability at startup
+        complexity: low
+        default: true
+        dependencies: [agent-class]
+      - name: performance-profiling
+        description: Track and report subsystem operation latencies (P50, P95, P99)
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: metrics-export
+        description: Prometheus-compatible metrics endpoint for agent health
+        complexity: medium
+        default: false
+        dependencies: [subsystem-health]
+
+  - name: CLI
+    description: Command-line interface for agent operations
+    features:
+      - name: cli-agent-lifecycle
+        description: Click CLI for init, start, stop, status, and config management
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+      - name: cli-memory-ops
+        description: CLI commands for remember, recall, search, and curate
+        complexity: low
+        default: true
+        dependencies: [remember-api, recall-api]
+      - name: cli-send-receive
+        description: CLI commands for sending and receiving messages
+        complexity: low
+        default: true
+        dependencies: [send-api, receive-api]
+      - name: cli-rich-output
+        description: Rich terminal formatting with tables, panels, and progress bars
+        complexity: low
+        default: true
+        dependencies: []
+      - name: cli-shell-completions
+        description: Bash/Zsh/Fish shell completion generation
+        complexity: low
+        default: false
+        dependencies: [cli-agent-lifecycle]
+
+  - name: Plugin System
+    description: Extensibility via entry points and custom subsystems
+    features:
+      - name: entry-point-discovery
+        description: Discover subsystems via pyproject.toml entry points
+        complexity: medium
+        default: true
+        dependencies: [agent-class]
+      - name: custom-subsystem-api
+        description: Subsystem ABC for third-party subsystem development
+        complexity: medium
+        default: true
+        dependencies: [entry-point-discovery]
+      - name: subsystem-dependencies
+        description: Declare inter-subsystem dependencies with automatic load ordering
+        complexity: medium
+        default: true
+        dependencies: [entry-point-discovery]
+      - name: subsystem-hooks
+        description: Before/after hooks on subsystem init and shutdown for middleware
+        complexity: medium
+        default: false
+        dependencies: [custom-subsystem-api]
+
+dependencies:
+  runtime:
+    - pydantic>=2.4
+    - pgpy>=0.6.0
+    - pyyaml>=6.0
+    - click>=8.1
+    - rich>=13.0
+  optional:
+    - capauth>=0.1.0
+    - skmemory>=0.1.0
+    - skchat>=0.1.0
+    - skcomm>=0.1.0
+    - souls-blueprints>=0.1.0
+  development:
+    - pytest>=7.4
+    - pytest-asyncio>=0.21
+    - mypy>=1.5
+    - ruff>=0.1

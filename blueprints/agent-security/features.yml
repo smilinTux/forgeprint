@@ -1,0 +1,443 @@
+# Agent Security (SKSecurity) Features Catalog
+# Based on SKSecurity blueprint, five-layer defense architecture
+
+name: Agent Security
+version: "1.0.0"
+description: >
+  Enterprise-grade security for sovereign AI agent ecosystems with multi-layer
+  threat detection, behavioral analysis, auto-quarantine, and compliance reporting.
+
+groups:
+  - name: Pre-Deployment Gate (Layer 1)
+    description: Security validation before agents are deployed
+    features:
+      - name: static-code-analysis
+        description: Scan agent code for vulnerability patterns, injection risks, and unsafe practices
+        complexity: high
+        default: true
+      - name: dependency-audit
+        description: Check all dependencies against NVD, GitHub Advisories, and pip-audit databases
+        complexity: medium
+        default: true
+      - name: cve-blocking
+        description: Block deployment when CRITICAL CVE found in dependency tree
+        complexity: medium
+        default: true
+        dependencies: [dependency-audit]
+      - name: policy-validation
+        description: Validate agent permission requests against organization security policy
+        complexity: medium
+        default: true
+      - name: container-vulnerability-scan
+        description: Scan container image layers for known vulnerabilities via Trivy
+        complexity: high
+        default: true
+      - name: secret-detection
+        description: Detect hardcoded secrets, API keys, and credentials in source code
+        complexity: medium
+        default: true
+      - name: permission-boundary-check
+        description: Verify agent does not request permissions exceeding its role
+        complexity: medium
+        default: true
+      - name: gate-result-reporting
+        description: Detailed pass/fail/conditional report for each gate check
+        complexity: low
+        default: true
+
+  - name: Threat Analysis (Layer 2)
+    description: AI-powered threat detection and risk scoring
+    features:
+      - name: ml-behavioral-classifier
+        description: Machine learning model classifying agent behavior as normal, suspicious, or malicious
+        complexity: high
+        default: true
+      - name: signature-matching
+        description: Match agent behavior against known threat signature database
+        complexity: medium
+        default: true
+      - name: heuristic-rule-engine
+        description: Configurable rule engine for custom detection logic
+        complexity: medium
+        default: true
+      - name: risk-score-aggregation
+        description: Combine multiple signals into composite 0-10 risk score
+        complexity: high
+        default: true
+      - name: zero-day-detection
+        description: ML-based detection of previously unknown attack patterns
+        complexity: high
+        default: true
+        dependencies: [ml-behavioral-classifier]
+      - name: anomaly-correlation
+        description: Cross-reference anomalies across multiple agents to detect coordinated attacks
+        complexity: high
+        default: false
+        dependencies: [ml-behavioral-classifier]
+      - name: risk-threshold-actions
+        description: Configurable actions at risk score thresholds (log, alert, throttle, quarantine)
+        complexity: medium
+        default: true
+        dependencies: [risk-score-aggregation]
+
+  - name: Runtime Monitoring (Layer 3)
+    description: Real-time execution tracking and anomaly detection
+    features:
+      - name: syscall-tracking
+        description: Monitor and categorize system calls made by agents
+        complexity: high
+        default: true
+      - name: network-connection-monitoring
+        description: Track all network connections, destinations, protocols, and data volumes
+        complexity: high
+        default: true
+      - name: resource-usage-monitoring
+        description: Monitor CPU, memory, disk I/O, and open file handles per agent
+        complexity: medium
+        default: true
+      - name: api-access-monitoring
+        description: Track API endpoint access patterns and request rates
+        complexity: medium
+        default: true
+      - name: behavioral-baseline-learning
+        description: Automatically learn normal behavior profile during observation window
+        complexity: high
+        default: true
+      - name: anomaly-detection
+        description: Real-time comparison of current behavior against learned baseline
+        complexity: high
+        default: true
+        dependencies: [behavioral-baseline-learning]
+      - name: temporal-pattern-analysis
+        description: Detect time-based anomalies (activity outside normal hours, unusual bursts)
+        complexity: medium
+        default: true
+      - name: baseline-auto-tuning
+        description: Continuously refine baselines as confirmed false positives are resolved
+        complexity: high
+        default: false
+        dependencies: [behavioral-baseline-learning, anomaly-detection]
+      - name: configurable-sensitivity
+        description: Per-agent and per-metric anomaly threshold tuning (0.0-1.0 scale)
+        complexity: medium
+        default: true
+
+  - name: Data Protection (Layer 4)
+    description: Encryption enforcement, access control, and data loss prevention
+    features:
+      - name: encryption-in-transit-enforcement
+        description: Verify all agent network communications use TLS or equivalent encryption
+        complexity: medium
+        default: true
+      - name: encryption-at-rest-enforcement
+        description: Verify all persisted data is encrypted with approved algorithms
+        complexity: medium
+        default: true
+      - name: capauth-access-control
+        description: Validate CapAuth capability tokens for all agent operations
+        complexity: high
+        default: true
+      - name: pii-detection
+        description: Detect personally identifiable information in data flows
+        complexity: high
+        default: true
+      - name: secret-leak-prevention
+        description: Prevent secrets and credentials from being exfiltrated in outbound data
+        complexity: high
+        default: true
+      - name: dlp-rule-engine
+        description: Configurable data loss prevention rules with block/alert actions
+        complexity: high
+        default: true
+      - name: data-classification-labels
+        description: Auto-classify data as public, internal, confidential, or restricted
+        complexity: medium
+        default: true
+      - name: network-egress-policy
+        description: Whitelist-based egress firewall rules per agent
+        complexity: medium
+        default: true
+
+  - name: Incident Response (Layer 5)
+    description: Automated response, quarantine, forensics, and recovery
+    features:
+      - name: auto-quarantine
+        description: Instantly isolate agents when HIGH or CRITICAL threat detected
+        complexity: high
+        default: true
+      - name: quarantine-levels
+        description: "Graduated isolation: network_only, full, forensic"
+        complexity: medium
+        default: true
+        dependencies: [auto-quarantine]
+      - name: forensic-snapshot
+        description: Capture memory dump, network traffic, and filesystem diff on quarantine
+        complexity: high
+        default: true
+        dependencies: [auto-quarantine]
+      - name: evidence-chain-of-custody
+        description: PGP-signed, append-only evidence log for forensic integrity
+        complexity: high
+        default: true
+        dependencies: [forensic-snapshot]
+      - name: automated-rollback
+        description: Restore agent to last known-good checkpoint after incident
+        complexity: high
+        default: false
+      - name: response-playbooks
+        description: YAML-defined automated response workflows for common incident types
+        complexity: high
+        default: true
+      - name: quarantine-review-deadline
+        description: Auto-terminate quarantined agents not reviewed within configurable deadline
+        complexity: medium
+        default: true
+        dependencies: [auto-quarantine]
+      - name: manual-quarantine-override
+        description: SOC operators can manually quarantine or release with audit trail
+        complexity: medium
+        default: true
+
+  - name: Threat Intelligence
+    description: External and internal threat feed aggregation
+    features:
+      - name: nvd-cve-feed
+        description: Ingest NIST National Vulnerability Database CVE data
+        complexity: medium
+        default: true
+      - name: github-advisory-feed
+        description: Ingest GitHub Security Advisories for dependency vulnerabilities
+        complexity: medium
+        default: true
+      - name: moltbook-security-feed
+        description: Sovereign threat intelligence via Moltbook Security over SKComm
+        complexity: medium
+        default: true
+      - name: ai-pattern-generation
+        description: ML-generated threat patterns from local behavioral analysis
+        complexity: high
+        default: true
+      - name: community-intelligence
+        description: P2P threat intelligence sharing between sovereign nodes via SKComm
+        complexity: medium
+        default: false
+      - name: feed-normalization
+        description: Normalize all intelligence sources into unified indicator format
+        complexity: medium
+        default: true
+      - name: indicator-ttl
+        description: Auto-expire stale threat indicators past their time-to-live
+        complexity: low
+        default: true
+      - name: confidence-scoring
+        description: Score intelligence reliability based on source history and corroboration
+        complexity: medium
+        default: true
+
+  - name: Alerting & Notifications
+    description: Multi-channel alert routing and escalation
+    features:
+      - name: severity-based-routing
+        description: Route alerts to channels based on event severity level
+        complexity: medium
+        default: true
+      - name: slack-integration
+        description: Send security alerts to Slack channels via webhook
+        complexity: low
+        default: true
+      - name: email-alerts
+        description: Send security alerts via SMTP email
+        complexity: low
+        default: true
+      - name: skcomm-alerts
+        description: Send alerts via sovereign SKComm P2P messaging
+        complexity: medium
+        default: true
+      - name: pagerduty-integration
+        description: PagerDuty incident creation for CRITICAL events
+        complexity: medium
+        default: false
+      - name: webhook-alerts
+        description: Generic HTTP webhook for custom alert integrations
+        complexity: low
+        default: false
+      - name: alert-deduplication
+        description: Suppress duplicate alerts within configurable time window
+        complexity: medium
+        default: true
+      - name: escalation-chains
+        description: Automatic escalation if alert not acknowledged within deadline
+        complexity: medium
+        default: false
+
+  - name: Compliance & Reporting
+    description: Regulatory compliance frameworks and evidence generation
+    features:
+      - name: soc2-mapping
+        description: Map security controls to SOC 2 Trust Service Criteria
+        complexity: high
+        default: true
+      - name: nist-csf-mapping
+        description: Map security controls to NIST Cybersecurity Framework
+        complexity: high
+        default: true
+      - name: pci-dss-mapping
+        description: Map security controls to PCI DSS requirements
+        complexity: high
+        default: false
+      - name: hipaa-mapping
+        description: Map security controls to HIPAA Security Rule requirements
+        complexity: high
+        default: false
+      - name: compliance-report-generation
+        description: Generate PDF compliance reports with evidence and gap analysis
+        complexity: high
+        default: true
+      - name: continuous-compliance-monitoring
+        description: Real-time compliance posture dashboard with drift detection
+        complexity: high
+        default: true
+      - name: evidence-collection
+        description: Automated evidence collection for audit readiness
+        complexity: medium
+        default: true
+
+  - name: SOC Dashboard
+    description: Security operations center web interface
+    features:
+      - name: real-time-event-feed
+        description: WebSocket-powered live security event stream
+        complexity: medium
+        default: true
+      - name: agent-risk-overview
+        description: Grid view of all agents with current risk scores and status
+        complexity: medium
+        default: true
+      - name: threat-map-visualization
+        description: Visual map of threat sources, targets, and attack vectors
+        complexity: high
+        default: false
+      - name: incident-timeline
+        description: Chronological timeline view of security incidents
+        complexity: medium
+        default: true
+      - name: quarantine-management
+        description: Manage quarantined agents directly from dashboard
+        complexity: medium
+        default: true
+      - name: compliance-posture-view
+        description: At-a-glance compliance status across all frameworks
+        complexity: medium
+        default: true
+
+  - name: Observability
+    description: Internal monitoring and diagnostics
+    features:
+      - name: prometheus-metrics
+        description: Prometheus-compatible metrics for all security operations
+        complexity: medium
+        default: true
+      - name: structured-logging
+        description: JSON-structured logging with configurable levels
+        complexity: low
+        default: true
+      - name: log-rotation
+        description: Size-based log rotation with configurable retention
+        complexity: low
+        default: true
+      - name: health-endpoint
+        description: /health endpoint for liveness and readiness probes
+        complexity: low
+        default: true
+      - name: event-store-retention
+        description: Configurable event retention with archival and purge policies
+        complexity: medium
+        default: true
+      - name: self-monitoring
+        description: SKSecurity monitors its own processes for tampering
+        complexity: high
+        default: true
+
+  - name: Multi-Tenant
+    description: Multi-tenant isolation and management
+    features:
+      - name: namespace-isolation
+        description: Tenant security contexts isolated by namespace
+        complexity: high
+        default: false
+      - name: per-tenant-policies
+        description: Independent security policies per tenant
+        complexity: medium
+        default: false
+        dependencies: [namespace-isolation]
+      - name: cross-tenant-intelligence-sharing
+        description: Opt-in threat intelligence sharing between tenants
+        complexity: high
+        default: false
+        dependencies: [namespace-isolation]
+      - name: tenant-scoped-compliance
+        description: Compliance reports scoped to individual tenants
+        complexity: medium
+        default: false
+        dependencies: [namespace-isolation]
+
+  - name: Integration
+    description: Integration with sovereign ecosystem
+    features:
+      - name: capauth-identity
+        description: CapAuth-based identity and token validation for all operations
+        complexity: high
+        default: true
+      - name: skcomm-transport
+        description: Receive threat intelligence and send alerts via SKComm
+        complexity: medium
+        default: true
+      - name: skcapstone-agent
+        description: Run as SKCapstone MCP skill providing security tools to agents
+        complexity: high
+        default: false
+      - name: skmemory-incident-sync
+        description: Store incident summaries in SKMemory for agent recall
+        complexity: medium
+        default: false
+      - name: docker-container-management
+        description: Manage agent containers via Docker API for quarantine and rollback
+        complexity: high
+        default: true
+      - name: kubernetes-integration
+        description: Native Kubernetes pod management for cloud-native deployments
+        complexity: high
+        default: false
+
+dependencies:
+  runtime:
+    - python: ">=3.11"
+    - fastapi: ">=0.110.0"
+    - uvicorn: ">=0.27.0"
+    - scikit-learn: ">=1.4.0"
+    - numpy: ">=1.26.0"
+    - scipy: ">=1.12.0"
+    - psutil: ">=5.9.0"
+    - httpx: ">=0.27.0"
+    - pydantic: ">=2.0.0"
+    - aiosqlite: ">=0.20.0"
+    - jinja2: ">=3.1.0"
+    - pyyaml: ">=6.0.0"
+    - click: ">=8.1.0"
+    - rich: ">=13.0.0"
+    - websockets: ">=12.0"
+  optional:
+    - docker: ">=7.0.0"
+    - scapy: ">=2.5.0"
+    - skcomm: ">=0.1.0"
+    - capauth-sdk: ">=0.1.0"
+    - skcapstone-sdk: ">=0.1.0"
+    - prometheus-client: ">=0.20.0"
+    - trivy: ">=0.50.0"
+  development:
+    - pytest: ">=8.0.0"
+    - pytest-asyncio: ">=0.23.0"
+    - httpx: ">=0.27.0"
+    - mypy: ">=1.8.0"
+    - ruff: ">=0.3.0"
+    - faker: ">=24.0.0"

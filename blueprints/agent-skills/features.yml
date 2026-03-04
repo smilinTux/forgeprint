@@ -1,0 +1,408 @@
+# Agent Skills Framework (SKSkills) Features Catalog
+# Based on SKSkills blueprint, MCP (Model Context Protocol)
+
+name: Agent Skills Framework
+version: "1.0.0"
+description: >
+  Sovereign agent skill framework built natively on MCP. Three primitives
+  (Knowledge, Capability, Flow), isolated subprocess execution, namespace
+  support, and CapAuth access control.
+
+groups:
+  - name: Core Primitives
+    description: The three fundamental skill primitive types
+    features:
+      - name: knowledge-primitive
+        description: "MCP resource primitive: documents, context, data accessible via URI"
+        complexity: medium
+        default: true
+      - name: capability-primitive
+        description: "MCP tool primitive: actions the agent can execute with input/output schemas"
+        complexity: medium
+        default: true
+      - name: flow-primitive
+        description: "MCP prompt primitive: multi-step automation sequences with variable substitution"
+        complexity: high
+        default: true
+      - name: primitive-composition
+        description: Skills can combine multiple primitives of different types
+        complexity: medium
+        default: true
+      - name: typed-input-schemas
+        description: JSON Schema validation for all tool inputs
+        complexity: medium
+        default: true
+      - name: typed-output-schemas
+        description: JSON Schema validation for tool outputs
+        complexity: medium
+        default: true
+      - name: resource-uri-templates
+        description: URI template support for parameterized resource access
+        complexity: medium
+        default: true
+      - name: flow-step-orchestration
+        description: Execute flow steps sequentially with context passing between steps
+        complexity: high
+        default: true
+
+  - name: Skill Manifest
+    description: Declarative skill definition and metadata
+    features:
+      - name: skill-yaml-manifest
+        description: Declarative skill.yaml defining name, version, primitives, and entry point
+        complexity: medium
+        default: true
+      - name: manifest-validation
+        description: JSON Schema-based validation of skill.yaml on install and load
+        complexity: medium
+        default: true
+      - name: semantic-versioning
+        description: Enforce semantic versioning for skill versions
+        complexity: low
+        default: true
+      - name: dependency-declaration
+        description: Declare Python, skill, and system dependencies in manifest
+        complexity: medium
+        default: true
+      - name: config-schema-declaration
+        description: Declare configurable parameters with JSON Schema types and defaults
+        complexity: medium
+        default: true
+      - name: capauth-scope-declaration
+        description: Declare required CapAuth scopes per primitive in manifest
+        complexity: medium
+        default: true
+        dependencies: [capauth-token-gating]
+      - name: pgp-manifest-signing
+        description: PGP-sign skill manifests for authorship verification
+        complexity: high
+        default: false
+      - name: post-install-hooks
+        description: Run custom scripts after skill installation
+        complexity: medium
+        default: false
+
+  - name: Skill Registry
+    description: Installation, tracking, and lifecycle management
+    features:
+      - name: local-registry
+        description: JSON-file registry tracking installed skills and their state
+        complexity: medium
+        default: true
+      - name: skill-install-local
+        description: Install skills from local filesystem path
+        complexity: low
+        default: true
+      - name: skill-install-git
+        description: Install skills from git repository URL
+        complexity: medium
+        default: true
+      - name: skill-install-registry
+        description: Install skills from a remote skill registry by name
+        complexity: high
+        default: false
+      - name: skill-uninstall
+        description: Remove a skill and its files, preserving configuration
+        complexity: low
+        default: true
+      - name: skill-enable-disable
+        description: Enable or disable skills without uninstalling
+        complexity: low
+        default: true
+      - name: skill-update
+        description: Update installed skill to new version with rollback on failure
+        complexity: medium
+        default: true
+      - name: dependency-resolution
+        description: Resolve and install Python and inter-skill dependencies
+        complexity: high
+        default: true
+      - name: registry-integrity-check
+        description: Verify registry consistency and fix orphaned entries
+        complexity: medium
+        default: true
+      - name: bulk-operations
+        description: Install, update, or remove multiple skills in a single operation
+        complexity: medium
+        default: false
+
+  - name: MCP Transport
+    description: Communication between agent frameworks and skill subprocesses
+    features:
+      - name: stdio-transport
+        description: Communicate with skills via stdin/stdout pipes (default, lowest latency)
+        complexity: medium
+        default: true
+      - name: sse-transport
+        description: Communicate with skills via HTTP Server-Sent Events (for remote skills)
+        complexity: high
+        default: true
+      - name: json-rpc-protocol
+        description: MCP JSON-RPC 2.0 message format for all communication
+        complexity: medium
+        default: true
+      - name: message-size-limits
+        description: Configurable maximum message size to prevent resource exhaustion
+        complexity: low
+        default: true
+      - name: request-timeout
+        description: Configurable timeout for MCP requests with graceful cancellation
+        complexity: medium
+        default: true
+      - name: connection-keepalive
+        description: Maintain persistent connections to skill processes between calls
+        complexity: medium
+        default: true
+      - name: transport-auto-detection
+        description: Auto-detect transport type from skill manifest
+        complexity: low
+        default: true
+
+  - name: Runtime Management
+    description: Skill subprocess lifecycle and orchestration
+    features:
+      - name: subprocess-launch
+        description: Launch each skill as an isolated subprocess with its own PID
+        complexity: medium
+        default: true
+      - name: subprocess-health-check
+        description: Periodic health checks for all running skill processes
+        complexity: medium
+        default: true
+      - name: auto-restart-on-crash
+        description: Automatically restart crashed skill processes with backoff
+        complexity: medium
+        default: true
+      - name: max-restart-limit
+        description: Mark skill as degraded after exceeding restart attempts
+        complexity: low
+        default: true
+        dependencies: [auto-restart-on-crash]
+      - name: graceful-shutdown
+        description: Send termination signal and wait for clean shutdown before killing
+        complexity: medium
+        default: true
+      - name: startup-timeout
+        description: Configurable timeout for skill startup with failure handling
+        complexity: low
+        default: true
+      - name: resource-limits
+        description: Set memory and CPU limits per skill subprocess
+        complexity: medium
+        default: false
+      - name: hot-reload
+        description: Enable/disable skills at runtime without restarting the entire runtime
+        complexity: high
+        default: false
+      - name: lazy-loading
+        description: Only launch skill subprocess on first invocation, not at startup
+        complexity: medium
+        default: false
+      - name: concurrent-skill-limit
+        description: Configurable maximum number of simultaneous skill processes
+        complexity: low
+        default: true
+
+  - name: Namespace Support
+    description: Global and per-agent skill scoping
+    features:
+      - name: global-namespace
+        description: Skills installed globally are available to all agents
+        complexity: low
+        default: true
+      - name: agent-namespace
+        description: Skills installed per-agent are scoped to that agent only
+        complexity: medium
+        default: true
+      - name: namespace-resolution-order
+        description: "Configurable resolution: agent-first, global-first, or agent-only"
+        complexity: medium
+        default: true
+      - name: agent-config-overrides
+        description: Agent-specific configuration overrides for global skills
+        complexity: medium
+        default: true
+      - name: namespace-isolation
+        description: Agent-namespaced skills cannot see or access other agents' skills
+        complexity: medium
+        default: true
+
+  - name: Security
+    description: Access control, isolation, and integrity
+    features:
+      - name: process-isolation
+        description: Each skill runs in separate process with isolated memory and file descriptors
+        complexity: medium
+        default: true
+      - name: capauth-token-gating
+        description: Require CapAuth capability tokens for tool invocation
+        complexity: high
+        default: false
+      - name: per-tool-scoping
+        description: Granular CapAuth scopes per individual tool within a skill
+        complexity: high
+        default: false
+        dependencies: [capauth-token-gating]
+      - name: per-agent-scoping
+        description: Different agents can have different scope grants for the same skill
+        complexity: high
+        default: false
+        dependencies: [capauth-token-gating]
+      - name: manifest-signature-verification
+        description: Verify PGP signature on skill manifests before installation
+        complexity: high
+        default: false
+        dependencies: [pgp-manifest-signing]
+      - name: file-integrity-check
+        description: SHA-256 hash verification of skill files after installation
+        complexity: medium
+        default: true
+      - name: dependency-virtualenv
+        description: Each skill uses its own virtualenv to prevent dependency conflicts
+        complexity: medium
+        default: false
+      - name: localhost-only-sse
+        description: SSE transport bound to localhost by default for security
+        complexity: low
+        default: true
+
+  - name: Built-in Skills
+    description: Skills that ship with SKSkills out of the box
+    features:
+      - name: skmemory-skill
+        description: "Knowledge + Capability: search/store agent memories via MCP"
+        complexity: high
+        default: true
+      - name: skseal-skill
+        description: "Capability: sign and verify documents via MCP"
+        complexity: high
+        default: true
+      - name: skpdf-skill
+        description: "Capability: PDF generation, manipulation, and form filling via MCP"
+        complexity: high
+        default: true
+      - name: skill-scaffolder
+        description: Generate new skill project from template via skskills scaffold command
+        complexity: medium
+        default: true
+
+  - name: CLI Interface
+    description: Command-line management and introspection tools
+    features:
+      - name: cli-install
+        description: "Install skills: skskills install <source> [--agent <name>]"
+        complexity: medium
+        default: true
+      - name: cli-uninstall
+        description: "Remove skills: skskills uninstall <name>"
+        complexity: low
+        default: true
+      - name: cli-list
+        description: "List skills: skskills list [--agent <name>] with rich table output"
+        complexity: low
+        default: true
+      - name: cli-info
+        description: "Skill details: skskills info <name> with full manifest display"
+        complexity: low
+        default: true
+      - name: cli-enable-disable
+        description: "Toggle skills: skskills enable/disable <name>"
+        complexity: low
+        default: true
+      - name: cli-update
+        description: "Update skills: skskills update <name> [--all]"
+        complexity: medium
+        default: true
+      - name: cli-run
+        description: "Start runtime: skskills run [--agent <name>]"
+        complexity: medium
+        default: true
+      - name: cli-health
+        description: "Health check: skskills health with per-skill status"
+        complexity: low
+        default: true
+      - name: cli-scaffold
+        description: "New skill: skskills scaffold <name> generates project template"
+        complexity: medium
+        default: true
+      - name: cli-validate
+        description: "Validate: skskills validate <path> checks skill.yaml correctness"
+        complexity: low
+        default: true
+      - name: cli-tools
+        description: "List tools: skskills tools shows all tools across enabled skills"
+        complexity: low
+        default: true
+      - name: cli-resources
+        description: "List resources: skskills resources shows all resources"
+        complexity: low
+        default: true
+
+  - name: Observability
+    description: Logging, monitoring, and diagnostics
+    features:
+      - name: structured-logging
+        description: JSON-structured logging with per-skill log tagging
+        complexity: low
+        default: true
+      - name: log-rotation
+        description: Size-based log rotation with configurable retention
+        complexity: low
+        default: true
+      - name: process-status-tracking
+        description: Track PID, uptime, memory, and health status per skill process
+        complexity: medium
+        default: true
+      - name: invocation-metrics
+        description: Count and latency tracking for all tool and resource invocations
+        complexity: medium
+        default: false
+      - name: prometheus-metrics
+        description: Prometheus-compatible metrics endpoint for monitoring stacks
+        complexity: medium
+        default: false
+      - name: health-endpoint
+        description: HTTP /health endpoint for external health monitoring
+        complexity: low
+        default: false
+
+  - name: Integration
+    description: Integration with sovereign ecosystem
+    features:
+      - name: skcapstone-integration
+        description: Register as MCP provider for SKCapstone agent runtime
+        complexity: high
+        default: true
+      - name: capauth-integration
+        description: CapAuth SDK for capability token validation
+        complexity: high
+        default: false
+      - name: skcomm-skill-distribution
+        description: Distribute and install skills via SKComm P2P transport
+        complexity: high
+        default: false
+      - name: openclaw-migration
+        description: Migration guide and adapter for OpenClaw plugins to SKSkills
+        complexity: medium
+        default: false
+
+dependencies:
+  runtime:
+    - python: ">=3.11"
+    - pyyaml: ">=6.0.0"
+    - jsonschema: ">=4.20.0"
+    - click: ">=8.1.0"
+    - rich: ">=13.0.0"
+    - pydantic: ">=2.0.0"
+    - httpx: ">=0.27.0"
+  optional:
+    - capauth-sdk: ">=0.1.0"
+    - skcapstone-sdk: ">=0.1.0"
+    - skcomm: ">=0.1.0"
+    - pgpy: ">=0.6.0"
+    - prometheus-client: ">=0.20.0"
+  development:
+    - pytest: ">=8.0.0"
+    - pytest-asyncio: ">=0.23.0"
+    - mypy: ">=1.8.0"
+    - ruff: ">=0.3.0"
