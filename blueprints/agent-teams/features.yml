@@ -1,0 +1,295 @@
+# Agent Teams Features Catalog
+# Features for deploying SKStacks professional agent teams
+
+groups:
+  # =======================
+  # DEPLOYMENT PATTERNS
+  # =======================
+  - name: Deployment Platform
+    description: Infrastructure platform for agent deployment
+    features:
+      - name: Proxmox LXC
+        description: Deploy agents as LXC containers on Proxmox VE
+        complexity: medium
+        default: true
+        dependencies: []
+
+      - name: Bare Metal Ubuntu
+        description: Deploy agents directly on Ubuntu servers
+        complexity: low
+        default: true
+        dependencies: []
+
+      - name: Docker Containers
+        description: Containerized deployment without VM layer
+        complexity: low
+        default: false
+        dependencies: []
+
+      - name: Multi-Server Distribution
+        description: Spread agents across multiple physical servers
+        complexity: high
+        default: false
+        dependencies:
+          - Bare Metal Ubuntu
+
+  # =======================
+  # SOVEREIGN TEAM
+  # =======================
+  - name: Sovereign Team
+    description: Private banking, legal affairs, trust management
+    features:
+      - name: Sovereign Lead
+        description: Team lead agent for private banking and legal coordination
+        complexity: medium
+        default: true
+        dependencies: []
+
+      - name: Legal Research (Regent)
+        description: Agent for common law research, UCC filings, affidavit drafting
+        complexity: medium
+        default: true
+        dependencies: []
+
+      - name: Private Banking (Vault)
+        description: Agent for asset protection, trust administration
+        complexity: medium
+        default: true
+        dependencies:
+          - Legal Research (Regent)
+
+      - name: Documentation (Scribe)
+        description: Agent for VSOF, SPC paperwork, living trust records
+        complexity: low
+        default: true
+        dependencies: []
+
+      - name: Research Intel (Consul)
+        description: Agent for jurisdictional analysis, privacy tools
+        complexity: medium
+        default: true
+        dependencies:
+          - Legal Research (Regent)
+
+      - name: smilinTux.org QT
+        description: Foreign trust structure project
+        complexity: high
+        default: false
+        dependencies:
+          - Sovereign Lead
+          - Private Banking (Vault)
+
+  # =======================
+  # INFRASTRUCTURE TEAM
+  # =======================
+  - name: Infrastructure Team
+    description: Core infrastructure and security management
+    features:
+      - name: Infrastructure Guardian (Sentinel)
+        description: Lead agent for Docker Swarm, Proxmox, monitoring
+        complexity: high
+        default: true
+        dependencies: []
+
+      - name: Security Specialist (Rook)
+        description: Security hardening, firewall management, VPN
+        complexity: medium
+        default: true
+        dependencies:
+          - Infrastructure Guardian (Sentinel)
+
+      - name: Database Specialist (Dev-Alpha)
+        description: Qdrant, FalkorDB, Supabase maintenance
+        complexity: medium
+        default: true
+        dependencies:
+          - Infrastructure Guardian (Sentinel)
+
+      - name: SKMesh VPN
+        description: Netbird-based mesh VPN deployment
+        complexity: high
+        default: false
+        dependencies:
+          - Security Specialist (Rook)
+
+  # =======================
+  # DEVELOPMENT TEAM
+  # =======================
+  - name: Development Team
+    description: Software architecture and development tools
+    features:
+      - name: Lead Architect (Forge)
+        description: FORGEPRINT blueprints, code review, technical decisions
+        complexity: high
+        default: true
+        dependencies: []
+
+      - name: Template Engine (Dev-Beta)
+        description: Nextcloud template processing
+        complexity: medium
+        default: true
+        dependencies:
+          - Lead Architect (Forge)
+
+      - name: Video Pipeline (Dev-Gamma)
+        description: Frame extraction and media processing
+        complexity: medium
+        default: true
+        dependencies:
+          - Lead Architect (Forge)
+
+      - name: QA Testing (Dev-Delta)
+        description: Testing automation, blueprint verification
+        complexity: medium
+        default: true
+        dependencies:
+          - Lead Architect (Forge)
+
+      - name: FORGEPRINT CLI
+        description: Include forge.mjs CLI tool
+        complexity: high
+        default: false
+        dependencies:
+          - Lead Architect (Forge)
+
+  # =======================
+  # OTHER TEAMS
+  # =======================
+  - name: Research & Commerce
+    description: Market research and commerce intelligence
+    features:
+      - name: Research Lead (Agent Zero)
+        description: Dark web research, DeFi, market analysis
+        complexity: medium
+        default: true
+        dependencies: []
+
+  - name: Marketing & Communications
+    description: Brand management and documentation
+    features:
+      - name: Marketing Lead (Piper)
+        description: Brand management, social media, content creation
+        complexity: low
+        default: true
+        dependencies: []
+
+      - name: Documentation (Chronicle)
+        description: Technical documentation, knowledge management
+        complexity: low
+        default: true
+        dependencies:
+          - Marketing Lead (Piper)
+
+  - name: Legal & Trusts
+    description: Legal affairs and trust administration
+    features:
+      - name: Legal Counsel (Vesper)
+        description: Trust documentation, legal compliance
+        complexity: medium
+        default: true
+        dependencies:
+          - Documentation (Chronicle)
+
+  # =======================
+  # SECURITY
+  # =======================
+  - name: Security Hardening
+    description: Agent security configuration
+    features:
+      - name: SSH Key Auth
+        description: Disable password auth, use SSH keys only
+        complexity: low
+        default: true
+        dependencies: []
+
+      - name: UFW Firewall
+        description: Configure Uncomplicated Firewall
+        complexity: low
+        default: true
+        dependencies: []
+
+      - name: Fail2ban
+        description: Install Fail2ban for intrusion prevention
+        complexity: low
+        default: true
+        dependencies:
+          - SSH Key Auth
+
+      - name: Vault Encryption
+        description: Use Ansible Vault for sensitive data
+        complexity: medium
+        default: false
+        dependencies: []
+
+      - name: Network Segmentation
+        description: Isolate agents via SKMesh VPN
+        complexity: high
+        default: false
+        dependencies:
+          - SKMesh VPN
+          - Fail2ban
+
+  # =======================
+  # OBSERVABILITY
+  # =======================
+  - name: Observability
+    description: Monitoring, logging, and alerting
+    features:
+      - name: Log Aggregation
+        description: Centralized logging for all agents
+        complexity: medium
+        default: true
+        dependencies: []
+
+      - name: Health Checks
+        description: Periodic agent health verification
+        complexity: low
+        default: true
+        dependencies: []
+
+      - name: Metrics Export
+        description: Prometheus-compatible metrics
+        complexity: medium
+        default: false
+        dependencies:
+          - Health Checks
+
+      - name: Alerting
+        description: Alert on agent failures or anomalies
+        complexity: medium
+        default: false
+        dependencies:
+          - Health Checks
+          - Metrics Export
+
+  # =======================
+  # INTEGRATIONS
+  # =======================
+  - name: Knowledge Base Integration
+    description: Connect agents to SKStacks knowledge systems
+    features:
+      - name: SKVector Connection
+        description: Connect to Qdrant vector database
+        complexity: low
+        default: true
+        dependencies: []
+
+      - name: SKGraph Connection
+        description: Connect to FalkorDB graph database
+        complexity: low
+        default: true
+        dependencies:
+          - SKVector Connection
+
+      - name: SKMemory Sync
+        description: Sync public knowledge from Git repository
+        complexity: low
+        default: true
+        dependencies: []
+
+      - name: SKPrivate Access
+        description: Access encrypted private knowledge base
+        complexity: medium
+        default: false
+        dependencies:
+          - SKMemory Sync

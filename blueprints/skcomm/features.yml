@@ -1,0 +1,212 @@
+category: skcomm
+description: Sovereign multi-layer communication protocol for unbreakable AI/agent messaging
+repository: https://github.com/smilinTux/skcomm
+license: GPL-3.0
+
+# Feature groups aligned to SKForge schema
+groups:
+  - name: P2P_Mesh
+    description: Direct peer-to-peer mesh VPN communication
+    features:
+      - name: Netbird Primary
+        description: Self-hosted WireGuard mesh VPN (primary channel)
+        complexity: high
+        default: true
+        dependencies: []
+      - name: Tailscale Fallback
+        description: Zero-config WireGuard backup (automatic fallback)
+        complexity: medium
+        default: true
+        dependencies: [Netbird Primary]
+      - name: Direct Discovery
+        description: mDNS/Bonjour endpoint discovery on local network
+        complexity: low
+        default: true
+        dependencies: []
+
+  - name: Dead_Drop_Institutional
+    description: Archived, searchable communication via institutional platforms
+    features:
+      - name: GitHub Issues
+        description: Encrypted messages in GitHub Issue bodies
+        complexity: medium
+        default: true
+        dependencies: [PGP Signing]
+      - name: GitHub Gists
+        description: Secret gists with PGP-encrypted content
+        complexity: low
+        default: true
+        dependencies: [PGP Signing]
+      - name: GitLab Support
+        description: GitLab Issues/MRs as alternative to GitHub
+        complexity: low
+        default: false
+        dependencies: [GitHub Issues]
+
+  - name: Steganographic_Web
+    description: Hidden communication in public web content
+    features:
+      - name: HTML Comment Injection
+        description: Messages hidden in HTML <!-- comments -->
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: CSS Steganography
+        description: Messages encoded in unused CSS properties
+        complexity: high
+        default: false
+        dependencies: [HTML Comment Injection]
+      - name: Image LSB
+        description: Least-significant-bit encoding in images
+        complexity: high
+        default: false
+        dependencies: []
+      - name: CDN Distribution
+        description: Cloudflare/AWS CloudFront for global dead drop availability
+        complexity: medium
+        default: true
+        dependencies: [HTML Comment Injection]
+
+  - name: File_Sync_Bitchat
+    description: File-based messaging via sync services (v0 protocol)
+    features:
+      - name: Nextcloud Sync
+        description: ~/Nextcloud/p/skcomm/ or similar for message exchange
+        complexity: low
+        default: true
+        dependencies: []
+      - name: Dropbox/Syncthing
+        description: Alternative sync backends (degraded but functional)
+        complexity: low
+        default: false
+        dependencies: [Nextcloud Sync]
+      - name: Auto-Acknowledgment
+        description: Separate ack/ directory for delivery confirmation
+        complexity: low
+        default: true
+        dependencies: [Nextcloud Sync]
+      - name: Inbox/Outbox Pattern
+        description: ~inbox/, ~outbox/, ~ack/ directory structure
+        complexity: low
+        default: true
+        dependencies: []
+
+  - name: Emergency_Raw
+    description: Protocol-of-last-resort communication
+    features:
+      - name: Netcat Sockets
+        description: Raw TCP/UDP socket messaging (nc listener)
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: Magic Wormhole
+        description: Encrypted file transfer via rendezvous
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: Bluetooth Mesh
+        description: BLE mesh for hardware-proximity emergency
+        complexity: high
+        default: false
+        dependencies: []
+
+  - name: Nuclear_Immutable
+    description: Immutable, censorship-resistant communication
+    features:
+      - name: Arweave Permaweb
+        description: Permanent storage (expensive, unkillable)
+        complexity: high
+        default: false
+        dependencies: []
+      - name: Ethereum Calldata
+        description: ETH transactions with embedded PGP (very expensive)
+        complexity: high
+        default: false
+        dependencies: []
+      - name: IPFS Pinning
+        description: Distributed content-addressed storage
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: Bitcoin OP_RETURN
+        description: Limited message storage via BTC (40 bytes)
+        complexity: high
+        default: false
+        dependencies: []
+
+  - name: Cryptography_Core
+    description: PGP and encryption foundation
+    features:
+      - name: PGP Signing
+        description: Mandatory GPG/PGP signatures on all messages
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: Minisign Support
+        description: Optional Ed25519 signatures (small, fast)
+        complexity: low
+        default: false
+        dependencies: [PGP Signing]
+      - name: Double Ratchet
+        description: Signal Protocol for perfect forward secrecy
+        complexity: high
+        default: false
+        dependencies: []
+      - name: Ephemeral Keys
+        description: Single-use keys per message for forward secrecy
+        complexity: medium
+        default: false
+        dependencies: []
+
+  - name: Protocol_Management
+    description: Message routing, deduplication, acknowledgment
+    features:
+      - name: Multi-Channel Send
+        description: Send via all channels for P0/P1 priority
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: Deduplication
+        description: Message hash tracking to prevent duplicates
+        complexity: low
+        default: true
+        dependencies: []
+      - name: ACK Required
+        description: Configurable acknowledgment requirement per message
+        complexity: low
+        default: true
+        dependencies: []
+      - name: Channel Health Check
+        description: Continuous monitoring of all channels (30s interval)
+        complexity: medium
+        default: true
+        dependencies: []
+      - name: Intelligent Routing
+        description: ML-based optimal channel selection
+        complexity: high
+        default: false
+        dependencies: [Channel Health Check]
+
+  - name: Integration
+    description: OpenClaw, daemon, and automation integration
+    features:
+      - name: OpenClaw Skill
+        description: Native OpenClaw integration for agents
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: Node.js Daemon
+        description: Background service monitoring all channels
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: Python CLI
+        description: Command-line tool for manual sending/receiving
+        complexity: medium
+        default: false
+        dependencies: []
+      - name: Systemd Integration
+        description: systemd service file for auto-start
+        complexity: low
+        default: false
+        dependencies: [Node.js Daemon]
