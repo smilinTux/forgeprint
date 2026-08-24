@@ -1,0 +1,11 @@
+# Python build/bytecode artifacts (regenerated on every run/build)
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Node
+node_modules/
